@@ -1,38 +1,32 @@
-import {
-  DEMO_OTP_CODE,
-  demoAuthEnabled,
-  demoCookie,
-  demoUserFor,
-} from "@/features/auth/server/demo-session";
+import { NextResponse } from "next/server";
+
+import { demoAuthEnabled, demoCookie, demoUserFor } from "@/features/auth/server/demo-session";
+import { COOKIE, cookieOptions } from "@/shared/api/cookies";
+import { ApiError } from "@/shared/api/errors";
 import { fail, ok } from "@/shared/api/responses";
-import type { User } from "@/shared/contracts";
+import { routes } from "@/shared/api/routes";
+import { serverFetch } from "@/shared/api/server";
+import { DEMO_OTP_CODE } from "@/shared/config";
+import type { TokenPair, User } from "@/shared/contracts";
 
 /**
  * `POST /api/auth/otp-verify` — exchange a code for a session.
  *
- * A local route rather than a BFF passthrough because the backend's response
- * carries the token pair, and those must become httpOnly cookies on the server
- * rather than be handed to the browser.
+ * A local route rather than a BFF passthrough, and the reason is the whole
+ * point of it: the backend answers with a `TokenPair`, and those three tokens
+ * must become httpOnly cookies *on the server*. Proxying the response would
+ * hand them to the browser, where any script could read them — which is
+ * exactly what the cookie scheme exists to prevent.
  *
- * Two modes, and the split is the security boundary:
+ * Two modes:
  *
- * - **sample** (`BLOGS_DATA_SOURCE=fixtures`) — any email plus `000000` signs
- *   in as a demo reader. There is no backend and no real account, so there is
- *   nothing here to reach beyond invented articles.
- * - **api** — refuses, pending the real exchange in Phase 2. It fails closed
- *   rather than falling back to the demo path, because a fixed code that
- *   worked against real data would be an unauthenticated sign-in as anyone.
+ * - **api** — forwards to `POST /auth/otp/verify` and writes the cookies. The
+ *   dev bypass code, when one is configured, is just a code the *backend*
+ *   accepts; nothing here knows or cares which one worked.
+ * - **fixtures** — no backend exists, so `DEMO_OTP_CODE` signs in as an
+ *   invented reader against invented articles.
  */
 export async function POST(request: Request) {
-  if (!demoAuthEnabled()) {
-    return fail(
-      501,
-      "INTERNAL_ERROR",
-      "Sign-in is not connected yet. Set BLOGS_DATA_SOURCE=fixtures for sample mode.",
-      { stage: "AUTH" },
-    );
-  }
-
   let body: { email?: unknown; code?: unknown };
   try {
     body = (await request.json()) as typeof body;
@@ -49,9 +43,55 @@ export async function POST(request: Request) {
     });
   }
 
+  return demoAuthEnabled() ? demoSignIn(email, code) : apiSignIn(email, code);
+}
+
+/**
+ * The real exchange.
+ *
+ * The actor token is sent so the backend can attribute everything this browser
+ * read before signing in to the new account — the merge that makes a fresh
+ * account not-cold. It arrives back rotated, and all three are written here.
+ */
+async function apiSignIn(email: string, code: string) {
+  let tokens: TokenPair;
+
+  try {
+    tokens = await serverFetch<TokenPair>(routes.otpVerify(), {
+      method: "POST",
+      body: { email, code },
+    });
+  } catch (cause) {
+    if (cause instanceof ApiError) {
+      // Passed through rather than flattened: the client distinguishes a wrong
+      // code from an expired one from a throttled one, and each needs a
+      // different thing from the reader.
+      const { safe_message, stage, retryability } = cause.envelope;
+      return fail(cause.status, cause.category, safe_message, { stage, retryability });
+    }
+
+    return fail(502, "INTERNAL_ERROR", "Could not reach the API.", { stage: "ACCESS" });
+  }
+
+  const response = NextResponse.json({
+    success: true as const,
+    message: "Signed in.",
+    data: null,
+    error: null,
+  });
+
+  response.cookies.set(COOKIE.access, tokens.access_token, cookieOptions.access());
+  response.cookies.set(COOKIE.refresh, tokens.refresh_token, cookieOptions.refresh());
+  response.cookies.set(COOKIE.actor, tokens.actor_token, cookieOptions.actor());
+
+  return response;
+}
+
+/** Sample mode: any address, the fixed code, an invented reader. */
+function demoSignIn(email: string, code: string) {
   if (code !== DEMO_OTP_CODE) {
     // The same category and wording the backend uses for a wrong code — the
-    // demo path should not teach a different vocabulary from the real one.
+    // sample path should not teach a different vocabulary from the real one.
     return fail(400, "OTP_INVALID", "That code is not correct.", { stage: "AUTH" });
   }
 

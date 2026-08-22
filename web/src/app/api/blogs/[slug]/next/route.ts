@@ -1,12 +1,12 @@
 import { fetchBlog, fetchFeed } from "@/entities/blog/api/server";
-import { nextBlog } from "@/entities/blog/model/selectors";
+import { nextBlog, type NextReason } from "@/entities/blog/model/selectors";
 import { fail, ok } from "@/shared/api/responses";
 
 /**
  * `GET /api/blogs/{slug}/next` → what to read after this article.
  *
  * ```json
- * { "success": true, "data": { "slug": "…", "id": "…", "title": "…", "reason": "series" } }
+ * { "success": true, "data": { "slug": "…", "id": "…", "title": "…", "reason": "random" } }
  * ```
  *
  * The article page does **not** call this — it is a Server Component and reads
@@ -16,16 +16,17 @@ import { fail, ok } from "@/shared/api/responses";
  * digest, or anything else that wants the answer without reproducing the rule.
  *
  * Both paths go through the same selector, so they cannot drift. When
- * relevance ranking replaces the recency fallback it changes there, and this
- * route needs no edit.
+ * relevance ranking replaces the random pick it changes there, and this route
+ * needs no edit.
  */
 
 interface NextBlogResponse {
   readonly slug: string;
   readonly id: string;
   readonly title: string;
-  /** Which rule picked it — `series` follows the author's reading order. */
-  readonly reason: "series" | "recency";
+  /** Which rule picked it. `random` today — the field exists so a caller can
+   *  tell a real recommendation from a placeholder once there is one. */
+  readonly reason: NextReason;
 }
 
 export async function GET(
@@ -60,8 +61,8 @@ export async function GET(
       title: next.blog.title,
       reason: next.reason,
     },
-    // The same 60s window the feed uses; the answer only changes when
-    // something new is published.
-    { headers: { "cache-control": "public, max-age=60" } },
+    // Uncached, because the answer is drawn fresh on every call. Caching a
+    // random pick would make it a fixed one with extra steps.
+    { headers: { "cache-control": "no-store" } },
   );
 }

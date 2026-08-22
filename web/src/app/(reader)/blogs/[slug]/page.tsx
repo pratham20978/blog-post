@@ -63,11 +63,12 @@ export default async function ArticlePage({ params }: { params: Params }) {
   // Read directly rather than through `/api/blogs/[slug]/next`: this is a
   // Server Component, and calling our own origin over HTTP would add a round
   // trip to get an answer already in memory. Both go through `nextBlog()`.
+  //
+  // The pick is random, and this page is cached — so it is fixed for the life
+  // of the cache entry rather than varying per reader. That is fine for a
+  // placeholder; when real ranking lands it will want to vary per reader, and
+  // that is the point at which this block moves client-side onto the route.
   const next = nextBlog(feed.items, blog);
-  const nextSeries =
-    next?.reason === "series"
-      ? currentSeries
-      : (series.find((entry) => entry.id === next?.blog.series_id) ?? null);
 
   const cover = content ? extractCover(content.markdown, blog.title) : null;
 
@@ -158,11 +159,7 @@ export default async function ArticlePage({ params }: { params: Params }) {
             aria-label="What to read next"
             className="mx-auto mt-16 max-w-[var(--measure)] border-t border-rule pt-8"
           >
-            <Eyebrow>
-              {next.reason === "series" && nextSeries
-                ? `Next in ${nextSeries.title}`
-                : "Read next"}
-            </Eyebrow>
+            <Eyebrow>Read next</Eyebrow>
 
             <Link href={`/blogs/${next.blog.slug}`} className="group mt-4 block">
               <h2 className="text-heading font-semibold tracking-title text-fg transition-colors group-hover:text-muted">

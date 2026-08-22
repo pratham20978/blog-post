@@ -8,7 +8,6 @@ import { useAuth } from "@/app/providers/AuthProvider";
 import { useConfig } from "@/app/providers/ConfigProvider";
 import { messageFor } from "@/shared/api/errors";
 import { BFF_BASE, localRoutes, routes } from "@/shared/api/routes";
-import { DEMO_OTP_CODE } from "@/shared/config";
 import type {
   APIResponse,
   AuthPurpose,
@@ -35,7 +34,7 @@ import { OtpInput } from "./OtpInput";
  * to be.
  */
 export function AuthForm({ purpose }: { purpose: AuthPurpose }) {
-  const { oauthProviders, dataSource } = useConfig();
+  const { oauthProviders, dataSource, devOtpCode } = useConfig();
   const { refresh } = useAuth();
   const router = useRouter();
 
@@ -158,11 +157,16 @@ export function AuthForm({ purpose }: { purpose: AuthPurpose }) {
     return (
       <div>
         <h1 className="text-title font-semibold tracking-title">Check your email</h1>
+        {/*
+          Three states, not two. There is no email adapter yet, so "we sent you
+          a code" is only true once one exists — saying it while nothing was
+          sent leaves the reader waiting on an email that is never coming.
+        */}
         <p className="mt-3 text-[0.9375rem] text-muted">
-          {simulated ? (
+          {devOtpCode ? (
             <>
-              Sample mode sends no email. Enter{" "}
-              <code className="font-mono text-fg">{DEMO_OTP_CODE}</code> to sign in as{" "}
+              No email is sent yet. Enter{" "}
+              <code className="font-mono text-fg">{devOtpCode}</code> to sign in as{" "}
               <span className="text-fg">{email}</span>.
             </>
           ) : (

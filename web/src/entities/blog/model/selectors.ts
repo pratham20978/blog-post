@@ -121,7 +121,7 @@ export function seriesBlogCounts(
 }
 
 /** Why a particular article was chosen as the next one to read. */
-export type NextReason = "series" | "recency";
+export type NextReason = "random";
 
 export interface NextBlog {
   readonly blog: BlogSummary;
@@ -136,42 +136,31 @@ export interface NextBlog {
  * end of an article is "what now", and offering a way back to something they
  * have just read competes with it for attention.
  *
- * Two rules, in order:
+ * **Currently a uniform random pick** over everything published except the
+ * article being read. That is a placeholder and is meant to be: with no
+ * ranking signal available, random at least surfaces the whole archive instead
+ * of walking everyone down the same path, and it makes the seam obvious rather
+ * than dressing up recency as a recommendation.
  *
- *   series    the next part of the series this article belongs to, by
- *               `series_position` — the author's reading order, which beats
- *               any signal we could derive
- *   recency   otherwise the next most recent article, wrapping to the newest
- *               when this is the oldest, so there is always somewhere to go
+ * **This function is the seam for relevance ranking.** When a signal exists it
+ * replaces the body here and nothing else in the app changes — the article page
+ * and the `/api/blogs/[slug]/next` route both read it through this one
+ * function, which is why the reason is part of the return type: the UI already
+ * knows how to explain a choice it did not make.
  *
- * **This function is the seam for relevance ranking.** When a recommendation
- * signal exists, it replaces the `recency` branch here and nothing else in the
- * app changes — the page and the `/api/blogs/[slug]/next` route both read it
- * through this one function.
+ * One caveat that belongs with the caller, not here: the article page is
+ * server-rendered and cached, so the pick it renders is fixed for the life of
+ * that cache entry rather than varying per reader. The route handler is
+ * uncached and does vary per call.
  */
 export function nextBlog(
   blogs: readonly BlogSummary[],
   current: Pick<BlogSummary, "id" | "series_id">,
 ): NextBlog | null {
-  if (current.series_id) {
-    const parts = seriesBlogs(blogs, current.series_id);
-    const index = parts.findIndex((blog) => blog.id === current.id);
-    const nextPart = index === -1 ? undefined : parts[index + 1];
-    if (nextPart) return { blog: nextPart, reason: "series" };
-  }
+  const candidates = blogs.filter((blog) => blog.id !== current.id);
+  const pick = candidates[Math.floor(Math.random() * candidates.length)];
 
-  const ordered = byNewest(blogs);
-  const index = ordered.findIndex((blog) => blog.id === current.id);
-  if (index === -1) {
-    // The current article is not in the given set — hand back the newest
-    // thing there is rather than nothing.
-    return ordered[0] ? { blog: ordered[0], reason: "recency" } : null;
-  }
-
-  // Wrap: the oldest article's "next" is the newest, so the end of the
-  // archive leads back to the front instead of dead-ending.
-  const candidate = ordered[index + 1] ?? ordered[0];
-  return candidate && candidate.id !== current.id
-    ? { blog: candidate, reason: "recency" }
-    : null;
+  // Only when the archive holds nothing else. Linking an article to itself
+  // would be worse than showing no suggestion at all.
+  return pick ? { blog: pick, reason: "random" } : null;
 }

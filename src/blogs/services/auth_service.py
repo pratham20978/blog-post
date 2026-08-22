@@ -18,6 +18,7 @@ from on the very first page the user sees.
 from __future__ import annotations
 
 import logging
+import secrets
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 
@@ -56,6 +57,9 @@ class OtpSettings:
     max_attempts: int
     resend_cooldown_seconds: int
     log_codes: bool
+    #: Development only, and refused in production by ``Settings``. See
+    #: ``verify_otp`` for what accepting it actually skips.
+    dev_bypass_code: str | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -178,6 +182,31 @@ class AuthService:
         correlation_id: str | None = None,
     ) -> SignInResult:
         now = self._clock.now()
+
+        if self._is_dev_bypass(code):
+            # Straight to the happy path: no challenge is looked up, none is
+            # consumed, and the attempt counter is untouched. There may not be
+            # a challenge at all — that is the point, since nothing can send
+            # one until F2 lands.
+            #
+            # Everything downstream is the real flow, so the resulting session
+            # is a genuine one: real tokens, real user row (created here if the
+            # address is new), and the same actor merge a real code would do.
+            logger.warning(
+                "DEV ONLY - accepting the OTP bypass code for %s; no challenge was verified",
+                email,
+            )
+            async with self._uow.begin() as uow:
+                return await self._complete_otp_sign_in(
+                    uow,
+                    email=email,
+                    actor_id=actor_id,
+                    now=now,
+                    user_agent=user_agent,
+                    client_ip=client_ip,
+                    correlation_id=correlation_id,
+                )
+
         code_hash = self._hasher.hash_otp(code)
 
         async with self._uow.begin() as uow:
@@ -217,6 +246,18 @@ class AuthService:
             }[failed_outcome],
             correlation_id=correlation_id,
         )
+
+    def _is_dev_bypass(self, code: str) -> bool:
+        """Whether this is the configured development code.
+
+        ``compare_digest`` rather than ``==``: the comparison is cheap either
+        way, and a short-circuiting one on a value this guessable is the kind of
+        detail that gets copied into a context where it does matter.
+        """
+        configured = self._otp.dev_bypass_code
+        if not configured:
+            return False
+        return secrets.compare_digest(code, configured)
 
     async def _complete_otp_sign_in(  # type: ignore[no-untyped-def]
         self,

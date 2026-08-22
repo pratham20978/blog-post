@@ -182,6 +182,17 @@ describe("seriesBlogCounts", () => {
   });
 });
 
+/**
+ * `nextBlog` picks at random, so there is no single expected answer to assert.
+ * What can be asserted are the invariants that must hold for *every* draw —
+ * and those are the ones that matter, because each corresponds to a visible
+ * bug: an article linking to itself, a link to something that is not in the
+ * feed, or a dead end at the last article.
+ *
+ * The picks are exercised many times rather than once. A single call passes
+ * against a broken implementation most of the time, which is worse than no
+ * test at all.
+ */
 describe("nextBlog", () => {
   const parts = [
     blog({ id: "a", slug: "a", series_id: "s1", series_position: 1, published_at: "2026-01-03T00:00:00Z" }),
@@ -189,45 +200,40 @@ describe("nextBlog", () => {
     blog({ id: "c", slug: "c", series_id: "s1", series_position: 3, published_at: "2026-01-01T00:00:00Z" }),
   ];
 
-  it("follows series position, not recency", () => {
-    // `a` is the most recent, so a recency rule would send `b` backwards to
-    // it. Reading order has to win.
-    const result = nextBlog(parts, { id: "b", series_id: "s1" });
+  const draws = (feed = parts, current: { id: string; series_id: string | null } = { id: "b", series_id: "s1" }) =>
+    Array.from({ length: 200 }, () => nextBlog(feed, current));
 
-    expect(result?.blog.id).toBe("c");
-    expect(result?.reason).toBe("series");
+  it("never suggests the article being read", () => {
+    for (const result of draws()) expect(result?.blog.id).not.toBe("b");
   });
 
-  it("falls back to recency at the end of a series", () => {
-    const standalone = blog({
-      id: "z",
-      slug: "z",
-      published_at: "2026-01-04T00:00:00Z",
-    });
-    const result = nextBlog([...parts, standalone], { id: "c", series_id: "s1" });
-
-    // `c` is the last part and also the oldest article overall, so the
-    // recency branch wraps to the newest.
-    expect(result?.blog.id).toBe("z");
-    expect(result?.reason).toBe("recency");
+  it("only ever suggests something from the feed it was given", () => {
+    const ids = new Set(parts.map((entry) => entry.id));
+    for (const result of draws()) expect(ids.has(result?.blog.id ?? "")).toBe(true);
   });
 
-  it("uses recency for an article outside any series", () => {
-    const result = nextBlog(parts, { id: "a", series_id: null });
-
-    expect(result?.blog.id).toBe("b");
-    expect(result?.reason).toBe("recency");
+  it("reaches every other article, given enough draws", () => {
+    // Guards against an off-by-one that quietly makes one article
+    // unreachable — the kind of bug a single-draw test never catches.
+    const seen = new Set(draws().map((result) => result?.blog.id));
+    expect(seen).toEqual(new Set(["a", "c"]));
   });
 
-  it("wraps at the oldest article so the archive never dead-ends", () => {
-    const result = nextBlog(parts, { id: "c", series_id: null });
-
-    expect(result?.blog.id).toBe("a");
+  it("suggests something even for an article outside the given feed", () => {
+    // The article page fetches a bounded window, so the current article can
+    // legitimately fall outside it. Answering null there would dead-end a
+    // perfectly good page.
+    const result = nextBlog(parts, { id: "not-in-feed", series_id: null });
+    expect(result).not.toBeNull();
   });
 
   it("returns null when the article is the only one published", () => {
     const only = blog({ id: "solo", slug: "solo" });
 
     expect(nextBlog([only], { id: "solo", series_id: null })).toBeNull();
+  });
+
+  it("returns null for an empty feed", () => {
+    expect(nextBlog([], { id: "anything", series_id: null })).toBeNull();
   });
 });

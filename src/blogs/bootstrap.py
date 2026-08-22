@@ -156,6 +156,7 @@ async def build_container(settings: Settings) -> Container:
                 max_attempts=settings.otp_max_attempts,
                 resend_cooldown_seconds=settings.otp_resend_cooldown_s,
                 log_codes=settings.otp_log_codes,
+                dev_bypass_code=_secret_or_none(settings.otp_dev_bypass_code),
             ),
             refresh_ttl_seconds=settings.refresh_token_ttl_s,
             access_ttl_seconds=settings.access_token_ttl_s,

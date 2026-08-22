@@ -80,6 +80,20 @@ class Settings(BaseSettings):
     #: exists to email it. Refused in production by the validator below.
     otp_log_codes: bool = True
 
+    #: A fixed code accepted for any address, in place of an emailed one.
+    #:
+    #: There is no email adapter yet (F2), so without this every local sign-in
+    #: means reading a code out of the server log. Set it to something like
+    #: "000000" in development and the OTP flow works end to end.
+    #:
+    #: Be clear about what this is: **it is an unauthenticated sign-in as any
+    #: address, the admin included.** It bypasses the challenge entirely — no
+    #: code is sent, none is consumed, and the attempt counter never advances.
+    #: That is only tolerable because it cannot reach production: the validator
+    #: below refuses to start when it is set there, the same way it refuses
+    #: `otp_log_codes`. Leave it unset and the real challenge is the only path.
+    otp_dev_bypass_code: SecretStr | None = None
+
     # ── OAuth ───────────────────────────────────────────────────────────────
     oauth_redirect_base_url: str = "http://127.0.0.1:8080"
     google_client_id: str | None = None
@@ -148,6 +162,14 @@ class Settings(BaseSettings):
             )
         if self.otp_log_codes:
             raise ValueError("refusing to start in production with otp_log_codes enabled")
+        # The one that would matter most. A fixed code in production is an
+        # unauthenticated sign-in as anybody, so it fails at assembly rather
+        # than being caught in review.
+        if self.otp_dev_bypass_code is not None:
+            raise ValueError(
+                "refusing to start in production with otp_dev_bypass_code set; "
+                "it accepts a fixed code for any address, including the admin"
+            )
         if self.db_min_pool_size > self.db_max_pool_size:
             raise ValueError("db_min_pool_size cannot exceed db_max_pool_size")
         # A default or short admin prefix is guessable, which is the one thing
