@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(uv run *)",
+      "Bash(uv run python -c ' *)",
+      "Bash(pkill -f \"uvicorn blogs.main\")",
+      "Bash(rm -f /tmp/claude-1000/-home-prathamv-claude-skills-blog-post/304bad14-f30a-44db-b774-6df02f77af0a/scratchpad/api.log)",
+      "Bash(python3 -)",
+      "Bash(BLOGS_DATABASE_URL=\"postgresql://lucifer:password123@127.0.0.1:5432/blogs\" uv run python -m blogs.database.migrator status)",
+      "Bash(git add *)"
+    ]
+  }
+}

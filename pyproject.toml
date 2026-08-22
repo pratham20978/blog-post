@@ -1,7 +1,73 @@
 [project]
 name = "blog-post"
 version = "0.1.0"
-description = "Add your description here"
+description = "Core blog platform (F3): stateless auth, admin markdown authoring, engagement log."
 readme = "README.md"
 requires-python = ">=3.14"
-dependencies = []
+dependencies = [
+    "fastapi>=0.120",
+    "uvicorn[standard]>=0.38",
+    "pydantic>=2.12",
+    "pydantic-settings>=2.12",
+    "psycopg[binary,pool]>=3.3",
+    "python-multipart>=0.0.20",
+    "pyjwt[crypto]>=2.10",
+    "httpx>=0.28",
+    "minio>=7.2",
+    # Parsing only — headings and word count. Nothing is rendered, so there is
+    # no HTML to sanitise and no sanitiser dependency.
+    "markdown-it-py>=4.0",
+    "python-frontmatter>=1.1",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.4",
+    "pytest-asyncio>=1.3",
+    "ruff>=0.15",
+    "mypy>=1.19",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/blogs"]
+
+[tool.pytest.ini_options]
+testpaths = ["src/tests"]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "session"
+filterwarnings = ["error"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py314"
+src = ["src"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "UP", "B", "SIM", "RUF", "ASYNC", "S", "DTZ"]
+ignore = ["S101"]
+
+[tool.ruff.lint.per-file-ignores]
+# S608 flags every f-string that reaches a query. In this package the
+# interpolated parts are module-level constants only — column lists, a
+# bucket name looked up in a closed dict, and joins over statically
+# built clause fragments. Every caller-supplied value goes through a
+# %(name)s placeholder and is bound by psycopg, never formatted in.
+# Enforced by test_no_parameter_interpolation, which fails if a query
+# string interpolates anything that is not one of those constants.
+"src/blogs/repository/*.py" = ["S608"]
+# S105 fires on ErrorCategory members whose names contain TOKEN, and on
+# the literal "Bearer" token_type. They are enum labels, not secrets.
+"src/blogs/contracts/common.py" = ["S105"]
+"src/blogs/contracts/identity.py" = ["S105"]
+"src/tests/**" = ["S105", "S106", "S107", "S311"]
+
+[tool.mypy]
+python_version = "3.14"
+mypy_path = "src"
+packages = ["blogs"]
+strict = true
+warn_unreachable = true

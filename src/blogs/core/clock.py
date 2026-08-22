@@ -7,8 +7,11 @@ in tests costs nothing and removes a whole class of flake.
 outside-the-process boundary — there is no adapter, no connection and nothing to
 fail.
 
-
-# this is we do persioon fo ranalyze which user put what amount of time at our platform via the senind the some signlena lf rhe forntin the in the some time and via the clocking system here we do analuze by soem methods
+This is also the seam behind dwell measurement: the client reports how long it
+spent on an article, the server stamps every engagement row from here, and F1
+later normalises that dwell against the article's word count. Because both the
+stamp and the expiry checks come from one injectable source, a test can replay
+a whole reading session without sleeping.
 """
 
 from __future__ import annotations
