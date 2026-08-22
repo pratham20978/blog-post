@@ -1,0 +1,1872 @@
+1. First understand the evaluation problem
+
+Suppose a user searches:
+
+query = "postgres vacuum"
+
+Your search engine returns:
+
+Rank 1 → Document A
+Rank 2 → Document B
+Rank 3 → Document C
+Rank 4 → Document D
+Rank 5 → Document E
+
+But which documents are actually useful?
+
+Suppose humans have judged:
+
+A → relevant
+B → not relevant
+C → relevant
+D → not relevant
+E → relevant
+
+Then:
+
+Ranking:
+
+1  A  ✓
+2  B  ✗
+3  C  ✓
+4  D  ✗
+5  E  ✓
+
+Now we can measure different things.
+
+And different metrics answer different questions.
+
+2. The fundamental vocabulary
+
+Before P@k, Recall@k, etc., understand these:
+
+Query
+
+What the user searches for.
+
+"postgres vacuum"
+Document
+
+A searchable item.
+
+PostgreSQL VACUUM documentation
+Relevant document
+
+A document judged useful for that query.
+
+Ranking
+
+The order in which the search engine returns documents.
+
+1 → A
+2 → B
+3 → C
+...
+Relevance judgment
+
+Usually:
+
+0 = irrelevant
+1 = relevant
+2 = highly relevant
+3 = extremely relevant
+
+This distinction becomes important for nDCG.
+
+3. Binary vs graded relevance
+
+There are two major forms of relevance judgments.
+
+Binary
+0 = irrelevant
+1 = relevant
+
+Example:
+
+A → 1
+B → 0
+C → 1
+D → 0
+
+Metrics such as:
+
+Precision
+Recall
+MAP
+MRR
+
+are commonly explained using binary relevance.
+
+Graded
+
+Instead of:
+
+relevant / irrelevant
+
+we can say:
+
+0 → irrelevant
+1 → somewhat relevant
+2 → relevant
+3 → highly relevant
+
+Example:
+
+Rank     Document    Relevance
+1        A           3
+2        B           0
+3        C           2
+4        D           1
+5        E           3
+
+This is important for:
+
+nDCG
+ERR
+
+because not all relevant documents are equally useful.
+
+4. Precision@k
+
+Let's start with the simplest.
+
+Suppose your search engine returns:
+
+k = 5
+
+1 → ✓
+2 → ✗
+3 → ✓
+4 → ✗
+5 → ✓
+
+There are:
+
+3 relevant documents
+
+among the top 5.
+
+Therefore:
+
+Precision@5=
+5
+relevant documents in top 5
+	​
+
+=
+5
+3
+	​
+
+=
+0.6
+	​
+
+
+or:
+
+60%
+	​
+
+5. What question does Precision@k answer?
+
+It answers:
+
+"Of the results I showed the user, how many were relevant?"
+
+This is extremely important for search.
+
+If the user only looks at the first 5 results, then:
+
+P@5
+
+is often more meaningful than overall precision.
+
+6. Precision@1
+
+Suppose:
+
+1 → relevant
+
+Then:
+
+P@1=1
+
+If:
+
+1 → irrelevant
+
+then:
+
+P@1=0
+
+This is useful for systems where users mostly care about the first result.
+
+7. Recall@k
+
+Precision asks:
+
+How many retrieved results were relevant?
+
+Recall asks:
+
+How many of all relevant documents did we manage to retrieve?
+
+Suppose there are actually:
+
+10 relevant documents
+
+in the entire corpus.
+
+Your top 5 results contain:
+
+3 relevant documents
+
+Then:
+
+Recall@5=
+10
+3
+	​
+
+=
+0.3
+	​
+
+
+or:
+
+30%
+8. Precision vs Recall
+
+This distinction is fundamental.
+
+Suppose:
+
+Corpus contains 100 relevant documents.
+
+System A:
+
+returns 5 documents
+5 are relevant
+
+Then:
+
+P@5=1
+
+Excellent precision.
+
+But:
+
+Recall@5=
+100
+5
+	​
+
+=0.05
+
+Very poor recall.
+
+System B:
+
+returns 5 documents
+2 are relevant
+
+Then:
+
+P@5=0.4
+
+and:
+
+Recall@5=0.02
+
+So precision and recall tell you different things.
+
+9. Why Recall@k becomes tricky
+
+Recall requires knowing:
+
+all relevant documents
+
+But in a huge corpus, how do we know every relevant document?
+
+That's one of the major problems in information retrieval evaluation.
+
+We'll come back to this when we discuss:
+
+Cranfield / TREC / pooling
+
+10. MAP — Mean Average Precision
+
+This one is more interesting.
+
+First understand:
+
+Average Precision
+
+Suppose:
+
+Rank:
+
+1 → ✓
+2 → ✗
+3 → ✓
+4 → ✗
+5 → ✓
+
+Calculate precision every time we encounter a relevant document.
+
+At rank 1:
+
+P@1=1
+
+At rank 3:
+
+P@3=
+3
+2
+	​
+
+
+At rank 5:
+
+P@5=
+5
+3
+	​
+
+
+Then:
+
+AP=
+3
+P@1+P@3+P@5
+	​
+
+
+So:
+
+AP=
+3
+1+
+3
+2
+	​
+
++
+5
+3
+	​
+
+	​
+
+AP≈0.756
+11. Why is AP interesting?
+
+Notice what happened.
+
+If relevant results appear early:
+
+✓
+✓
+✗
+✗
+
+you get high precision early.
+
+If relevant results appear late:
+
+✗
+✗
+✗
+✓
+✓
+
+you get lower AP.
+
+So AP rewards:
+
+retrieving relevant documents early.
+
+12. MAP
+
+Now suppose you have multiple queries.
+
+Query 1 → AP = 0.80
+Query 2 → AP = 0.60
+Query 3 → AP = 0.90
+Query 4 → AP = 0.70
+
+Then:
+
+MAP=
+4
+0.8+0.6+0.9+0.7
+	​
+
+=
+0.75
+	​
+
+
+So:
+
+MAP=Mean(Average Precision)
+	​
+
+
+MAP is simply:
+
+Average AP across queries.
+
+13. MRR — Mean Reciprocal Rank
+
+MRR asks a much narrower question:
+
+Where is the first relevant result?
+
+Suppose:
+
+1 → ✗
+2 → ✗
+3 → ✓
+
+First relevant result is at rank 3.
+
+Reciprocal rank:
+
+RR=
+3
+1
+	​
+
+
+Now suppose:
+
+1 → ✓
+
+Then:
+
+RR=1
+
+If:
+
+1 → ✗
+2 → ✓
+
+then:
+
+RR=
+2
+1
+	​
+
+=0.5
+14. MRR across queries
+
+Suppose:
+
+Query 1 → first relevant at rank 1
+Query 2 → first relevant at rank 2
+Query 3 → first relevant at rank 4
+
+Then:
+
+MRR=
+3
+1+
+2
+1
+	​
+
++
+4
+1
+	​
+
+	​
+
+=
+3
+1.75
+	​
+
+0.5833
+	​
+
+15. When is MRR useful?
+
+MRR is excellent when the user primarily needs one correct answer.
+
+Examples:
+
+"Who is the CEO of Nvidia?"
+
+"What is the capital of France?"
+
+"What is the syntax for PostgreSQL VACUUM?"
+
+You care about:
+
+How quickly did I find the first useful answer?
+
+16. MRR has a major limitation
+
+Suppose:
+
+System A:
+
+1 → ✓
+2 → ✗
+3 → ✗
+4 → ✗
+5 → ✗
+
+MRR:
+
+1
+
+System B:
+
+1 → ✓
+2 → ✓
+3 → ✓
+4 → ✓
+5 → ✓
+
+MRR:
+
+1
+
+They get the same MRR.
+
+But obviously System B is much better if the user wants many useful results.
+
+That's why MRR is focused on:
+
+first relevant result
+	​
+
+17. nDCG@k
+
+Now we reach one of the most important ranking metrics.
+
+nDCG = normalized Discounted Cumulative Gain.
+
+This metric handles:
+
+relevance grade
+ranking position
+
+This is why it's so powerful.
+
+18. Why do we need graded relevance?
+
+Suppose:
+
+Rank 1 → relevance 3
+Rank 2 → relevance 1
+Rank 3 → relevance 2
+
+All three are technically relevant.
+
+But:
+
+relevance 3
+
+is much better than:
+
+relevance 1
+
+Binary metrics lose this information.
+
+nDCG doesn't.
+
+19. DCG
+
+Your formula:
+
+DCG@k=
+i=1
+∑
+k
+	​
+
+log
+2
+	​
+
+(i+1)
+2
+rel
+i
+	​
+
+−1
+	​
+
+
+Let's calculate it.
+
+Suppose:
+
+Rank     relevance
+1        3
+2        2
+3        0
+4        1
+
+At rank 1:
+
+log
+2
+	​
+
+(2)
+2
+3
+−1
+	​
+
+=
+1
+7
+	​
+
+=7
+
+Rank 2:
+
+log
+2
+	​
+
+(3)
+2
+2
+−1
+	​
+
+=
+1.585
+3
+	​
+
+≈1.893
+
+Rank 3:
+
+log
+2
+	​
+
+(4)
+2
+0
+−1
+	​
+
+=0
+
+Rank 4:
+
+log
+2
+	​
+
+(5)
+2
+1
+−1
+	​
+
+≈0.431
+
+Therefore:
+
+DCG≈7+1.893+0+0.431
+DCG≈9.324
+	​
+
+20. Why 2^rel - 1?
+
+This makes relevance differences nonlinear.
+
+For:
+
+rel = 0
+2
+0
+−1=0
+
+For:
+
+rel = 1
+2
+1
+−1=1
+
+For:
+
+rel = 2
+2
+2
+−1=3
+
+For:
+
+rel = 3
+2
+3
+−1=7
+
+So:
+
+0 → 0
+1 → 1
+2 → 3
+3 → 7
+
+A highly relevant result gets dramatically more gain.
+
+21. Why divide by log2(i+1)?
+
+This is the discount.
+
+Users generally pay less attention to lower-ranked results.
+
+So:
+
+Rank 1 → full value
+Rank 2 → discounted
+Rank 3 → more discounted
+Rank 10 → heavily discounted
+
+The formula:
+
+log
+2
+	​
+
+(i+1)
+1
+	​
+
+
+implements that idea mathematically.
+
+So DCG captures:
+
+relevance×position importance
+	​
+
+22. Why normalize?
+
+Raw DCG isn't easy to compare between queries.
+
+Suppose:
+
+Query A
+maximum possible relevance = high
+
+Query B
+maximum possible relevance = low
+
+Their DCG scales differ.
+
+So we calculate ideal DCG:
+
+IDCG@k
+
+This means:
+
+What would DCG be if we sorted the documents in the perfect order?
+
+Then:
+
+nDCG@k=
+IDCG@k
+DCG@k
+	​
+
+
+Therefore:
+
+0≤nDCG≤1
+	​
+
+
+Usually.
+
+And:
+
+nDCG=1
+	​
+
+
+means the ranking is ideal for those judgments.
+
+23. Why nDCG is often the dominant search-ranking metric
+
+Because it simultaneously handles:
+
+Relevance grade
+       +
+Ranking position
+       +
+Normalization
+
+So for modern search systems:
+
+P@k
+Recall@k
+MAP
+MRR
+nDCG
+
+nDCG is often particularly useful when your judgments are graded.
+
+24. ERR — Expected Reciprocal Rank
+
+ERR takes a different approach.
+
+Instead of simply saying:
+
+"Rank 1 is worth X, rank 2 is worth Y."
+
+it models a user browsing results.
+
+The intuition is:
+
+User sees result 1
+       ↓
+Is it satisfying?
+       │
+    ┌──┴──┐
+    │     │
+   YES    NO
+    │     │
+ stop    continue
+          ↓
+       result 2
+
+This is called a cascade model.
+
+25. ERR intuition
+
+Suppose:
+
+Rank 1 → highly relevant
+
+The user may stop immediately.
+
+Therefore, results below it matter less.
+
+But if rank 1 is bad:
+
+Rank 1 → bad
+
+the user continues.
+
+Then rank 2 matters.
+
+Then rank 3.
+
+So ERR models:
+
+P(user reaches rank i)
+
+and:
+
+P(user is satisfied at rank i)
+26. ERR formula
+
+A common formulation is:
+
+ERR=
+i=1
+∑
+k
+	​
+
+i
+1
+	​
+
+P(user reaches i)R
+i
+	​
+
+
+where R
+i
+	​
+
+ represents the probability that the user is satisfied with result i.
+
+The reach probability is recursively determined by previous dissatisfaction.
+
+Conceptually:
+
+P(reach i)=
+j=1
+∏
+i−1
+	​
+
+(1−R
+j
+	​
+
+)
+
+So:
+
+ERR=
+i=1
+∑
+k
+	​
+
+i
+1
+	​
+
+[
+j=1
+∏
+i−1
+	​
+
+(1−R
+j
+	​
+
+)]R
+i
+	​
+
+
+That's the key mathematical idea.
+
+27. Comparing the ranking metrics
+
+Think of them like this:
+
+Metric	Main question
+Precision@k	How many top-k results are relevant?
+Recall@k	How many relevant documents did we retrieve?
+MAP	How well are relevant documents distributed throughout ranking?
+MRR	How quickly do we find the first relevant result?
+nDCG@k	How good is the graded ranking?
+ERR	How likely is the user to find satisfaction while browsing?
+28. Now: Cranfield evaluation
+
+This is the foundation of offline information retrieval evaluation.
+
+The basic setup:
+
+Corpus
+  +
+Queries/topics
+  +
+Relevance judgments
+  ↓
+Evaluate search systems
+
+Suppose we have:
+
+1,000,000 documents
+
+and:
+
+100 search topics
+
+For each topic, humans judge which documents are relevant.
+
+Then we can run:
+
+System A
+System B
+System C
+
+against exactly the same evaluation set.
+
+Now comparison is controlled.
+
+29. Why is this called the Cranfield paradigm?
+
+The Cranfield approach established the idea of evaluating retrieval systems using:
+
+collection
++
+queries
++
+relevance judgments
++
+retrieval system
+
+This separates:
+
+the retrieval algorithm
+
+from:
+
+the evaluation collection and judgments
+
+That's extremely useful scientifically.
+
+30. TREC
+
+TREC = Text REtrieval Conference.
+
+It applies this idea at large scale.
+
+A TREC-style evaluation provides:
+
+Corpus
+Topics
+Qrels
+Corpus
+
+Documents.
+
+Topics
+
+Queries/information needs.
+
+Qrels
+
+Relevance judgments.
+
+For example:
+
+query  document  relevance
+
+101     D123      2
+101     D456      0
+101     D789      1
+
+These are the ground truth used to evaluate systems.
+
+31. The pooling problem
+
+Here's a fascinating problem.
+
+Suppose:
+
+System A → top 100 documents
+System B → top 100 documents
+System C → top 100 documents
+
+There are millions of documents.
+
+Humans can't judge every document.
+
+So researchers create a pool.
+
+Take top results from multiple systems:
+
+A top 100
+B top 100
+C top 100
+D top 100
+
+Combine them:
+
+POOL
+ ↓
+unique documents
+ ↓
+human judges
+
+Now we have relevance judgments.
+
+32. Pooling bias
+
+Here's the problem.
+
+Suppose the true relevant documents are:
+
+A
+B
+C
+D
+E
+F
+
+But none of the systems retrieve:
+
+F
+
+Then F may never enter the pool.
+
+So:
+
+F = unjudged
+
+But many evaluation setups effectively treat unjudged documents as:
+
+not relevant
+
+That creates pooling bias.
+
+This is why:
+
+"Not judged"
+
+doesn't necessarily mean:
+
+"Not relevant."
+
+33. Why this matters
+
+Imagine:
+
+System X
+
+discovers completely new relevant documents.
+
+But those documents aren't in the judgment pool.
+
+The evaluation may incorrectly penalize X.
+
+Therefore offline evaluation has limitations.
+
+34. Statistical significance
+
+Suppose:
+
+System A nDCG = 0.421
+System B nDCG = 0.427
+
+Is B actually better?
+
+Maybe.
+
+Or maybe the difference happened because of random variation across queries.
+
+We need statistical testing.
+
+35. Paired t-test
+
+Suppose for each query we calculate:
+
+A_q
+B_q
+
+Then calculate:
+
+d
+q
+	​
+
+=A
+q
+	​
+
+−B
+q
+	​
+
+
+For example:
+
+Query 1 → +0.02
+Query 2 → -0.01
+Query 3 → +0.04
+Query 4 → +0.01
+
+The paired t-test asks whether the mean difference is significantly different from zero.
+
+t=
+s
+d
+	​
+
+/
+n
+	​
+
+d
+ˉ
+	​
+
+
+where:
+
+d
+ˉ
+ = mean difference
+s
+d
+	​
+
+ = standard deviation of differences
+n = number of queries
+36. Why paired?
+
+Because both systems are evaluated on the same queries.
+
+So we don't treat them as unrelated samples.
+
+We compare:
+
+Query 1:
+A vs B
+
+Query 2:
+A vs B
+
+Query 3:
+A vs B
+
+That's a paired comparison.
+
+37. Wilcoxon signed-rank test
+
+The paired t-test assumes certain distributional properties.
+
+Wilcoxon signed-rank is a non-parametric alternative.
+
+Instead of relying directly on the mean and normality assumptions, it looks at the ranks of the paired differences.
+
+Useful when:
+
+metric differences
+
+are not well modeled by a normal distribution.
+
+38. Permutation test
+
+This is conceptually beautiful.
+
+Suppose:
+
+A beats B
+
+We ask:
+
+If A and B were actually equivalent, how often could we observe a difference this large just by randomly swapping their labels?
+
+We repeatedly randomize:
+
+A/B labels
+
+and build a null distribution.
+
+Then:
+
+p=P(difference at least this extreme∣H
+0
+	​
+
+)
+
+This is often very intuitive for IR evaluation.
+
+39. What does p < 0.05 mean?
+
+Usually:
+
+p<0.05
+
+means:
+
+Under the null hypothesis, results at least this extreme would be relatively unlikely.
+
+It does not mean:
+
+There is a 95% probability that my new system is better.
+
+That's a very common statistical mistake.
+
+40. Offline vs online evaluation
+
+Now we've covered:
+
+OFFLINE
+│
+├── P@k
+├── Recall@k
+├── MAP
+├── MRR
+├── nDCG
+├── ERR
+├── TREC
+├── qrels
+└── significance tests
+
+But there's another world:
+
+ONLINE
+
+where real users interact with the system.
+
+41. A/B testing
+
+Suppose you have:
+
+A = current search engine
+B = new search engine
+
+Randomly assign users:
+
+50% → A
+50% → B
+
+Then measure:
+
+click rate
+query success
+conversion
+time to success
+reformulation rate
+etc.
+
+This is an online experiment.
+
+42. Why A/B testing is powerful
+
+Offline:
+
+documents + judgments
+
+Online:
+
+real users
+real queries
+real behavior
+
+So online testing captures things offline judgments may miss.
+
+But it is expensive and can be noisy.
+
+43. Interleaving
+
+Instead of:
+
+User A → system A
+User B → system B
+
+we can combine results from A and B into one ranking.
+
+For example:
+
+A result 1
+B result 1
+A result 2
+B result 2
+...
+
+Then observe which system's results receive more interactions.
+
+One popular approach is:
+
+Team Draft Interleaving
+
+44. Team Draft Interleaving
+
+Imagine:
+
+System A:
+A1 A2 A3 A4
+
+System B:
+B1 B2 B3 B4
+
+The interleaver creates something like:
+
+A1
+B1
+A2
+B2
+A3
+B3
+
+Users interact with the mixed list.
+
+If users disproportionately click A's documents:
+
+A wins
+
+If they favor B:
+
+B wins
+
+The advantage is that A and B compete within the same user/query context.
+
+45. But clicks aren't relevance
+
+This is a very important transition.
+
+Suppose:
+
+Rank 1 → clicked
+Rank 5 → not clicked
+
+Can we conclude:
+
+Rank 1 relevant
+Rank 5 irrelevant
+
+No.
+
+Why?
+
+Because the user may never have examined rank 5.
+
+This leads to:
+
+Position bias
+
+Users tend to examine higher-ranked results more often.
+
+So:
+
+P(click∣rank=1)>P(click∣rank=10)
+
+even if the documents have identical relevance.
+
+46. Examination hypothesis
+
+A simple model is:
+
+Click=Examination×Relevance
+
+More probabilistically:
+
+P(C
+i
+	​
+
+=1)=P(E
+i
+	​
+
+=1)×P(R
+i
+	​
+
+=1)
+
+where:
+
+C
+i
+	​
+
+ = click
+E
+i
+	​
+
+ = user examined result
+R
+i
+	​
+
+ = result is relevant
+
+This is the intuition behind the examination hypothesis.
+
+A user can't click something they never examined.
+
+47. Position-Based Model — PBM
+
+The Position-Based Model says examination probability mainly depends on position.
+
+For example:
+
+Position:
+
+1 → 0.95
+2 → 0.80
+3 → 0.70
+4 → 0.60
+5 → 0.50
+...
+
+Then:
+
+P(C
+i
+	​
+
+)=P(E
+i
+	​
+
+∣position
+i
+	​
+
+)P(R
+i
+	​
+
+)
+
+So if result 5 gets fewer clicks, that doesn't necessarily mean it's worse.
+
+Maybe:
+
+P(E
+5
+	​
+
+)
+
+is simply low.
+
+48. Cascade model
+
+The cascade model says users examine results sequentially.
+
+Conceptually:
+
+result 1
+   ↓
+satisfying?
+   │
+  no
+   ↓
+result 2
+   ↓
+satisfying?
+   │
+  no
+   ↓
+result 3
+
+If a result satisfies the user, they stop.
+
+Therefore:
+
+P(E
+i
+	​
+
+)
+
+depends on whether the user continued past earlier results.
+
+This makes the model more behavioral than a simple position model.
+
+49. DBN — Dynamic Bayesian Network
+
+DBN models are more sophisticated click models.
+
+They distinguish things such as:
+
+examination
+click
+satisfaction
+continuation
+
+For example:
+
+Examine
+   ↓
+Click?
+   ↓
+Satisfied?
+   ↓
+Continue?
+
+This lets the model represent behaviors like:
+
+User clicked a result but then continued searching because the result wasn't satisfying.
+
+That's much more informative than treating every click as success.
+
+50. Counterfactual evaluation
+
+Now we get into a much harder idea.
+
+Suppose your existing search engine produced:
+
+rank 1 → A
+rank 2 → B
+rank 3 → C
+
+You observed clicks.
+
+But you want to know:
+
+What would have happened if I had shown B at rank 1?
+
+That's a counterfactual question.
+
+You didn't actually observe that world.
+
+This is where off-policy evaluation comes in.
+
+51. Propensity
+
+Suppose your logging system tells you:
+
+P(examined result at rank 1) = 0.9
+P(examined result at rank 2) = 0.7
+P(examined result at rank 3) = 0.5
+
+These are propensities.
+
+Generally:
+
+p
+i
+	​
+
+=P(observed interaction∣context)
+52. Inverse Propensity Scoring — IPS
+
+Suppose an event has propensity:
+
+p=0.2
+
+It happened.
+
+Instead of counting:
+
+1
+
+IPS gives it weight:
+
+p
+1
+	​
+
+=
+0.2
+1
+	​
+
+=5
+
+So:
+
+rarely observed event
+       ↓
+large weight
+
+while:
+
+very common event
+       ↓
+small weight
+53. Why does IPS work conceptually?
+
+Suppose an event is observed only 20% of the time.
+
+If you simply count observations, you underestimate its true frequency.
+
+But:
+
+E[
+p
+I
+	​
+
+]
+
+where I is the observation indicator.
+
+Since:
+
+E[I]=p
+
+we get:
+
+E[
+p
+I
+	​
+
+]=
+p
+E[I]
+	​
+
+=
+p
+p
+	​
+
+=1
+
+That's the mathematical intuition behind inverse-propensity correction.
+
+54. IPS in search
+
+Suppose:
+
+Document A
+
+is shown at rank 10.
+
+It gets clicked.
+
+But rank 10 has:
+
+p=0.1
+
+Then its IPS weight is:
+
+0.1
+1
+	​
+
+=10
+
+So the click provides stronger evidence because it occurred despite low exposure probability.
+
+55. But IPS has a dangerous property
+
+If:
+
+p→0
+
+then:
+
+p
+1
+	​
+
+→∞
+
+So tiny propensities create huge weights.
+
+That produces:
+
+high variance
+
+and unstable estimates.
+
+This is one of the major practical problems with IPS.
+
+Methods such as propensity clipping can trade some bias for lower variance.
+
+56. The complete evaluation architecture
+
+Now put everything together.
+
+                       SEARCH SYSTEM
+                            │
+                  ┌─────────┴─────────┐
+                  │                   │
+               OFFLINE              ONLINE
+                  │                   │
+          ┌───────┴───────┐       ┌───┴────────┐
+          │               │       │            │
+       Retrieval       Ranking   A/B       Interleaving
+          │               │       │            │
+       Recall          nDCG     CTR          clicks
+       Precision        MAP
+       MRR              ERR
+          │
+          ▼
+      TREC/Cranfield
+          │
+          ▼
+        QRELS
+          │
+          ▼
+   Statistical testing
+          │
+   ┌──────┼─────────┐
+   │      │         │
+   t-test Wilcoxon permutation
+
+And then:
+
+ONLINE CLICKS
+      │
+      ▼
+  position bias
+      │
+      ▼
+click models
+      │
+ ┌────┼──────────┐
+ │    │          │
+PBM Cascade     DBN
+ │
+ ▼
+propensity
+ │
+ ▼
+IPS
+ │
+ ▼
+counterfactual evaluation
+57. The most important conceptual distinction
+
+I would divide everything you listed into four layers:
+
+Layer 1 — Retrieval quality
+
+Did we retrieve relevant things?
+
+Precision@k
+Recall@k
+Layer 2 — Ranking quality
+
+Did we put the good results at the top?
+
+MAP
+MRR
+nDCG
+ERR
+Layer 3 — Experimental validity
+
+Is the observed improvement actually statistically meaningful?
+
+paired t-test
+Wilcoxon
+permutation test
+Layer 4 — Real-user evaluation
+
+Does the search engine actually help users?
+
+A/B testing
+interleaving
+click models
+position bias
+counterfactual evaluation
+IPS
+58. And here's the mathematical progression
+
+Since you like the math, this is the path I'd recommend:
+
+Precision→Recall→AP→MAP→MRR→DCG→nDCG→ERR
+	​
+
+
+Then:
+
+Relevance Judgments→Cranfield→TREC→Pooling→Qrels
+	​
+
+
+Then statistics:
+
+Difference→paired tests→p-value→confidence/uncertainty
+	​
+
+
+Then online:
+
+Clicks→position bias→examination hypothesis→click models→propensity→IPS
+	​
+
+
+And finally:
+
+offline evaluation+online evaluation+counterfactual evaluation
+	​
+
+
+= a much more complete search-evaluation framework.
+
+The next thing I'd drill into is the first mathematical block: take one tiny ranking such as ✓ ✗ ✓ ✗ ✓, and calculate P@1, P@3, P@5, Recall@k, AP, MAP, MRR, DCG, IDCG, nDCG, and ERR by hand. Once you can calculate all of them yourself, their differences become extremely intuitive.
