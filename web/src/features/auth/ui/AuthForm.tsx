@@ -8,6 +8,7 @@ import { useAuth } from "@/app/providers/AuthProvider";
 import { useConfig } from "@/app/providers/ConfigProvider";
 import { messageFor } from "@/shared/api/errors";
 import { BFF_BASE, localRoutes, routes } from "@/shared/api/routes";
+import { DEMO_OTP_CODE } from "@/shared/config";
 import type {
   APIResponse,
   AuthPurpose,
@@ -46,8 +47,9 @@ export function AuthForm({ purpose }: { purpose: AuthPurpose }) {
   const [resendAt, setResendAt] = useState<number | null>(null);
   const [secondsLeft, setSecondsLeft] = useState(0);
 
-  // Simulated in fixtures mode so the screen is fully reviewable with no
-  // backend running. In `api` mode every branch below is the real call.
+  // Sample mode. The code step is real either way — `/api/auth/otp-verify`
+  // handles both — but no email can be sent and OAuth has no provider to
+  // redirect to, so those two steps are stubbed and say so.
   const simulated = dataSource === "fixtures";
 
   useEffect(() => {
@@ -96,13 +98,6 @@ export function AuthForm({ purpose }: { purpose: AuthPurpose }) {
     setError(null);
 
     try {
-      if (simulated) {
-        // Any six digits are accepted; there is no code to check against.
-        await new Promise((resolve) => setTimeout(resolve, 400));
-        setError("Sample mode: sign-in needs the backend running.");
-        return;
-      }
-
       // A local route rather than the BFF passthrough: this response carries
       // the token pair, and it must be turned into httpOnly cookies on the
       // server rather than handed to the browser.
@@ -164,7 +159,17 @@ export function AuthForm({ purpose }: { purpose: AuthPurpose }) {
       <div>
         <h1 className="text-title font-semibold tracking-title">Check your email</h1>
         <p className="mt-3 text-[0.9375rem] text-muted">
-          We sent a six-digit code to <span className="text-fg">{email}</span>.
+          {simulated ? (
+            <>
+              Sample mode sends no email. Enter{" "}
+              <code className="font-mono text-fg">{DEMO_OTP_CODE}</code> to sign in as{" "}
+              <span className="text-fg">{email}</span>.
+            </>
+          ) : (
+            <>
+              We sent a six-digit code to <span className="text-fg">{email}</span>.
+            </>
+          )}
         </p>
 
         <form

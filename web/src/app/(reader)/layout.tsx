@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 
 import { fetchCategories, fetchFeedSafe, fetchSeries } from "@/entities/blog/api/server";
+import { getServerSession } from "@/features/auth/server/session";
 import { readServerConfig } from "@/shared/config";
 import { SiteFooter } from "@/widgets/SiteFooter/SiteFooter";
 import { SiteHeader } from "@/widgets/SiteHeader/SiteHeader";
@@ -23,10 +24,11 @@ import { SiteHeader } from "@/widgets/SiteHeader/SiteHeader";
 export default async function ReaderLayout({ children }: { children: ReactNode }) {
   const config = readServerConfig();
 
-  const [feed, categories, series] = await Promise.all([
+  const [feed, categories, series, session] = await Promise.all([
     fetchFeedSafe({ limit: 50 }),
     fetchCategories(),
     fetchSeries(),
+    getServerSession(),
   ]);
 
   return (
@@ -37,7 +39,12 @@ export default async function ReaderLayout({ children }: { children: ReactNode }
         {children}
       </main>
 
-      <SiteFooter siteName={config.siteName} categories={categories} series={series} />
+      <SiteFooter
+        siteName={config.siteName}
+        categories={categories}
+        series={series}
+        signedIn={session.status === "authenticated"}
+      />
     </div>
   );
 }

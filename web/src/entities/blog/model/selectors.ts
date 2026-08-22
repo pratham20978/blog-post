@@ -120,23 +120,58 @@ export function seriesBlogCounts(
   return counts;
 }
 
+/** Why a particular article was chosen as the next one to read. */
+export type NextReason = "series" | "recency";
+
+export interface NextBlog {
+  readonly blog: BlogSummary;
+  readonly reason: NextReason;
+}
+
 /**
- * The neighbours of an article within its series, for "next in series".
- * Ordered by `series_position`, so it follows the author's reading order
- * rather than publication order.
+ * What to read after this article.
+ *
+ * Forward only — there is deliberately no "previous". Reading is not a
+ * filmstrip the reader scrubs back and forth along; the useful question at the
+ * end of an article is "what now", and offering a way back to something they
+ * have just read competes with it for attention.
+ *
+ * Two rules, in order:
+ *
+ *   series    the next part of the series this article belongs to, by
+ *               `series_position` — the author's reading order, which beats
+ *               any signal we could derive
+ *   recency   otherwise the next most recent article, wrapping to the newest
+ *               when this is the oldest, so there is always somewhere to go
+ *
+ * **This function is the seam for relevance ranking.** When a recommendation
+ * signal exists, it replaces the `recency` branch here and nothing else in the
+ * app changes — the page and the `/api/blogs/[slug]/next` route both read it
+ * through this one function.
  */
-export function seriesNeighbours(
+export function nextBlog(
   blogs: readonly BlogSummary[],
   current: Pick<BlogSummary, "id" | "series_id">,
-): { previous: BlogSummary | null; next: BlogSummary | null } {
-  if (!current.series_id) return { previous: null, next: null };
+): NextBlog | null {
+  if (current.series_id) {
+    const parts = seriesBlogs(blogs, current.series_id);
+    const index = parts.findIndex((blog) => blog.id === current.id);
+    const nextPart = index === -1 ? undefined : parts[index + 1];
+    if (nextPart) return { blog: nextPart, reason: "series" };
+  }
 
-  const ordered = seriesBlogs(blogs, current.series_id);
+  const ordered = byNewest(blogs);
   const index = ordered.findIndex((blog) => blog.id === current.id);
-  if (index === -1) return { previous: null, next: null };
+  if (index === -1) {
+    // The current article is not in the given set — hand back the newest
+    // thing there is rather than nothing.
+    return ordered[0] ? { blog: ordered[0], reason: "recency" } : null;
+  }
 
-  return {
-    previous: ordered[index - 1] ?? null,
-    next: ordered[index + 1] ?? null,
-  };
+  // Wrap: the oldest article's "next" is the newest, so the end of the
+  // archive leads back to the front instead of dead-ending.
+  const candidate = ordered[index + 1] ?? ordered[0];
+  return candidate && candidate.id !== current.id
+    ? { blog: candidate, reason: "recency" }
+    : null;
 }

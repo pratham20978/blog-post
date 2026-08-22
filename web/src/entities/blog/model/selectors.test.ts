@@ -5,9 +5,9 @@ import type { BlogSummary, Series } from "@/shared/contracts";
 import {
   byNewest,
   deriveFeedSections,
+  nextBlog,
   seriesBlogCounts,
   seriesBlogs,
-  seriesNeighbours,
 } from "./selectors";
 
 function blog(overrides: Partial<BlogSummary> & Pick<BlogSummary, "id" | "slug">): BlogSummary {
@@ -182,29 +182,52 @@ describe("seriesBlogCounts", () => {
   });
 });
 
-describe("seriesNeighbours", () => {
-  const blogs = [
-    blog({ id: "a", slug: "a", series_id: "s1", series_position: 1 }),
-    blog({ id: "b", slug: "b", series_id: "s1", series_position: 2 }),
-    blog({ id: "c", slug: "c", series_id: "s1", series_position: 3 }),
+describe("nextBlog", () => {
+  const parts = [
+    blog({ id: "a", slug: "a", series_id: "s1", series_position: 1, published_at: "2026-01-03T00:00:00Z" }),
+    blog({ id: "b", slug: "b", series_id: "s1", series_position: 2, published_at: "2026-01-02T00:00:00Z" }),
+    blog({ id: "c", slug: "c", series_id: "s1", series_position: 3, published_at: "2026-01-01T00:00:00Z" }),
   ];
 
-  it("finds the surrounding entries", () => {
-    const { previous, next } = seriesNeighbours(blogs, { id: "b", series_id: "s1" });
+  it("follows series position, not recency", () => {
+    // `a` is the most recent, so a recency rule would send `b` backwards to
+    // it. Reading order has to win.
+    const result = nextBlog(parts, { id: "b", series_id: "s1" });
 
-    expect(previous?.id).toBe("a");
-    expect(next?.id).toBe("c");
+    expect(result?.blog.id).toBe("c");
+    expect(result?.reason).toBe("series");
   });
 
-  it("returns null at the edges rather than wrapping", () => {
-    expect(seriesNeighbours(blogs, { id: "a", series_id: "s1" }).previous).toBeNull();
-    expect(seriesNeighbours(blogs, { id: "c", series_id: "s1" }).next).toBeNull();
-  });
-
-  it("returns nothing for an article outside any series", () => {
-    expect(seriesNeighbours(blogs, { id: "x", series_id: null })).toEqual({
-      previous: null,
-      next: null,
+  it("falls back to recency at the end of a series", () => {
+    const standalone = blog({
+      id: "z",
+      slug: "z",
+      published_at: "2026-01-04T00:00:00Z",
     });
+    const result = nextBlog([...parts, standalone], { id: "c", series_id: "s1" });
+
+    // `c` is the last part and also the oldest article overall, so the
+    // recency branch wraps to the newest.
+    expect(result?.blog.id).toBe("z");
+    expect(result?.reason).toBe("recency");
+  });
+
+  it("uses recency for an article outside any series", () => {
+    const result = nextBlog(parts, { id: "a", series_id: null });
+
+    expect(result?.blog.id).toBe("b");
+    expect(result?.reason).toBe("recency");
+  });
+
+  it("wraps at the oldest article so the archive never dead-ends", () => {
+    const result = nextBlog(parts, { id: "c", series_id: null });
+
+    expect(result?.blog.id).toBe("a");
+  });
+
+  it("returns null when the article is the only one published", () => {
+    const only = blog({ id: "solo", slug: "solo" });
+
+    expect(nextBlog([only], { id: "solo", series_id: null })).toBeNull();
   });
 });

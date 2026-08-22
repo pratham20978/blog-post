@@ -12,6 +12,11 @@ export const THEME_STORAGE_KEY = "blogs:theme";
  * rather than in CSS, so the stylesheet needs one `[data-theme="dark"]` block
  * instead of that block plus a `prefers-color-scheme` copy that could drift.
  *
+ * The default is `light`, not the OS preference: the platform is a white-ground
+ * publication, and a visitor whose laptop happens to be in dark mode should
+ * still land on it as designed. Dark stays one click away on the header switch,
+ * and `system` still follows the OS for anyone who picks it.
+ *
  * Wrapped in try/catch because `localStorage` throws outright in some
  * privacy modes — and a theme preference is never worth a blank page.
  */
@@ -21,7 +26,9 @@ export const themeScript = `
     var stored = localStorage.getItem(${JSON.stringify(THEME_STORAGE_KEY)});
     var theme = (stored === "light" || stored === "dark")
       ? stored
-      : (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+      : (stored === "system"
+          ? (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light")
+          : "light");
     var root = document.documentElement;
     root.dataset.theme = theme;
     root.style.colorScheme = theme;

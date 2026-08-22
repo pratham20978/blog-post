@@ -9,7 +9,7 @@ import {
   fetchFeed,
   fetchSeries,
 } from "@/entities/blog/api/server";
-import { seriesNeighbours } from "@/entities/blog/model/selectors";
+import { nextBlog } from "@/entities/blog/model/selectors";
 import { BlogCover } from "@/entities/blog/ui/BlogCover";
 import { extractCover } from "@/shared/lib/cover";
 import { formatDate, formatReadingTime, toDateAttribute } from "@/shared/lib/date";
@@ -52,16 +52,22 @@ export default async function ArticlePage({ params }: { params: Params }) {
   const [categories, series, feed] = await Promise.all([
     fetchCategories(),
     fetchSeries(),
-    // Only needed to compute series navigation.
-    blog.series_id ? fetchFeed({ series_id: blog.series_id, limit: 100 }) : null,
+    // The whole published set: what to read next may sit outside this
+    // article's series, and does whenever the article has none.
+    fetchFeed({ limit: 100 }),
   ]);
 
   const categoryLabels = new Map(categories.map((entry) => [entry.key, entry.label]));
   const currentSeries = series.find((entry) => entry.id === blog.series_id) ?? null;
 
-  const { previous, next } = feed
-    ? seriesNeighbours(feed.items, blog)
-    : { previous: null, next: null };
+  // Read directly rather than through `/api/blogs/[slug]/next`: this is a
+  // Server Component, and calling our own origin over HTTP would add a round
+  // trip to get an answer already in memory. Both go through `nextBlog()`.
+  const next = nextBlog(feed.items, blog);
+  const nextSeries =
+    next?.reason === "series"
+      ? currentSeries
+      : (series.find((entry) => entry.id === next?.blog.series_id) ?? null);
 
   const cover = content ? extractCover(content.markdown, blog.title) : null;
 
@@ -144,33 +150,37 @@ export default async function ArticlePage({ params }: { params: Params }) {
           </div>
         </div>
 
-        {(previous || next) && currentSeries && (
+        {/* Forward only. The reader has just finished; the one useful
+            question is what to read now, and a "previous" link back into
+            something they have already read only competes with it. */}
+        {next && (
           <nav
-            aria-label="Series navigation"
+            aria-label="What to read next"
             className="mx-auto mt-16 max-w-[var(--measure)] border-t border-rule pt-8"
           >
-            <Eyebrow>{currentSeries.title}</Eyebrow>
-            <div className="mt-4 grid gap-6 sm:grid-cols-2">
-              {previous && (
-                <Link href={`/blogs/${previous.slug}`} className="group block">
-                  <p className="text-meta text-muted">Previous</p>
-                  <p className="mt-1 font-medium text-fg transition-colors group-hover:text-muted">
-                    {previous.title}
-                  </p>
-                </Link>
+            <Eyebrow>
+              {next.reason === "series" && nextSeries
+                ? `Next in ${nextSeries.title}`
+                : "Read next"}
+            </Eyebrow>
+
+            <Link href={`/blogs/${next.blog.slug}`} className="group mt-4 block">
+              <h2 className="text-heading font-semibold tracking-title text-fg transition-colors group-hover:text-muted">
+                {next.blog.title}
+              </h2>
+
+              {next.blog.summary && (
+                <p className="mt-2 text-[0.9375rem] text-muted">{next.blog.summary}</p>
               )}
-              {next && (
-                <Link
-                  href={`/blogs/${next.slug}`}
-                  className="group block sm:text-right sm:[grid-column:2]"
-                >
-                  <p className="text-meta text-muted">Next</p>
-                  <p className="mt-1 font-medium text-fg transition-colors group-hover:text-muted">
-                    {next.title}
-                  </p>
-                </Link>
-              )}
-            </div>
+
+              <MetaRow
+                className="mt-3"
+                items={[
+                  next.blog.published_at ? formatDate(next.blog.published_at) : null,
+                  formatReadingTime(next.blog.reading_minutes),
+                ]}
+              />
+            </Link>
           </nav>
         )}
       </Container>

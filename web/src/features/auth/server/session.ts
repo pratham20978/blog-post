@@ -6,6 +6,8 @@ import { isUser, type MeResponse } from "@/shared/contracts";
 
 import type { Session } from "@/app/providers/AuthProvider";
 
+import { readDemoSession } from "./demo-session";
+
 /**
  * Resolve the caller's session on the server, for seeding `AuthProvider`.
  *
@@ -17,6 +19,11 @@ import type { Session } from "@/app/providers/AuthProvider";
  * "Sign in" link rather than to a broken page.
  */
 export async function getServerSession(): Promise<Session> {
+  // Sample mode only — see `demo-session.ts`. Returns null against the API, so
+  // this cannot shadow a real session.
+  const demo = await readDemoSession();
+  if (demo) return { status: "authenticated", user: demo };
+
   const me = await serverFetchOptional<MeResponse>(routes.me());
 
   if (!me) return { status: "anonymous", actorId: null };

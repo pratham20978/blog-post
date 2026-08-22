@@ -57,7 +57,7 @@ export function readServerConfig(): AppConfig {
     .filter((value): value is OAuthProviderName => value === "google" || value === "github");
 
   return {
-    siteName: process.env.NEXT_PUBLIC_SITE_NAME ?? "Blogs",
+    siteName: process.env.NEXT_PUBLIC_SITE_NAME ?? "Canerly",
     siteUrl: process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000",
     searchAdapter: process.env.NEXT_PUBLIC_SEARCH_ADAPTER === "http" ? "http" : "mock",
     dataSource: dataSource(),
@@ -75,3 +75,13 @@ export function apiOrigin(): string {
 
 /** Everything the backend serves lives under this prefix. */
 export const API_PREFIX = "/api/v1";
+
+/**
+ * The sign-in code accepted in sample mode, with any email address.
+ *
+ * Lives here rather than in `features/auth/server/demo-session.ts` so the code
+ * screen can show it to the reviewer — that module is `server-only`. It is a
+ * constant, not a secret: it unlocks invented articles and only when
+ * `BLOGS_DATA_SOURCE=fixtures`, which is the guard that makes it safe.
+ */
+export const DEMO_OTP_CODE = "000000";

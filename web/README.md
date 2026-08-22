@@ -1,6 +1,10 @@
-# Blogs — web
+# Canerly — web
 
 The reader-facing UI for the FastAPI backend in `../src/blogs`.
+
+Branding lives in `../brand` (see its README). `shared/ui/Logo.tsx` inlines the
+horizontal lockup with `fill="currentColor"` so the mark follows the theme;
+the same files are copied to `public/brand/` for anything outside React.
 
 Next.js 16 (App Router) · React 19 · TypeScript · Tailwind v4 · TanStack Query · Zustand.
 
@@ -125,6 +129,25 @@ behind the secret admin prefix, and `Series` has no dates or status. The feed's
 five rails are derived in `entities/blog/model/selectors.ts` — pure, unit
 tested, and the single file to change when a real signal lands.
 
+**No "what to read next".** `nextBlog()` in the same file picks the next part of
+the series by `series_position`, falling back to recency and wrapping at the
+oldest article so the archive never dead-ends. Navigation is forward only —
+there is deliberately no "previous". When a relevance signal exists it replaces
+the recency branch there, and both the article page and
+`GET /api/blogs/[slug]/next` follow without edits.
+
+## Signing in
+
+**Sample mode** (`BLOGS_DATA_SOURCE=fixtures`, the default): any email address
+plus the code `000000` signs you in as a demo reader. The code step is the real
+UI and the real route — only the code check and the session are stubbed, in
+`features/auth/server/demo-session.ts`.
+
+That stub is gated on fixtures mode and refuses in `api` mode, where the
+articles are real and a fixed code would be an unauthenticated sign-in as
+anyone. It fails closed rather than falling back, so a misconfigured deployment
+cannot accidentally accept it.
+
 ## Known limitation: OTP codes cannot be delivered
 
 There is no email adapter — that is F2 (`../src/docs/04_email_pipeline.md`) and
@@ -138,7 +161,7 @@ DEV ONLY — OTP for you@example.com is 123456
 That log is gated by `otp_log_codes`, which production refuses to enable. So
 today:
 
-- **OAuth (Google, GitHub) is the only sign-in that works end to end.**
+- **Against the real API, OAuth is the only sign-in that works end to end.**
 - Email OTP is testable in development by reading the backend's console.
 - Email OTP is **not usable in production** until F2 ships.
 
@@ -165,6 +188,15 @@ to the backend.
 | `/login`, `/signup` | one passwordless flow, two framings |
 | `/profile` | read-only: continue reading, saved, recently read |
 | `/search` | URL-driven results |
+
+Frontend-owned API routes, not proxied to the backend:
+
+| | |
+| --- | --- |
+| `GET /api/blogs/[slug]/next` | what to read after an article — `{slug, id, title, reason}` |
+| `GET /api/auth/me` | the session, sample mode only |
+| `POST /api/auth/otp-verify` | exchange a code for a session |
+| `POST /api/auth/sign-out` | clear the session cookies |
 
 ## One thing not to change
 

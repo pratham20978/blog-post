@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 
 import { readServerConfig } from "@/shared/config";
+import { Logo } from "@/shared/ui/Logo";
 
 /**
  * A deliberately bare shell. No header, no footer, no navigation — the only
@@ -16,9 +17,10 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
       <div className="px-5 py-6 sm:px-8">
         <Link
           href="/blogs"
-          className="text-[1.0625rem] font-semibold tracking-title transition-opacity hover:opacity-70"
+          aria-label={`${siteName} — home`}
+          className="inline-block transition-opacity hover:opacity-70"
         >
-          {siteName}
+          <Logo className="h-7 w-auto" title={siteName} />
         </Link>
       </div>
 

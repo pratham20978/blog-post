@@ -64,4 +64,9 @@ export const localRoutes = {
   signOut: () => "/api/auth/sign-out",
   /** Exchanges an OTP code for cookies. */
   otpVerify: () => "/api/auth/otp-verify",
+  /** Who the caller is, in sample mode. The API path uses the BFF instead. */
+  session: () => "/api/auth/me",
+  /** What to read after an article. Also read directly by the article page,
+   *  which is server-rendered and does not need the hop. */
+  nextBlog: (slug: string) => `/api/blogs/${encodeURIComponent(slug)}/next`,
 } as const;

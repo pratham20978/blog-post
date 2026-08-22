@@ -8,6 +8,7 @@ import { useConfig } from "@/app/providers/ConfigProvider";
 import type { SearchCorpus } from "@/features/search/model/adapters";
 import { SearchDialog, SearchIcon } from "@/features/search/ui/SearchDialog";
 import { ThemeToggle } from "@/features/theme/ui/ThemeToggle";
+import { Logo } from "@/shared/ui/Logo";
 
 import { AccountMenu } from "./AccountMenu";
 
@@ -40,9 +41,13 @@ export function SiteHeader({ corpus }: { corpus: SearchCorpus }) {
         <div className="mx-auto flex h-16 max-w-[1440px] items-center gap-4 px-5 sm:px-8">
           <Link
             href="/blogs"
-            className="text-[1.0625rem] font-semibold tracking-title text-fg transition-opacity hover:opacity-70"
+            aria-label={`${siteName} — home`}
+            className="text-fg transition-opacity hover:opacity-70"
           >
-            {siteName}
+            {/* `h-7` puts the lockup at ~120px wide, just above the 100px
+                minimum in brand/README.md. It inherits `currentColor`, so it
+                turns white in the dark theme with no second asset. */}
+            <Logo className="h-7 w-auto" title={siteName} />
           </Link>
 
           <nav aria-label="Main" className="ml-6 hidden items-center gap-6 md:flex">

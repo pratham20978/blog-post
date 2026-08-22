@@ -12,6 +12,7 @@ import {
 } from "react";
 
 import { BFF_BASE, localRoutes, routes } from "@/shared/api/routes";
+import { useConfig } from "./ConfigProvider";
 import {
   isUser,
   type APIResponse,
@@ -66,6 +67,7 @@ export function AuthProvider({
   const [session, setSession] = useState<Session>(initialSession);
   const [isPending, startTransition] = useTransition();
   const queryClient = useQueryClient();
+  const { dataSource } = useConfig();
 
   const clearIdentityCaches = useCallback(() => {
     for (const key of IDENTITY_SCOPED) {
@@ -75,7 +77,12 @@ export function AuthProvider({
 
   const refresh = useCallback(async () => {
     try {
-      const response = await fetch(`${BFF_BASE}${routes.me()}`, {
+      // Sample mode answers locally; there is no backend to proxy to. The
+      // shapes are identical, so nothing below this line branches.
+      const endpoint =
+        dataSource === "fixtures" ? localRoutes.session() : `${BFF_BASE}${routes.me()}`;
+
+      const response = await fetch(endpoint, {
         headers: { accept: "application/json" },
         // The session is the one thing that must never come from a cache.
         cache: "no-store",
@@ -98,7 +105,7 @@ export function AuthProvider({
     }
 
     clearIdentityCaches();
-  }, [clearIdentityCaches]);
+  }, [clearIdentityCaches, dataSource]);
 
   const signOut = useCallback(
     async ({ allDevices = false }: { allDevices?: boolean } = {}) => {

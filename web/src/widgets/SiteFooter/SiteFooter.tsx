@@ -16,10 +16,12 @@ export function SiteFooter({
   siteName,
   categories,
   series,
+  signedIn = false,
 }: {
   siteName: string;
   categories: readonly Category[];
   series: readonly Series[];
+  signedIn?: boolean;
 }) {
   const year = new Date().getUTCFullYear();
 
@@ -50,8 +52,14 @@ export function SiteFooter({
           </FooterColumn>
 
           <FooterColumn title="Account">
-            <FooterLink href="/login">Sign in</FooterLink>
-            <FooterLink href="/signup">Create an account</FooterLink>
+            {/* Offering "Sign in" to someone already signed in reads as the
+                session having been lost. */}
+            {!signedIn && (
+              <>
+                <FooterLink href="/login">Sign in</FooterLink>
+                <FooterLink href="/signup">Create an account</FooterLink>
+              </>
+            )}
             <FooterLink href="/profile">Profile</FooterLink>
           </FooterColumn>
         </div>

@@ -65,7 +65,10 @@ const themeStore = {
     } catch {
       // Storage throws outright in some privacy modes.
     }
-    return "system";
+    // Light, not `system` — must stay in step with `theme-script.ts`, which
+    // decides the first paint. If they disagree the switch starts out pointing
+    // the wrong way.
+    return "light";
   },
 
   getResolved(): ResolvedTheme {
@@ -77,7 +80,7 @@ const themeStore = {
   /** The server has no viewer, so it renders the default and the client
    *  corrects on hydration — invisibly, because the head script already
    *  painted the right theme. */
-  serverPreference: (): ThemePreference => "system",
+  serverPreference: (): ThemePreference => "light",
   serverResolved: (): ResolvedTheme => "light",
 };
 
