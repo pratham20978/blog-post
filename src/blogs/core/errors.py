@@ -189,12 +189,16 @@ ERROR_CATALOG: dict[ErrorCategory, ErrorDescriptor] = {
         _S.PERSIST, _R.RETRYABLE, "The service is temporarily unable to reach its database."
     ),
     _C.EMAIL_NOT_CONFIGURED: ErrorDescriptor(
-        # Deliberately vague to the caller. "No email provider is configured"
-        # describes our deployment, and a stranger at a sign-in form has no use
-        # for that. The operator gets the detail in the logs.
+        # Two constraints on this wording. It must stay vague — "no email
+        # provider is configured" describes our deployment, and a stranger at a
+        # sign-in form has no use for that; the operator gets the detail from
+        # the startup warning and the logs. And it must read correctly for
+        # every caller, because the same category is raised for a sign-in code
+        # and for an announcement to a mailing list. Anything that advises the
+        # reader what to do next is wrong for one of them.
         _S.PUBLISH,
         _R.NOT_RETRYABLE,
-        "Email cannot be sent right now. Try another sign-in method.",
+        "Email is not available right now.",
     ),
     _C.EMAIL_SEND_FAILED: ErrorDescriptor(
         _S.PUBLISH, _R.RETRYABLE, "The message could not be sent. Try again shortly."

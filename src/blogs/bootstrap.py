@@ -276,7 +276,14 @@ async def _ensure_partitions(database: Database, months_ahead: int) -> None:
         )
         row = await cursor.fetchone()
     if row and row["created"]:
-        logger.info("engagement partitions created", extra={"created": row["created"]})
+        # Not `extra={"created": ...}`: `created` is a reserved LogRecord
+        # attribute (the record's own timestamp), and `makeRecord` raises
+        # rather than overwrite it — which takes down startup, but only on the
+        # days a partition is actually cut.
+        logger.info(
+            "engagement partitions created",
+            extra={"partitions_created": row["created"]},
+        )
 
 
 async def _seed_admin(container: Container) -> None:
