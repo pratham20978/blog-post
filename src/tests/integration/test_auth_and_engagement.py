@@ -19,6 +19,7 @@ from datetime import UTC, datetime, timedelta
 
 import pytest
 
+from blogs.adapters.email import InMemoryEmailSender
 from blogs.contracts.common import ErrorCategory
 from blogs.contracts.engagement import (
     EngagementKind,
@@ -40,6 +41,7 @@ NOW = datetime(2026, 8, 22, 12, 0, tzinfo=UTC)
 def auth(uow, clock, ids, hasher, access_tokens, actor_tokens, passwords) -> AuthService:  # type: ignore[no-untyped-def]
     return AuthService(
         uow=uow,
+        email=InMemoryEmailSender(),
         clock=clock,
         ids=ids,
         hasher=hasher,

@@ -188,6 +188,17 @@ ERROR_CATALOG: dict[ErrorCategory, ErrorDescriptor] = {
     _C.DATABASE_UNAVAILABLE: ErrorDescriptor(
         _S.PERSIST, _R.RETRYABLE, "The service is temporarily unable to reach its database."
     ),
+    _C.EMAIL_NOT_CONFIGURED: ErrorDescriptor(
+        # Deliberately vague to the caller. "No email provider is configured"
+        # describes our deployment, and a stranger at a sign-in form has no use
+        # for that. The operator gets the detail in the logs.
+        _S.PUBLISH,
+        _R.NOT_RETRYABLE,
+        "Email cannot be sent right now. Try another sign-in method.",
+    ),
+    _C.EMAIL_SEND_FAILED: ErrorDescriptor(
+        _S.PUBLISH, _R.RETRYABLE, "The message could not be sent. Try again shortly."
+    ),
     # ── Generic ─────────────────────────────────────────────────────────────
     _C.RATE_LIMITED: ErrorDescriptor(
         _S.ACCESS, _R.RETRYABLE, "Too many requests. Try again shortly."

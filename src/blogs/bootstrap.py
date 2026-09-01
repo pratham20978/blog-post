@@ -16,6 +16,7 @@ import logging
 from dataclasses import dataclass
 from typing import Any
 
+from blogs.adapters.email import ResendEmailSender, UnconfiguredEmailSender
 from blogs.adapters.markdown.parser import MarkdownItParser
 from blogs.adapters.oauth.providers import build_provider_registry
 from blogs.adapters.objectstore.minio_store import MinioObjectStore
@@ -30,10 +31,11 @@ from blogs.core.ids import IdGenerator, Uuid7Generator
 from blogs.core.logging import configure_logging
 from blogs.core.settings import Settings
 from blogs.database.session import Database
-from blogs.ports.services import ObjectStore
+from blogs.ports.services import EmailSender, ObjectStore
 from blogs.repository.uow import SqlUnitOfWorkFactory
 from blogs.services.actor_service import ActorService
 from blogs.services.admin_read_service import AdminReadService
+from blogs.services.announce_service import AnnounceService
 from blogs.services.auth_service import AuthService, OtpSettings
 from blogs.services.blog_service import BlogService
 from blogs.services.engagement_service import EngagementService
@@ -58,6 +60,7 @@ class Container:
     # Infrastructure lifecycles
     database: Database
     object_store: ObjectStore
+    email: EmailSender
 
     # Seams
     clock: Clock
@@ -72,6 +75,7 @@ class Container:
     interaction_service: InteractionService
     engagement_service: EngagementService
     admin_read_service: AdminReadService
+    announce_service: AnnounceService
 
 
 async def build_container(settings: Settings) -> Container:
@@ -101,6 +105,8 @@ async def build_container(settings: Settings) -> Container:
         region=settings.object_store_region,
     )
     await object_store.ensure_bucket()
+
+    email = _build_email_sender(settings)
 
     clock: Clock = SystemClock()
     ids: IdGenerator = Uuid7Generator()
@@ -132,6 +138,7 @@ async def build_container(settings: Settings) -> Container:
         settings=settings,
         database=database,
         object_store=object_store,
+        email=email,
         clock=clock,
         ids=ids,
         uow=uow,
@@ -144,6 +151,7 @@ async def build_container(settings: Settings) -> Container:
         ),
         auth_service=AuthService(
             uow=uow,
+            email=email,
             clock=clock,
             ids=ids,
             hasher=hasher,
@@ -191,6 +199,15 @@ async def build_container(settings: Settings) -> Container:
             uow=uow, clock=clock, ids=ids, policy=policy
         ),
         admin_read_service=AdminReadService(uow=uow, clock=clock, policy=policy),
+        announce_service=AnnounceService(
+            uow=uow,
+            email=email,
+            policy=policy,
+            # Recipients need an absolute URL; a relative one is unusable
+            # in an email client.
+            site_url=settings.public_site_url,
+            max_recipients=settings.announce_max_recipients,
+        ),
     )
 
     await _seed_admin(container)
@@ -208,8 +225,37 @@ async def build_container(settings: Settings) -> Container:
 
 async def close_container(container: Container) -> None:
     """Release everything, in reverse order of acquisition."""
+    closer = getattr(container.email, "aclose", None)
+    if closer is not None:
+        await closer()
     await container.database.close()
     logger.info("application shut down")
+
+
+def _build_email_sender(settings: Settings) -> EmailSender:
+    """Pick the adapter, or the one that refuses.
+
+    ``UnconfiguredEmailSender`` is not a null object — it raises. A deployment
+    with no provider should fail at the moment something tries to send, not
+    accept the message and drop it, which would make sign-in report success
+    while no code was ever delivered.
+    """
+    if settings.email_provider == "resend":
+        # Both are guaranteed present by `_email_provider_is_complete`.
+        assert settings.resend_api_key is not None
+        assert settings.email_from is not None
+        return ResendEmailSender(
+            api_key=settings.resend_api_key.get_secret_value(),
+            sender=settings.email_from,
+            reply_to=settings.email_reply_to,
+            timeout_s=settings.email_timeout_s,
+        )
+
+    logger.warning(
+        "no email provider configured; sign-in codes and announcements cannot "
+        "be delivered. Set BLOGS_EMAIL_PROVIDER=resend to enable them."
+    )
+    return UnconfiguredEmailSender()
 
 
 def _secret_or_none(value: Any) -> str | None:

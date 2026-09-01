@@ -42,6 +42,8 @@ from blogs.core.ids import IdGenerator
 from blogs.ports.services import (
     AccessTokenCodec,
     ActorTokenCodec,
+    EmailMessage,
+    EmailSender,
     PasswordHasher,
     SecretHasher,
 )
@@ -75,6 +77,7 @@ class AuthService:
         self,
         *,
         uow: UnitOfWorkFactory,
+        email: EmailSender,
         clock: Clock,
         ids: IdGenerator,
         hasher: SecretHasher,
@@ -88,6 +91,7 @@ class AuthService:
         admin_lockout_window_s: int = 900,
     ) -> None:
         self._uow = uow
+        self._email = email
         self._clock = clock
         self._ids = ids
         self._hasher = hasher
@@ -159,11 +163,13 @@ class AuthService:
                 aggregate_id=challenge.id,
             )
 
-        if self._otp.log_codes:
-            # Development only; Settings refuses to start in production with
-            # this on. The logging formatter redacts a key containing "otp", so
-            # the value is placed in the message rather than in `extra`.
-            logger.warning("DEV ONLY — OTP for %s is %s", email, code)
+        # Delivery happens after the commit, deliberately. Holding a database
+        # transaction open across an HTTP call to a mail provider would pin a
+        # connection for the provider's latency and, on a timeout, roll back a
+        # challenge whose email may already have gone out.
+        await self._deliver_otp(
+            email=email, code=code, correlation_id=correlation_id
+        )
 
         return OtpIssued(
             token_ref=challenge.id,
@@ -246,6 +252,49 @@ class AuthService:
             }[failed_outcome],
             correlation_id=correlation_id,
         )
+
+    async def _deliver_otp(
+        self, *, email: str, code: str, correlation_id: str | None
+    ) -> None:
+        """Send the code, or explain why it could not be sent.
+
+        The failure mode this exists to avoid: answering "a code is on its way"
+        when nothing was sent. Someone then waits for an email that will never
+        arrive, and the logs show a clean 200.
+        """
+        if self._otp.log_codes:
+            # Development only; Settings refuses to start in production with
+            # this on. The logging formatter redacts a key containing "otp", so
+            # the value is placed in the message rather than in `extra`.
+            logger.warning("DEV ONLY — OTP for %s is %s", email, code)
+
+        minutes = max(1, round(self._otp.ttl_seconds / 60))
+
+        try:
+            result = await self._email.send(
+                EmailMessage(
+                    to=email,
+                    subject=f"{code} is your sign-in code",
+                    text=_OTP_TEXT.format(code=code, minutes=minutes),
+                    html=_OTP_HTML.format(code=code, minutes=minutes),
+                )
+            )
+        except BlogPlatformError as error:
+            # No provider configured. In development the log line above *is*
+            # the delivery channel, so the flow continues; anywhere else this
+            # is a real misconfiguration and the caller must hear about it.
+            unconfigured = error.category is ErrorCategory.EMAIL_NOT_CONFIGURED
+            if unconfigured and self._otp.log_codes:
+                return
+            raise
+
+        if not result.sent:
+            logger.warning(
+                "otp email refused by provider", extra={"detail": result.detail}
+            )
+            raise_error(
+                ErrorCategory.EMAIL_SEND_FAILED, correlation_id=correlation_id
+            )
 
     def _is_dev_bypass(self, code: str) -> bool:
         """Whether this is the configured development code.
@@ -721,3 +770,26 @@ class AuthService:
 
 
 __all__ = ["AuthService", "OtpSettings", "SignInResult"]
+
+
+_OTP_TEXT = """Your sign-in code is {code}
+
+It expires in {minutes} minutes and can be used once.
+
+If you did not ask to sign in, you can ignore this message \u2014 the code is
+useless without access to this inbox, and nobody has been signed in.
+"""
+
+#: Inline styles only: every mail client strips <style> blocks, and about half
+#: strip <head> entirely.
+_OTP_HTML = """\
+<div style="font-family:system-ui,-apple-system,sans-serif;font-size:15px;
+            color:#0a0a0a;line-height:1.6">
+  <p>Your sign-in code is</p>
+  <p style="font-size:32px;font-weight:600;letter-spacing:0.15em;margin:24px 0">{code}</p>
+  <p style="color:#6b6b6b">It expires in {minutes} minutes and can be used once.</p>
+  <p style="color:#6b6b6b">If you did not ask to sign in, you can ignore this
+  message &mdash; the code is useless without access to this inbox, and nobody
+  has been signed in.</p>
+</div>
+"""

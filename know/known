@@ -1870,3 +1870,4946 @@ offline evaluation+online evaluation+counterfactual evaluation
 = a much more complete search-evaluation framework.
 
 The next thing I'd drill into is the first mathematical block: take one tiny ranking such as ✓ ✗ ✓ ✗ ✓, and calculate P@1, P@3, P@5, Recall@k, AP, MAP, MRR, DCG, IDCG, nDCG, and ERR by hand. Once you can calculate all of them yourself, their differences become extremely intuitive.
+
+
+
+
+
+
+
+
+Absolutely. This section is basically the engineering of search engines after you already know what an inverted index is.
+
+The list looks scary because it mixes several different topics:
+
+How do we build the inverted index?
+How do we store posting lists efficiently?
+How do we search those posting lists quickly?
+How do we skip documents that cannot possibly be in top-k?
+What if we don't have tokenized text and need substring/regex search?
+How do we make dictionaries and filters fast?
+
+I'll build this from the ground up rather than assuming you know the algorithms.
+
+0. First: what problem are we solving?
+
+Suppose we have these documents:
+
+D1: neural networks learn representations
+D2: neural networks use attention
+D3: transformers use attention mechanisms
+D4: neural networks are powerful
+
+We tokenize them:
+
+D1 → neural networks learn representations
+D2 → neural networks use attention
+D3 → transformers use attention mechanisms
+D4 → neural networks are powerful
+
+An inverted index looks roughly like:
+
+attention      → [D2, D3]
+learn          → [D1]
+mechanisms     → [D3]
+neural         → [D1, D2, D4]
+networks       → [D1, D2, D4]
+powerful       → [D4]
+representations→ [D1]
+transformers   → [D3]
+use            → [D2, D3]
+
+The important structure is:
+
+term → documents containing term
+
+This is called a posting list.
+
+For example:
+
+neural → [D1, D2, D4]
+
+But real search engines may have millions/billions of documents.
+
+So now we have several problems.
+
+Problem 1 — Building
+
+How do I construct this index when I have 10 billion documents?
+
+Problem 2 — Storage
+
+Suppose:
+
+neural → [1, 2, 5, 8, 100, 101, 102, 10000, ...]
+
+Storing every document ID as a normal 32-bit integer wastes a lot of space.
+
+Problem 3 — Querying
+
+For:
+
+neural AND networks AND attention
+
+we need to efficiently intersect:
+
+neural   → [...]
+networks → [...]
+attention→ [...]
+Problem 4 — Ranking
+
+For:
+
+"neural networks attention"
+
+we may need:
+
+Give me the top 10 documents.
+
+We don't necessarily want to fully score every document containing those terms.
+
+Problem 5 — Substrings
+
+What if the query is:
+
+"transfor"
+
+or:
+
+.*tion$
+
+An ordinary inverted index is not naturally designed for arbitrary substring/regex searching.
+
+That is where the other data structures come in.
+
+1. Inverted Index Construction
+
+Let's start with the most basic question:
+
+How do we actually build an inverted index?
+
+Suppose:
+
+D1: cat dog
+D2: cat mouse
+D3: dog mouse
+
+We want:
+
+cat   → [D1, D2]
+dog   → [D1, D3]
+mouse → [D2, D3]
+
+The naïve approach is:
+
+index = {}
+
+for document in documents:
+    for term in document:
+        index[term].append(document_id)
+
+Conceptually easy.
+
+But imagine:
+
+10 billion documents
+100 billion tokens
+
+You cannot keep everything conveniently in RAM.
+
+This leads to BSBI and SPIMI.
+
+2. BSBI — Blocked Sort-Based Indexing
+
+BSBI means:
+
+Blocked Sort-Based Indexing
+
+The fundamental idea:
+
+Don't build the entire index in memory. Build small pieces, write them to disk, then merge them.
+
+Imagine we have:
+
+1 billion documents
+
+but RAM can only handle:
+
+10 million documents
+
+So split them into blocks:
+
+Block 1 → D1 ... D10M
+Block 2 → D10M+1 ... D20M
+Block 3 → ...
+...
+
+For each block:
+
+documents
+    ↓
+collect term-document pairs
+    ↓
+sort them
+    ↓
+write temporary index to disk
+
+For example:
+
+Block 1:
+
+cat    → [1, 5, 8]
+dog    → [2, 5]
+mouse  → [3]
+
+Block 2:
+
+cat    → [101, 110]
+dog    → [103]
+mouse  → [105, 109]
+
+Then merge:
+
+cat → [1,5,8,101,110]
+dog → [2,5,103]
+mouse → [3,105,109]
+
+This is similar to external sorting.
+
+3. Why is sorting important?
+
+Suppose we generate:
+
+(term, docID)
+
+pairs:
+
+(cat, 1)
+(dog, 1)
+(cat, 2)
+(mouse, 2)
+(dog, 3)
+
+Sort them:
+
+(cat, 1)
+(cat, 2)
+(dog, 1)
+(dog, 3)
+(mouse, 2)
+
+Now all occurrences of the same term are next to each other.
+
+So creating posting lists becomes easy:
+
+cat   → [1,2]
+dog   → [1,3]
+mouse → [2]
+
+That's the core idea behind BSBI.
+
+4. SPIMI
+
+SPIMI means:
+
+Single-Pass In-Memory Indexing
+
+It solves a similar problem but avoids one important thing:
+
+SPIMI does not need to generate and sort all (term, docID) pairs globally.
+
+Instead, it directly builds a dictionary in memory.
+
+Imagine processing:
+
+D1: cat dog
+D2: cat mouse
+D3: dog mouse
+
+We directly construct:
+
+dictionary:
+
+cat   → [1,2]
+dog   → [1,3]
+mouse → [2,3]
+
+When memory becomes full:
+
+RAM index
+    ↓
+write segment to disk
+    ↓
+clear RAM
+    ↓
+continue
+
+So you might end up with:
+
+segment1
+segment2
+segment3
+segment4
+
+Then merge them.
+
+5. BSBI vs SPIMI
+
+The easiest way to remember:
+
+BSBI
+documents
+   ↓
+(term, docID) pairs
+   ↓
+sort
+   ↓
+temporary index
+   ↓
+merge
+SPIMI
+documents
+   ↓
+directly build dictionary
+   ↓
+posting lists
+   ↓
+flush segment
+   ↓
+merge
+
+SPIMI is generally more practical because you don't need to store and sort all term-document pairs in the same way.
+
+6. LSM-style segment merging
+
+Now we get to something very important.
+
+Modern search engines often don't constantly modify one giant index.
+
+Instead, think:
+
+new documents
+     ↓
+memory
+     ↓
+small immutable segment
+
+Then:
+
+Segment 1
+Segment 2
+Segment 3
+Segment 4
+
+Eventually merge:
+
+Segment 1 ─┐
+           ├──→ Segment 5
+Segment 2 ─┘
+
+and later:
+
+Segment 3 ─┐
+Segment 4 ─┤
+Segment 5 ─┘
+             ↓
+          Segment 6
+
+This is the LSM-style idea.
+
+LSM = Log-Structured Merge Tree.
+
+The important concept is:
+
+New data is written as new immutable structures, and background processes merge them.
+
+7. Why immutable segments?
+
+Suppose we have:
+
+neural → [1,2,5,8]
+
+A new document arrives:
+
+D9 contains neural
+
+Instead of modifying the existing structure directly:
+
+old segment:
+neural → [1,2,5,8]
+
+new segment:
+neural → [9]
+
+Eventually:
+
+merge
+
+neural → [1,2,5,8,9]
+
+Why?
+
+Because immutable data structures are much easier to:
+
+read concurrently
+cache
+write sequentially
+recover after failure
+merge
+maintain safely
+
+This is a major idea behind Lucene's segment architecture.
+
+8. Posting List Compression
+
+Now suppose:
+
+neural → [10, 11, 12, 13, 14, 15, 1000]
+
+If every document ID uses 32 bits:
+
+7 × 32 = 224 bits
+
+But notice something:
+
+10
+11
+12
+13
+14
+15
+1000
+
+The numbers are mostly close together.
+
+We can exploit that.
+
+9. Document gaps / d-gaps
+
+Instead of storing:
+
+[10, 11, 12, 13, 14, 15, 1000]
+
+store differences:
+
+10
+1
+1
+1
+1
+1
+985
+
+This is called:
+
+gap encoding / delta encoding
+
+Why useful?
+
+Because small numbers are easier to compress.
+
+For example:
+
+100000
+100001
+100002
+100005
+
+becomes:
+
+100000
+1
+1
+3
+
+Much easier to encode compactly.
+
+Most posting-list compression methods operate on these gaps or related integer sequences.
+
+10. Variable Byte Encoding
+
+Variable Byte, or VB, stores integers using one or more bytes.
+
+The basic idea:
+
+Small integers require fewer bytes.
+
+For example, conceptually:
+
+5 → 1 byte
+127 → 1 byte
+128 → 2 bytes
+10000 → 2 or more bytes
+
+A special bit indicates:
+
+"This is the final byte of this integer."
+
+So instead of giving every integer a fixed:
+
+32 bits
+
+we give small numbers:
+
+8 bits
+
+and larger numbers multiple bytes.
+
+Very useful for posting lists.
+
+11. Elias Gamma Coding
+
+Elias gamma coding is another integer compression method.
+
+It works especially well for small positive integers.
+
+Take:
+
+N = 13
+
+Binary:
+
+1101
+
+Length:
+
+4
+
+Gamma encoding stores:
+
+000 + 1101
+
+That is:
+
+0001101
+
+The first part indicates the length.
+
+The general structure is:
+
+zeros + binary number
+
+where the number of zeros is related to:
+
+floor(log2 N)
+
+Gamma coding is mathematically elegant but often slower than modern byte/word-oriented methods.
+
+12. Elias Delta Coding
+
+Delta coding improves on gamma coding for larger integers.
+
+It essentially encodes:
+
+the length of the binary representation
+that length itself
+the remaining bits
+
+So:
+
+Gamma → good integer compression
+Delta → often better for larger integers
+
+You don't need to memorize the bit-level construction initially.
+
+The important concept is:
+
+Elias codes represent integers using approximately logarithmic number of bits.
+
+13. Simple9 / Simple16
+
+Now we move toward CPU-friendly compression.
+
+The problem with bit-level compression is:
+
+very compact
+
+but decoding can be expensive.
+
+Simple9 says:
+
+Let's pack multiple small integers into a fixed-size machine word.
+
+Suppose we have:
+
+[1, 2, 3, 4, 5, 6, ...]
+
+We can pack many of them into a 32-bit word.
+
+For example:
+
+| selector | integer | integer | integer | ... |
+
+The selector tells the decoder:
+
+How many integers are packed and how many bits each integer uses.
+
+Simple16 does a similar thing with a larger word.
+
+So:
+
+Elias
+    ↓
+excellent compactness
+
+Simple9/Simple16
+    ↓
+very fast integer decoding
+14. PForDelta
+
+PForDelta means roughly:
+
+Patched Frame of Reference with Delta
+
+This is a very important modern compression idea.
+
+Suppose a block contains:
+
+[100, 102, 103, 105, 107, 108, 109, 1000]
+
+Most numbers are small.
+
+But one value:
+
+1000
+
+is much larger.
+
+If we use enough bits for 1000, we waste bits on all the other numbers.
+
+PForDelta says:
+
+Choose a bit width that handles most numbers, then store exceptional values separately.
+
+For example:
+
+normal values:
+use 7 bits
+
+exception:
+1000
+
+Conceptually:
+
+main compressed block
+---------------------
+100 102 103 105 107 108 109
+       ↓
+    7-bit values
+
+exceptions
+----------
+position 7 → 1000
+
+This is extremely useful because real data often has:
+
+many small values + a few outliers.
+
+15. SIMD-BP128
+
+Now we use CPU vector instructions.
+
+BP128 = Bit Packing 128
+
+The idea:
+
+Take a block of integers:
+
+128 integers
+
+Find the number of bits needed.
+
+Suppose:
+
+maximum = 100
+
+Binary representation needs:
+
+7 bits
+
+So pack:
+
+128 × 7 bits
+
+Then use SIMD instructions to decode many integers simultaneously.
+
+Instead of:
+
+decode integer
+decode integer
+decode integer
+decode integer
+
+we can conceptually do:
+
+decode 4/8/16/... integers simultaneously
+
+depending on the hardware.
+
+This makes decompression extremely fast.
+
+16. Why compression can make search faster
+
+This sounds counterintuitive.
+
+You might think:
+
+Compression means extra work, so search should be slower.
+
+But:
+
+compressed data
+     ↓
+smaller
+     ↓
+less memory bandwidth
+     ↓
+more cache-friendly
+     ↓
+faster search
+
+Modern CPUs can decompress simple integer formats extremely quickly.
+
+So:
+
+compression is not just about saving disk space; it can improve query latency.
+
+This is an extremely important search-engine concept.
+
+17. Elias-Fano
+
+Elias-Fano is designed for a sorted sequence of integers.
+
+Suppose:
+
+[10, 20, 21, 50, 100]
+
+It exploits:
+
+sortedness
+the fact that there are relatively few numbers compared with the universe
+
+It provides a quasi-succinct representation.
+
+One particularly important operation is:
+
+nextGEQ(x)
+
+meaning:
+
+Find the smallest stored value ≥ x.
+
+Example:
+
+posting list:
+
+[10, 20, 21, 50, 100]
+
+Query:
+
+nextGEQ(22)
+
+returns:
+
+50
+
+This operation is extremely useful for:
+
+skipping
+intersections
+galloping search
+query processing
+
+A quasi-succinct representation is a highly efficient way of storing data in computer science that compresses information almost to its absolute theoretical limit while allowing you to search or access it without decompressing the data first. [1, 2] 
+It is "quasi" (meaning "almost") because it uses a tiny fraction of a bit more space than a perfectly optimized ("succinct") structure, but it trades that microscopic amount of space for immense speed gains. [2, 3] 
+------------------------------
+## The Data Structure Spectrum
+To understand what makes it special, it helps to see how computer scientists categorize data storage based on the Information-Theoretic Lower Bound (OPT)—the absolute minimum number of bits mathematically required to store a piece of data: [1] 
+
+* 
+* Implicit Data Structure: Takes exactly OPT bits of space (e.g., a standard sorted array).
+* Succinct Data Structure: Takes OPT + o(OPT) bits of space. The extra space is negligibly small compared to the data size.
+* Quasi-Succinct Data Structure: Takes just a tiny bit more than a succinct structure (typically less than half a bit extra per element), but dramatically simplifies data access. [1, 2, 4] 
+* 
+
+------------------------------
+## Why Use It? (The Core Trade-off)
+In traditional data compression (like a .zip or .tar.gz file), you must decompress the entire file into your computer's RAM just to read a single line of text. [2] 
+A quasi-succinct representation solves this problem: [1] 
+
+   1. Random Access: It allows you to jump directly to any element in expected constant time (O(1)) without unzipping everything else.
+   2. In-Place Evaluation: Algorithms can run directly on top of the compressed bitstream.
+   3. Low Memory Footprint: It keeps massive datasets small enough to fit directly inside a server's fast RAM instead of spilling over to a slow hard drive. [1, 2, 5, 6] 
+
+------------------------------
+## Real-World Example: Search Engines & Inverted Indices
+The most famous application of quasi-succinct representation is in [Search Engine Indexing](https://en.wikipedia.org/wiki/Search_engine_indexing) and information retrieval. [7, 8] 
+When you search for a word, the engine looks at an "inverted index" (a sorted list of millions of document IDs where that word appears). Historically, databases compressed these using "gap encoding". To find document #999,999, the computer had to decode every single gap sequentially from document #1. [2, 5, 9] 
+By switching to a quasi-succinct encoding method called Elias-Fano Encoding, search engines split the bits of those sorted document IDs into "high bits" and "low bits" arrays. This allows the computer to instantly skip billions of documents and find the exact target data point in a fraction of a microsecond. [2, 3, 5, 8] 
+Would you like to explore how the Elias-Fano mathematical split works with a simple visual example, or are you looking at this concept for a specific database or coding project?
+
+[1] [https://en.wikipedia.org](https://en.wikipedia.org/wiki/Succinct_data_structure)
+[2] [https://gatiaher.github.io](https://gatiaher.github.io/projects/survey-of-data-structures-for-large-scale-information-retrieval/)
+[3] [https://www.antoniomallia.it](https://www.antoniomallia.it/sorted-integers-compression-with-elias-fano-encoding.html)
+[4] [https://courses.csail.mit.edu](https://courses.csail.mit.edu/6.851/spring12/scribe/L17.pdf)
+[5] [https://dl.acm.org](https://dl.acm.org/doi/10.1145/2433396.2433409)
+[6] [https://chadaustin.me](https://chadaustin.me/2017/04/quasi-succinct-data-structures/)
+[7] [https://dl.acm.org](https://dl.acm.org/doi/10.1145/2911451.2914802)
+[8] [https://wolfgarbe.medium.com](https://wolfgarbe.medium.com/elias-fano-quasi-succinct-compression-of-sorted-integers-in-c-89f92a8c9986)
+[9] [https://www.sciencedirect.com](https://www.sciencedirect.com/science/article/abs/pii/S0166218X22004279)
+
+
+
+NextGEQ stands for Next Greater-than or Equal-to. In the worlds of search engines, databases, and quasi-succinct data structures, it is a foundational operation (primitive) used to quickly skip through compressed data. [1, 2, 3] 
+While a traditional array uses a binary search to find a value, NextGEQ(x) is optimized to find the smallest number in a sorted sequence that is greater than or equal to x as fast as humanly possible, directly inside a compressed bitstream. [2, 4] 
+------------------------------
+## The Problem It Solves: Finding the Needle in the Haystack
+Imagine a search engine processing a query for two words: "Laptop" and "Deals".
+To find pages that contain both words, the search engine must intersect two massive lists of document IDs (called posting lists): [5, 6] 
+
+* 
+* List A ("Laptop"): [5, 12, 18, 10002, 10005, 500000]
+* List B ("Deals"): [3, 8, 12, 15, 22, 35, 10002]
+* 
+
+The engine reads 10002 from List B. Now it needs to check if 10002 is in List A.
+Instead of scanning every number sequentially from 18 all the way to 10002, it executes:
+ListA.NextGEQ(10002) [6] 
+The index instantly skips the billions of unneeded documents in between and jumps straight to 10002. [7] 
+------------------------------
+## How "Fast" NextGEQ Works in Quasi-Succinct Systems
+When a sequence is compressed using a quasi-succinct method like Elias-Fano encoding, integers are split into low bits and high bits: [4, 8] 
+
+   1. The low bits are stored in a simple, compact array.
+   2. The high bits act as "buckets" represented by a sequence of 0s and 1s. [4] 
+
+Because of this specific math layout, NextGEQ(x) does not need to perform slow loops. It works using two hardware-accelerated tricks:
+
+* 
+* The Bucket Jump (select_0): It divides x to figure out exactly which "bucket" the number should be in. Using a fast CPU instruction called select, it leaps instantly to that bucket's position in memory, skipping thousands of irrelevant numbers in 1 cycle. [4] 
+* The Linear Micro-Scan: Once the CPU lands in the correct bucket, it scans forward across just a few remaining bits to find the exact match. Because the bucket is tiny, this micro-scan fits perfectly inside the CPU's ultra-fast L1 cache. [4, 9] 
+* 
+
+## Why NextGEQ is a Game-Changer
+
+| Feature | Old Method (Gap Encoding / Delta-GZIP) | Quasi-Succinct Method (NextGEQ) |
+|---|---|---|
+| Data Access | Sequential only. Must unzip all prior numbers to see the next one. | Direct skipping. Jumps straight to values anywhere in the file. |
+| Intersect Speed | Slow. Time scales with the total number of documents. | Blazing fast. Time scales only with the number of matching documents. |
+| CPU Friendliness | Heavy decompression loops and branch mispredictions. | Leverages bit-manipulation CPU registers for instant lookups. |
+
+If you are working on a systems project, are you trying to implement set intersections (like an AND query), or are you evaluating a specific library like Lucene, PISA, or Succinct? Let me know, and I can give you the implementation pattern! [2, 6] 
+
+[1] [https://arxiv.org](https://arxiv.org/html/1908.10598v2)
+[2] [https://arxiv.org](https://arxiv.org/pdf/1907.01032)
+[3] [https://gatiaher.github.io](https://gatiaher.github.io/projects/survey-of-data-structures-for-large-scale-information-retrieval/)
+[4] [https://www.antoniomallia.it](https://www.antoniomallia.it/sorted-integers-compression-with-elias-fano-encoding.html)
+[5] [https://www.researchgate.net](https://www.researchgate.net/publication/347391882_Techniques_for_Inverted_Index_Compression)
+[6] [https://jermp.github.io](https://jermp.github.io/assets/pdf/papers/DCC2021.pdf)
+[7] [https://dl.acm.org](https://dl.acm.org/doi/pdf/10.1145/2600428.2609615)
+[8] [https://wolfgarbe.medium.com](https://wolfgarbe.medium.com/elias-fano-quasi-succinct-compression-of-sorted-integers-in-c-89f92a8c9986)
+[9] [https://drops.dagstuhl.de](https://drops.dagstuhl.de/storage/00lipics/lipics-vol344-wabi2025/LIPIcs.WABI.2025.6/LIPIcs.WABI.2025.6.pdf)
+
+
+
+
+
+To understand what the "extra things" are and how the Bucket Jump works in detail, we have to look under the hood of Elias-Fano encoding, which is the gold standard for quasi-succinct representation.
+Let's break down exactly what extra metadata is stored, followed by a mechanical, step-by-step breakdown of the Bucket Jump and Micro-Scan.
+------------------------------
+## Part 1: What is the "Extra Thing" Stored in Memory?
+To achieve $O(1)$ random access and in-place evaluation while keeping a low memory footprint, quasi-succinct structures store Rank/Select Hint Tables.
+If you just store compressed bits, the computer cannot jump to a specific element because it doesn't know where one number ends and the next begins. The "extra thing" is a tiny, highly optimized index (accounting for roughly 3% to 5% extra space) built on top of the compressed bitstream.
+It is split into three core layers:
+
+   1. The High-Bits Bitstring: A long string of 0s and 1s that acts as a continuous timeline of buckets.
+   2. The Low-Bits Array: A dense block of raw binary numbers packed tightly together.
+   3. The Super-Blocks / Hint Tables (The Extra Thing): The bitstream is chopped into fixed chunks (e.g., every 512 bits). For each chunk, an extra 64-bit integer is stored in a side-table. This integer records exactly how many 1s or 0s have appeared up to that point in the file.
+
+Because these hint tables are tiny, they easily fit into the server's ultra-fast L1/L2 CPU Cache. When you want to find data, the CPU does not search the main memory; it reads the hint table to calculate the exact hardware memory address of your target bucket.
+------------------------------
+## Part 2: Detailed Breakdown of the Bucket Jump
+The Bucket Jump uses a hardware-level operation called select0(j) or select1(j). This operation answers the question: "Where in memory is the $j$-th zero located?"
+Let's look at a concrete mathematical example. Imagine we want to store 4 sorted numbers ($N=4$), and the largest possible number we expect is 15.
+Our numbers are: 2, 3, 5, and 13.
+## Step 1: The Splitting Math
+Elias-Fano splits every number into Low Bits and High Bits.
+Since we have 4 numbers, our bucket size is calculated as $\log_2(15/4) \approx 2$ bits.
+
+* Low Bits: The last 2 bits of the number (stored as raw binary).
+* High Bits: The remaining upper bits, which tell us which bucket the number belongs to.
+
+Let's convert our numbers to binary and split them:
+
+* 2 $\rightarrow$ 00 10 $\rightarrow$ Bucket 00 (0), Low bits 10
+* 3 $\rightarrow$ 00 11 $\rightarrow$ Bucket 00 (0), Low bits 11
+* 5 $\rightarrow$ 01 01 $\rightarrow$ Bucket 01 (1), Low bits 01
+* 13 $\rightarrow$ 11 01 $\rightarrow$ Bucket 11 (3), Low bits 01
+
+## Step 2: How the High Bits Layout Looks in Memory
+Instead of storing bucket numbers as integers, Elias-Fano uses a unary bitstring map.
+
+* Every time a number lands in a bucket, we write a 1.
+* To move to the next bucket, we write a 0.
+
+Our high-bits bitstring for Buckets 0, 1, 2, and 3 looks like this:
+1 1 0 1 0 0 1 0
+Let's map it out to see why it looks like that:
+
+* 1 1 (Two numbers are in Bucket 0)
+* 0 (Move to Bucket 1)
+* 1 (One number is in Bucket 1)
+* 0 (Move to Bucket 2 — Bucket 2 is empty, so no 1s are added)
+* 0 (Move to Bucket 3)
+* 1 (One number is in Bucket 3)
+* 0 (End of stream)
+
+## Step 3: Executing NextGEQ(5) via the Bucket Jump
+Now, let’s run a search for NextGEQ(5). We want the first number $\ge 5$.
+
+   1. Target Split: We split 5 into binary (01 01). Its high bits tell us it belongs in Bucket 1.
+   2. The Jump: We need to find where Bucket 1 starts in our high-bits bitstring. Because of the unary math rules, Bucket $B$ always starts right after the $B$-th zero.
+   3. Since we want Bucket 1, the CPU executes a hardware instruction to find the 1st zero in our bitstring (1 1 0 1 0 0 1 0).
+   4. The 1st zero is at index position 2.
+   5. The CPU instantly jumps its memory pointer directly to index position 3 (the bit right after the zero).
+
+This is the Bucket Jump. The CPU completely skipped looking at Bucket 0 (1 1). If there were a billion items in Bucket 0, the CPU would still skip them all in exactly one operation.
+------------------------------
+## Part 3: Detailed Breakdown of the Micro-Scan
+Once the Bucket Jump drops the CPU pointer at index position 3, the Micro-Scan begins.
+
+   1. Reading the Bucket: The CPU looks at the bits starting at position 3: 1 0 0 1 0.
+   2. Counting the Elements: It counts how many 1s it sees before hitting the next zeros. It sees one 1, then a 0 (meaning Bucket 1 is over), then another 0 (Bucket 2 is empty), then a 1 (Bucket 3).
+   3. Mapping to Low Bits: By reading the high-bits, it knows that the number in Bucket 1 is the 3rd total number in the dataset. Because the Low Bits array is perfectly uniform (every item takes exactly 2 bits), the CPU multiplies: $3 \times 2 \text{ bits} = \text{bit position } 6$ in the low-bits array.
+   4. The Final Check: The CPU jumps to bit position 6 in the low-bits array, reads the 2 bits stored there (01), combines it with the high bits of Bucket 1 (01), and reconstructs the number: 0101 (which is 5).
+
+Because the "Extra Hint Tables" told the CPU exactly where to jump, it didn't have to scan the whole file. It skipped the macro-data, landed straight in the target bucket, and scanned a tiny sequence of bits already sitting inside its local L1 cache register.
+If you'd like, I can show you how this allows In-Place Evaluation to intersect two lists at the same time. Would you like to see a comparison of how two separate lists match up using this jumping technique?
+
+
+
+
+
+
+
+
+Absolutely. These are **classic string/pattern matching algorithms**. They solve the problem:
+
+> Given a large text `T` of length `n`, find occurrences of a pattern `P` of length `m`.
+
+For example:
+
+```text
+Text:    "the quick brown fox jumps over the lazy dog"
+Pattern: "brown"
+```
+
+We want to find where `"brown"` occurs.
+
+The important difference between these algorithms is **how they avoid unnecessary character comparisons**.
+
+---
+
+# 1. First understand the problem
+
+Suppose:
+
+```text
+T = "AAAAAAAAAAAAAAAAAB"
+P = "AAAAB"
+```
+
+A naive algorithm tries the pattern at every position:
+
+```text
+AAAAA...
+AAAAA...
+AAAAA...
+AAAAA...
+```
+
+This can result in roughly:
+
+[
+O(nm)
+]
+
+comparisons.
+
+The algorithms you listed try to do much better.
+
+---
+
+# 2. KMP — Knuth-Morris-Pratt
+
+## Main idea
+
+KMP says:
+
+> When a mismatch happens, don't start comparing from the beginning of the pattern again. Use information about the pattern that you already matched.
+
+Complexity:
+
+[
+\boxed{O(n+m)}
+]
+
+This is guaranteed.
+
+---
+
+## Example
+
+Pattern:
+
+```text
+P = ABABC
+```
+
+We need to construct an auxiliary array called:
+
+```text
+LPS
+```
+
+LPS = **Longest Proper Prefix which is also a Suffix**.
+
+For:
+
+```text
+A B A B C
+```
+
+we get:
+
+```text
+index:  0 1 2 3 4
+P:      A B A B C
+LPS:    0 0 1 2 0
+```
+
+Why?
+
+For substring:
+
+```text
+ABA
+```
+
+the longest prefix that is also a suffix is:
+
+```text
+A
+```
+
+so:
+
+```text
+LPS[2] = 1
+```
+
+For:
+
+```text
+ABAB
+```
+
+prefix:
+
+```text
+AB
+```
+
+suffix:
+
+```text
+AB
+```
+
+therefore:
+
+```text
+LPS[3] = 2
+```
+
+---
+
+## How KMP uses LPS
+
+Suppose:
+
+```text
+Text:
+ABABABABC
+
+Pattern:
+ABABC
+```
+
+We match:
+
+```text
+ABAB
+```
+
+and then get:
+
+```text
+Text:    A B A B A B A B C
+Pattern: A B A B C
+                 ↑
+              mismatch
+```
+
+Naively we'd restart pattern matching from:
+
+```text
+A
+```
+
+But KMP knows:
+
+```text
+ABAB
+```
+
+has a suffix:
+
+```text
+AB
+```
+
+that is also a prefix of the pattern.
+
+So instead of going back to zero:
+
+```text
+j = LPS[j-1]
+```
+
+which gives:
+
+```text
+j = 2
+```
+
+We continue from:
+
+```text
+AB
+```
+
+---
+
+## Why KMP is O(n+m)
+
+The text pointer never moves backward.
+
+Pattern pointer can move backward using LPS, but overall the amount of movement is bounded.
+
+Therefore:
+
+[
+O(n)+O(m)
+]
+
+=
+
+[
+\boxed{O(n+m)}
+]
+
+---
+
+## When to use KMP
+
+Good when:
+
+* you have one pattern
+* you need guaranteed linear time
+* worst-case performance matters
+* text/pattern can contain repetitive structures
+
+Example:
+
+```text
+DNA sequence matching
+log searching
+compiler parsing
+text searching
+```
+
+---
+
+# 3. Boyer-Moore
+
+Boyer-Moore takes a very different approach.
+
+Instead of comparing:
+
+```text
+left → right
+```
+
+it compares:
+
+```text
+right → left
+```
+
+This allows it to **skip large portions of the text**.
+
+That's the important idea.
+
+---
+
+## Example
+
+Pattern:
+
+```text
+P = EXAMPLE
+```
+
+Suppose text contains:
+
+```text
+THIS IS A SIMPLE EXAMPLE TEXT
+```
+
+Boyer-Moore aligns the pattern and starts comparing from:
+
+```text
+E X A M P L E
+            ↑
+```
+
+If the character doesn't match, it asks:
+
+> Can I safely shift the pattern several positions instead of moving just one?
+
+Often the answer is yes.
+
+---
+
+# 4. Boyer-Moore has two major heuristics
+
+## 4.1 Bad-character rule
+
+Suppose:
+
+```text
+Pattern = EXAMPLE
+```
+
+and we compare from right to left.
+
+Imagine we get:
+
+```text
+EXAMPLE
+     X
+     ↑
+```
+
+and the text character doesn't match.
+
+We look at the mismatching text character.
+
+If that character doesn't occur anywhere in the pattern, we can skip the entire pattern.
+
+For example:
+
+```text
+Pattern = ABCD
+Text    = XXXXABCD
+             ↑
+```
+
+If the mismatch character is `X`, and:
+
+```text
+X ∉ ABCD
+```
+
+then there is no reason for the pattern to start at any of the next `m-1` positions.
+
+We can jump:
+
+```text
+ABCD
+    ↓
+        ABCD
+```
+
+---
+
+# 5. Good-suffix rule
+
+This is the second major Boyer-Moore optimization.
+
+Suppose we matched a suffix:
+
+```text
+...ABC
+```
+
+and then got a mismatch.
+
+Boyer-Moore asks:
+
+> Does this matched suffix occur somewhere else in the pattern?
+
+If yes, shift the pattern so that occurrence lines up.
+
+This can produce very large jumps.
+
+---
+
+# 6. Why Boyer-Moore is called "sublinear"
+
+You will often see:
+
+[
+\boxed{\text{Boyer-Moore has sublinear average behavior}}
+]
+
+This means that in many practical cases, it examines **fewer than `n` characters on average**.
+
+It can skip large regions.
+
+But be careful:
+
+> "Sublinear" does NOT mean the worst-case complexity is always sublinear.
+
+The original/general Boyer-Moore has complicated worst-case behavior depending on the implementation/heuristics.
+
+Its big practical advantage is:
+
+[
+\boxed{\text{large skips}}
+]
+
+---
+
+# 7. BM-Horspool
+
+Boyer-Moore-Horspool is a simplified version of Boyer-Moore.
+
+Instead of using both:
+
+* bad character
+* good suffix
+
+it primarily uses the **bad-character shift**.
+
+And it makes the implementation much simpler.
+
+---
+
+## How it works
+
+Suppose:
+
+```text
+Pattern = ABCDE
+```
+
+Horspool builds a shift table.
+
+For every character except the last:
+
+```text
+A → 4
+B → 3
+C → 2
+D → 1
+```
+
+Characters not in the pattern:
+
+```text
+anything else → 5
+```
+
+The last character is special because after a mismatch, we inspect the character aligned with the **last pattern position** and determine how far to shift.
+
+---
+
+## Example
+
+```text
+Pattern = TEST
+```
+
+Approximate shift table:
+
+```text
+T → 3
+E → 2
+S → 1
+other → 4
+```
+
+So if the text character aligned with the final `T` is:
+
+```text
+X
+```
+
+then:
+
+```text
+X not in pattern
+```
+
+so we can shift by:
+
+```text
+4
+```
+
+instead of:
+
+```text
+1
+```
+
+---
+
+## Why Horspool is popular
+
+Because it gives much of the practical speed of Boyer-Moore with a much simpler implementation.
+
+Good for:
+
+```text
+single-pattern searching
+large text
+natural language
+practical search utilities
+```
+
+---
+
+# 8. Rabin-Karp
+
+Rabin-Karp takes a completely different approach.
+
+Instead of comparing strings character-by-character immediately, it uses a:
+
+[
+\boxed{\text{rolling hash}}
+]
+
+---
+
+## Basic idea
+
+Suppose:
+
+```text
+Pattern = ABC
+```
+
+Calculate:
+
+```text
+hash("ABC")
+```
+
+Now take a text window:
+
+```text
+Text = XYZABCDE
+```
+
+Look at windows of length 3:
+
+```text
+XYZ
+YZA
+ZAB
+ABC
+BCD
+CDE
+```
+
+Instead of comparing every string directly, calculate:
+
+```text
+hash(XYZ)
+hash(YZA)
+hash(ZAB)
+hash(ABC)
+...
+```
+
+If:
+
+```text
+hash(window) == hash(pattern)
+```
+
+then perform an actual character comparison.
+
+Why?
+
+Because two different strings can have the same hash.
+
+That's called a:
+
+[
+\boxed{\text{hash collision}}
+]
+
+---
+
+# 9. Rolling hash
+
+The clever part is that we don't calculate each hash from scratch.
+
+Suppose:
+
+```text
+ABC
+```
+
+has a hash:
+
+[
+H(ABC)
+]
+
+Now move the window:
+
+```text
+BCD
+```
+
+We remove:
+
+```text
+A
+```
+
+and add:
+
+```text
+D
+```
+
+So we update the hash efficiently.
+
+Conceptually:
+
+[
+H_{\text{new}}
+==============
+
+(H_{\text{old}}-\text{removed contribution})\times base
++\text{new character}
+]
+
+Therefore each window can be processed in approximately:
+
+[
+O(1)
+]
+
+hash-update time.
+
+---
+
+# 10. Rabin-Karp complexity
+
+Average:
+
+[
+\boxed{O(n+m)}
+]
+
+With a good hash function, usually very efficient.
+
+Worst case can degrade because of many hash collisions:
+
+[
+O(nm)
+]
+
+---
+
+## Where Rabin-Karp shines
+
+Especially useful when you need to search for:
+
+**multiple patterns of the same length.**
+
+For example:
+
+```text
+Patterns:
+cat
+dog
+fox
+cow
+```
+
+You can hash all patterns and then scan the text using rolling hashes.
+
+---
+
+# 11. Aho-Corasick
+
+This is one of the most important ones in your list.
+
+Especially because you mentioned:
+
+> gazetteer/tag matching
+
+Aho-Corasick is specifically designed for:
+
+[
+\boxed{\text{multiple pattern matching}}
+]
+
+Suppose you have:
+
+```text
+Patterns:
+he
+she
+his
+hers
+```
+
+and text:
+
+```text
+ushers
+```
+
+We want to find all patterns simultaneously.
+
+---
+
+# 12. Aho-Corasick uses a Trie
+
+First build a Trie.
+
+For:
+
+```text
+he
+she
+his
+hers
+```
+
+conceptually:
+
+```text
+             root
+            /    \
+           h      s
+           |      |
+           e      h
+          /       |
+         r        e
+         |       / \
+         s      ?   ...
+```
+
+More accurately, shared prefixes are represented by shared trie paths.
+
+For example:
+
+```text
+he
+hers
+```
+
+share:
+
+```text
+h → e
+```
+
+So we don't store them independently.
+
+---
+
+# 13. Failure links
+
+The most important part of Aho-Corasick is the:
+
+[
+\boxed{\text{failure link}}
+]
+
+Suppose we're matching:
+
+```text
+she
+```
+
+and we've reached:
+
+```text
+sh
+```
+
+but the next character doesn't continue that path.
+
+Instead of starting over from the root, the failure link says:
+
+> Where is the longest suffix of what I've matched that is also a valid Trie prefix?
+
+This is conceptually similar to KMP's fallback idea.
+
+---
+
+# 14. Output links
+
+Aho-Corasick also needs to know:
+
+> Which patterns end at this state?
+
+For example, while matching:
+
+```text
+she
+```
+
+we find:
+
+```text
+she
+```
+
+but we also know:
+
+```text
+he
+```
+
+is a suffix of:
+
+```text
+she
+```
+
+Therefore both can be reported.
+
+This is why Aho-Corasick is excellent for dictionaries/gazetteers.
+
+---
+
+# 15. Aho-Corasick example
+
+Patterns:
+
+```text
+cat
+car
+cart
+dog
+```
+
+Text:
+
+```text
+I have a cat and a cart and a dog.
+```
+
+The automaton scans the text once.
+
+It can report:
+
+```text
+cat
+car
+cart
+dog
+```
+
+without running four separate searches.
+
+---
+
+# 16. Complexity of Aho-Corasick
+
+Let:
+
+* `n` = text length
+* total pattern length = `M`
+* `z` = number of matches
+
+Building the automaton:
+
+[
+O(M)
+]
+
+roughly, depending on alphabet/transition representation.
+
+Searching:
+
+[
+\boxed{O(n+z)}
+]
+
+This is the complexity you quoted.
+
+More precisely, the output/reporting cost is proportional to the number of matches.
+
+This is why it is ideal for:
+
+```text
+gazetteers
+named entity dictionaries
+keyword detection
+tag matching
+profanity filters
+intrusion signatures
+DNA motifs
+dictionary matching
+```
+
+---
+
+# 17. Why Aho-Corasick beats running KMP repeatedly
+
+Suppose you have:
+
+```text
+1,000,000 patterns
+```
+
+and a text of:
+
+```text
+10 MB
+```
+
+Running KMP separately:
+
+```text
+KMP(pattern1)
+KMP(pattern2)
+KMP(pattern3)
+...
+```
+
+would be expensive.
+
+Aho-Corasick builds one automaton containing all patterns:
+
+```text
+                 ┌── pattern 1
+                 │
+Text → Automaton ├── pattern 2
+                 │
+                 ├── pattern 3
+                 │
+                 └── pattern N
+```
+
+Then scans the text once.
+
+---
+
+# 18. Commentz-Walter
+
+Commentz-Walter is basically an interesting combination of ideas from:
+
+* Boyer-Moore
+* Aho-Corasick
+
+It is designed for:
+
+[
+\boxed{\text{multiple-pattern searching}}
+]
+
+while trying to preserve the skipping behavior of Boyer-Moore.
+
+---
+
+## The problem
+
+Aho-Corasick:
+
+```text
+scan text left → right
+```
+
+and guarantees:
+
+[
+O(n+\text{matches})
+]
+
+But sometimes you want to **skip portions of the text** like Boyer-Moore.
+
+Commentz-Walter tries to do this.
+
+---
+
+## Conceptually
+
+Aho-Corasick gives us:
+
+```text
+Trie
++
+failure links
+```
+
+Boyer-Moore gives us:
+
+```text
+right-to-left comparison
++
+large shifts
+```
+
+Commentz-Walter combines these concepts.
+
+So:
+
+```text
+Multiple patterns
+        ↓
+Aho-Corasick-like structure
+        +
+Boyer-Moore-like skipping
+        ↓
+Commentz-Walter
+```
+
+It is useful when you have many patterns and want practical skipping rather than purely automaton-based scanning.
+
+---
+
+# 19. Bitap / Shift-Or
+
+Bitap is very different.
+
+It uses:
+
+[
+\boxed{\text{bit-parallelism}}
+]
+
+Instead of representing pattern matching with normal integers/arrays, it represents the matching state using **bits** in a machine word.
+
+For short patterns this can be extremely fast.
+
+---
+
+# 20. Basic Bitap idea
+
+Suppose:
+
+```text
+Pattern = ABC
+```
+
+We have three pattern positions:
+
+```text
+A B C
+0 1 2
+```
+
+Represent the state as bits:
+
+```text
+001
+010
+100
+```
+
+As characters arrive, bit operations update the matching state.
+
+Operations such as:
+
+```text
+AND
+OR
+SHIFT
+```
+
+can update many states simultaneously.
+
+---
+
+# 21. Why is that powerful?
+
+Normally you might update:
+
+```text
+state[0]
+state[1]
+state[2]
+state[3]
+...
+```
+
+one at a time.
+
+Bit-parallel algorithms can update many states using a **single CPU instruction**.
+
+For example, a 64-bit integer can conceptually hold:
+
+```text
+64 matching states
+```
+
+and:
+
+```text
+x << 1
+```
+
+moves all of them simultaneously.
+
+Therefore Bitap can be extremely fast for short patterns.
+
+---
+
+# 22. Bitap pattern length limitation
+
+Classic Bitap is constrained by machine word size.
+
+For example, with a 64-bit word, the simple implementation naturally handles patterns up to roughly:
+
+```text
+64 characters
+```
+
+Longer patterns require:
+
+```text
+multiple machine words
+```
+
+or another implementation.
+
+Modern implementations can use wider SIMD/vector registers as well.
+
+---
+
+# 23. Bitap can also support approximate matching
+
+This is particularly interesting.
+
+Bitap can be extended to handle:
+
+```text
+exact matching
+```
+
+and:
+
+```text
+fuzzy matching
+```
+
+such as:
+
+```text
+Pattern = kitten
+Text    = kittan
+```
+
+with one edit/substitution.
+
+This makes Bitap useful for:
+
+```text
+spell checking
+fuzzy search
+short pattern matching
+approximate string matching
+```
+
+---
+
+# 24. Now compare all of them
+
+| Algorithm           | Patterns | Main idea                         | Typical complexity             |
+| ------------------- | -------- | --------------------------------- | ------------------------------ |
+| **KMP**             | Single   | LPS/failure information           | `O(n+m)`                       |
+| **Boyer-Moore**     | Single   | Right-to-left + large skips       | Often sublinear average        |
+| **BM-Horspool**     | Single   | Simplified bad-character skipping | Very fast practical average    |
+| **Rabin-Karp**      | One/many | Rolling hash                      | Avg. `O(n+m)`, worst `O(nm)`   |
+| **Aho-Corasick**    | Many     | Trie + failure links              | `O(n + matches)`               |
+| **Commentz-Walter** | Many     | Aho-Corasick + BM-style skipping  | Practical multi-pattern search |
+| **Bitap/Shift-Or**  | Single   | Bit-parallel matching             | Very fast for short patterns   |
+
+---
+
+# 25. The key conceptual difference
+
+You can organize them like this:
+
+```text
+                 STRING MATCHING
+                       │
+          ┌────────────┴────────────┐
+          │                         │
+      SINGLE PATTERN           MULTIPLE PATTERNS
+          │                         │
+     ┌────┼─────┐             ┌─────┴─────┐
+     │    │     │             │           │
+    KMP   BM   Bitap       Aho-Corasick  Commentz-Walter
+          │
+       Horspool
+          
+          │
+       Rabin-Karp
+```
+
+But Rabin-Karp is somewhat special because it naturally extends to multiple patterns, especially patterns of equal length.
+
+---
+
+# 26. KMP vs Boyer-Moore
+
+This is a very important distinction.
+
+### KMP
+
+Thinks:
+
+> "I've already matched this prefix, so I know where I can continue."
+
+```text
+LEFT → RIGHT
+```
+
+Uses:
+
+```text
+LPS
+```
+
+Guarantees:
+
+[
+O(n+m)
+]
+
+---
+
+### Boyer-Moore
+
+Thinks:
+
+> "This mismatch tells me I can move the pattern far to the right."
+
+```text
+RIGHT → LEFT
+```
+
+Uses:
+
+```text
+bad character
+good suffix
+```
+
+Often extremely fast in real text.
+
+---
+
+# 27. KMP vs Aho-Corasick
+
+This distinction is even more important for search engines.
+
+### KMP
+
+One pattern:
+
+```text
+"machine learning"
+```
+
+Search:
+
+```text
+document → KMP
+```
+
+---
+
+### Aho-Corasick
+
+Many patterns:
+
+```text
+"machine learning"
+"deep learning"
+"neural network"
+"transformer"
+"attention"
+"retrieval"
+...
+```
+
+Build:
+
+```text
+                    Trie
+                     +
+               failure links
+                     ↓
+                  automaton
+                     ↓
+                   text
+                     ↓
+            all matching patterns
+```
+
+This is why Aho-Corasick is frequently used for **gazetteer/tag matching**.
+
+---
+
+# 28. Why this matters for information retrieval
+
+Since you're studying indexing/search, these algorithms appear at different levels.
+
+Imagine you have:
+
+```text
+100 million documents
+```
+
+and a query:
+
+```text
+"information retrieval"
+```
+
+You usually **don't scan every document character-by-character**.
+
+Instead, an inverted index tells you:
+
+```text
+information → [doc1, doc4, doc8, doc100...]
+retrieval   → [doc1, doc3, doc8, doc90...]
+```
+
+Then you intersect posting lists.
+
+String matching becomes useful in other components:
+
+```text
+                 Search System
+                      │
+        ┌─────────────┼──────────────┐
+        ↓             ↓              ↓
+   Tokenization    Dictionary     Query parsing
+                       │
+                       ↓
+               Aho-Corasick
+                       │
+                 gazetteer
+                       │
+                       ↓
+            "New York", "Mumbai",
+            "Google", "OpenAI", ...
+```
+
+---
+
+# 29. Example: Gazetteer matching
+
+Suppose your gazetteer contains:
+
+```text
+Mumbai
+New York
+New Delhi
+Delhi
+San Francisco
+Google
+Microsoft
+OpenAI
+```
+
+Input:
+
+```text
+"OpenAI opened a new office in New Delhi."
+```
+
+Aho-Corasick can identify:
+
+```text
+OpenAI
+New Delhi
+Delhi
+```
+
+depending on whether overlapping matches are reported.
+
+You could then perform:
+
+```text
+text
+ ↓
+Aho-Corasick
+ ↓
+matched spans
+ ↓
+entity/tag IDs
+ ↓
+indexing / annotation
+```
+
+This is much more efficient than running a separate string search for every gazetteer entry.
+
+---
+
+# 30. One important subtlety: `O(n + matches)`
+
+When you see:
+
+[
+O(n+\text{matches})
+]
+
+don't interpret it as simply "Aho-Corasick is always O(n)."
+
+Suppose:
+
+```text
+Text = aaaaaaaaaa...
+Patterns =
+a
+aa
+aaa
+aaaa
+...
+```
+
+There can be an enormous number of matches.
+
+For example:
+
+```text
+aaaaaaaa
+
+a
+aa
+aaa
+aaaa
+...
+```
+
+Many patterns match at the same position.
+
+So if you actually need to **output every match**, the output itself takes time.
+
+That's why:
+
+[
+O(n+\text{matches})
+]
+
+is the correct way to express the search cost.
+
+---
+
+# 31. A useful mental model
+
+Remember them this way:
+
+### KMP
+
+> **Don't restart unnecessarily.**
+
+```text
+LPS
+```
+
+### Boyer-Moore
+
+> **Skip as far as possible.**
+
+```text
+right → left
+```
+
+### Horspool
+
+> **Simplified Boyer-Moore.**
+
+```text
+bad-character shift
+```
+
+### Rabin-Karp
+
+> **Compare fingerprints first.**
+
+```text
+rolling hash
+```
+
+### Aho-Corasick
+
+> **Search an entire dictionary simultaneously.**
+
+```text
+Trie + failure links
+```
+
+### Commentz-Walter
+
+> **Aho-Corasick + Boyer-Moore-style skipping.**
+
+### Bitap
+
+> **Turn matching into bit operations.**
+
+```text
+SHIFT + AND + OR
+```
+
+---
+
+# 32. Which one should you choose?
+
+A practical decision tree:
+
+```text
+Do I have one pattern?
+        │
+       YES
+        │
+        ├── Need guaranteed O(n+m)?
+        │        ↓
+        │       KMP
+        │
+        ├── Want very fast practical search?
+        │        ↓
+        │    Boyer-Moore /
+        │    Horspool
+        │
+        ├── Pattern is short?
+        │        ↓
+        │      Bitap
+        │
+        └── Hashing/multiple equal-length patterns?
+                 ↓
+             Rabin-Karp
+
+
+Do I have MANY patterns?
+        │
+       YES
+        │
+        ├── Dictionary/gazetteer/tag matching?
+        │        ↓
+        │   Aho-Corasick
+        │
+        └── Want multi-pattern BM-style skipping?
+                 ↓
+           Commentz-Walter
+```
+
+The **big picture** is that KMP avoids restarting, Boyer-Moore skips ahead, Rabin-Karp avoids direct comparisons using hashes, Aho-Corasick turns many patterns into one automaton, Commentz-Walter combines multi-pattern matching with skipping, and Bitap turns the matching state into CPU-friendly bit operations.
+
+
+
+
+
+
+
+Absolutely. This whole section is about **finding strings that are similar even when they are not exactly equal**—for example:
+
+* `"cat"` → `"cut"`
+* `"receive"` → `"recieve"`
+* `"colour"` → `"color"`
+* `"jon"` → `"john"`
+
+This is extremely important in **search engines, spell correction, OCR correction, name matching, entity resolution, and fuzzy search**.
+
+I'll build it from the basic idea → algorithms → data structures → how Lucene/SymSpell/Norvig actually use them.
+
+---
+
+# 1. What is Edit Distance?
+
+Suppose we have two strings:
+
+```text
+A = kitten
+B = sitting
+```
+
+We want to know:
+
+> How many operations are required to transform `kitten` into `sitting`?
+
+Typical edit operations are:
+
+1. **Insertion** — insert a character
+2. **Deletion** — delete a character
+3. **Substitution** — replace one character with another
+4. **Transposition** — swap two adjacent characters
+
+For example:
+
+```text
+cat → cut
+```
+
+Only one substitution:
+
+```text
+cat
+ ↓
+cut
+```
+
+So:
+
+```text
+distance(cat, cut) = 1
+```
+
+---
+
+# 2. Levenshtein Distance
+
+The most fundamental edit-distance algorithm is **Levenshtein distance**.
+
+It allows:
+
+* insertion
+* deletion
+* substitution
+
+but **not transposition**.
+
+## Example
+
+```text
+kitten
+sitting
+```
+
+One possible transformation:
+
+```text
+kitten
+sitten    substitute k → s
+sittin    substitute e → i
+sitting   insert g
+```
+
+Therefore:
+
+```text
+distance = 3
+```
+
+---
+
+# 3. Dynamic Programming for Levenshtein
+
+This is one of the most important concepts.
+
+Let:
+
+```text
+A = a1 a2 ... am
+B = b1 b2 ... bn
+```
+
+Define:
+
+[
+D[i][j]
+]
+
+as:
+
+> minimum edit distance between the first `i` characters of A and first `j` characters of B.
+
+So:
+
+```text
+D[i][j] = distance(A[:i], B[:j])
+```
+
+---
+
+## Base cases
+
+Transforming a string into an empty string requires deletions.
+
+Therefore:
+
+[
+D[i][0] = i
+]
+
+Similarly, creating a string from an empty string requires insertions:
+
+[
+D[0][j] = j
+]
+
+Example:
+
+```text
+      ""  s  i  t  t  i  n  g
+""     0  1  2  3  4  5  6  7
+k      1
+i      2
+t      3
+t      4
+e      5
+n      6
+```
+
+---
+
+# 4. Levenshtein Recurrence
+
+For each pair of characters:
+
+```text
+A[i-1]
+B[j-1]
+```
+
+If they are equal:
+
+[
+D[i][j] = D[i-1][j-1]
+]
+
+because no operation is necessary.
+
+If they are different:
+
+[
+D[i][j]
+=======
+
+1+\min
+\begin{cases}
+D[i-1][j] & \text{deletion}\
+D[i][j-1] & \text{insertion}\
+D[i-1][j-1] & \text{substitution}
+\end{cases}
+]
+
+The `1` means:
+
+> We just performed one edit.
+
+---
+
+# 5. Why Three Directions?
+
+Look at the DP matrix:
+
+```text
+             B
+          j-1   j
+           ↖   ←
+        ↑
+        i-1
+```
+
+There are three possibilities.
+
+### Deletion
+
+```text
+A[i-1] removed
+```
+
+Move:
+
+```text
+D[i-1][j]
+```
+
+### Insertion
+
+Insert `B[j-1]`.
+
+Move:
+
+```text
+D[i][j-1]
+```
+
+### Substitution
+
+Replace:
+
+```text
+A[i-1] → B[j-1]
+```
+
+Move:
+
+```text
+D[i-1][j-1]
+```
+
+---
+
+# 6. Complexity
+
+For strings of lengths `m` and `n`:
+
+Number of DP cells:
+
+[
+(m+1)(n+1)
+]
+
+Therefore:
+
+[
+Time = O(mn)
+]
+
+and standard full-matrix space:
+
+[
+Space = O(mn)
+]
+
+But because each row only depends on the previous row, we can reduce space to:
+
+[
+O(\min(m,n))
+]
+
+This is very important in real implementations.
+
+---
+
+# 7. Damerau–Levenshtein Distance
+
+Levenshtein doesn't allow transposition.
+
+Consider:
+
+```text
+form
+from
+```
+
+The letters:
+
+```text
+o r
+```
+
+have been swapped:
+
+```text
+fo rm
+fr om
+```
+
+A transposition is:
+
+```text
+or → ro
+```
+
+Damerau–Levenshtein adds:
+
+> **Adjacent character transposition**
+
+So:
+
+```text
+form → from
+```
+
+has distance:
+
+[
+1
+]
+
+instead of requiring two substitutions.
+
+---
+
+# 8. Damerau–Levenshtein Operations
+
+It supports:
+
+```text
+Insertion
+Deletion
+Substitution
+Transposition
+```
+
+For example:
+
+```text
+hte → the
+```
+
+The first two characters are swapped:
+
+```text
+ht → th
+```
+
+So transposition handles common typing errors very naturally.
+
+This is why it can be useful for:
+
+* spell checking
+* OCR
+* keyboard mistakes
+* names
+* search queries
+
+---
+
+# 9. Why Transposition Matters So Much
+
+Human typing errors often look like:
+
+```text
+teh → the
+recieve → receive
+form → from
+```
+
+Without transposition, these may require more edits than they intuitively should.
+
+For example:
+
+```text
+teh
+the
+```
+
+A transposition:
+
+```text
+teh
+ ↓
+the
+```
+
+gives:
+
+[
+distance = 1
+]
+
+---
+
+# 10. Important Distinction: Optimal String Alignment vs True Damerau–Levenshtein
+
+You'll sometimes encounter two variants.
+
+### Optimal String Alignment (OSA)
+
+Allows adjacent transposition, but generally doesn't allow characters involved in transpositions to be reused arbitrarily.
+
+### True Damerau–Levenshtein
+
+Allows more general sequences of edits and therefore can produce a smaller distance in certain cases.
+
+For search/spell-correction discussions, people sometimes loosely say "Damerau–Levenshtein" while actually implementing OSA.
+
+That's an implementation detail worth remembering.
+
+---
+
+# 11. Needleman–Wunsch
+
+Now we move from ordinary edit distance to **sequence alignment**.
+
+Needleman–Wunsch is designed for:
+
+> **Global alignment**
+
+That means:
+
+> Align the entire first sequence against the entire second sequence.
+
+It was originally developed for biological sequence comparison.
+
+For example:
+
+```text
+ACCGT
+ACGGT
+```
+
+We align:
+
+```text
+A C C G T
+| |   | |
+A C G G T
+```
+
+The algorithm gives scores rather than simply counting edits.
+
+---
+
+# 12. Why Not Just Levenshtein?
+
+Levenshtein basically says:
+
+```text
+match       = 0 cost
+substitution = 1 cost
+insertion   = 1 cost
+deletion    = 1 cost
+```
+
+Needleman–Wunsch is more general.
+
+You define:
+
+```text
+match score
+mismatch penalty
+gap penalty
+```
+
+For example:
+
+```text
+match       +2
+mismatch    -1
+gap         -2
+```
+
+So biologically meaningful substitutions can have different costs.
+
+---
+
+# 13. Needleman–Wunsch DP
+
+Let:
+
+[
+F[i][j]
+]
+
+represent the best alignment score between:
+
+```text
+A[:i]
+B[:j]
+```
+
+Then:
+
+[
+F[i][j]
+=======
+
+\max
+\begin{cases}
+F[i-1][j-1]+score(A_i,B_j)\
+F[i-1][j]-gap\
+F[i][j-1]-gap
+\end{cases}
+]
+
+Three possibilities:
+
+```text
+↖ match/mismatch
+
+↑ deletion/gap
+
+← insertion/gap
+```
+
+---
+
+# 14. Global vs Local Alignment
+
+This distinction is **very important**.
+
+### Needleman–Wunsch
+
+Global:
+
+```text
+AAAACTGG
+||||||||
+AAAACTGG
+```
+
+It tries to align the **whole sequences**.
+
+### Smith–Waterman
+
+Local:
+
+```text
+AAAACTGGTTAC
+     |||||
+     CTGGT
+```
+
+It searches for the **best matching region**.
+
+---
+
+# 15. Smith–Waterman
+
+Smith–Waterman is essentially a **local alignment algorithm**.
+
+Instead of asking:
+
+> How well do these entire strings match?
+
+it asks:
+
+> What is the best matching substring/region between these strings?
+
+This is useful when:
+
+```text
+A = "thequickbrownfox"
+B = "xxxquickbrownxxx"
+```
+
+There is a strong local match:
+
+```text
+quickbrown
+```
+
+even though the entire strings are different.
+
+---
+
+# 16. The Key Smith–Waterman Difference
+
+The recurrence includes:
+
+[
+0
+]
+
+For example:
+
+[
+F[i][j]
+=======
+
+\max
+\begin{cases}
+0\
+F[i-1][j-1]+score\
+F[i-1][j]-gap\
+F[i][j-1]-gap
+\end{cases}
+]
+
+Why?
+
+Because if all possible alignments are bad, we can simply **start a new alignment here**.
+
+That's what makes it local.
+
+---
+
+# 17. Needleman–Wunsch vs Smith–Waterman
+
+| Algorithm        | Alignment            | Main idea                 |
+| ---------------- | -------------------- | ------------------------- |
+| Needleman–Wunsch | Global               | Align entire sequences    |
+| Smith–Waterman   | Local                | Find best matching region |
+| Levenshtein      | Global edit distance | Minimum edits             |
+
+Think:
+
+```text
+Needleman-Wunsch
+A ----------------
+B ----------------
+      whole thing
+
+Smith-Waterman
+A ------------------------
+       ███████
+B ---- ███████ -----------
+       best region
+```
+
+---
+
+# 18. Hamming Distance
+
+Hamming distance is much simpler.
+
+It only works when the strings have **the same length**.
+
+It counts positions where characters differ.
+
+Example:
+
+```text
+A = 1011101
+B = 1001001
+```
+
+Compare:
+
+```text
+1 = 1
+0 = 0
+1 ≠ 0
+1 = 1
+1 ≠ 0
+0 = 0
+1 = 1
+```
+
+So:
+
+[
+H(A,B)=2
+]
+
+---
+
+# 19. Hamming vs Levenshtein
+
+Suppose:
+
+```text
+cat
+cut
+```
+
+Both have length 3.
+
+Hamming:
+
+```text
+c = c
+a ≠ u
+t = t
+```
+
+Distance:
+
+```text
+1
+```
+
+Levenshtein:
+
+```text
+1 substitution
+```
+
+Also:
+
+```text
+cat
+cats
+```
+
+Hamming:
+
+> Not defined because lengths differ.
+
+Levenshtein:
+
+```text
+1 insertion
+```
+
+Therefore:
+
+> **Hamming only handles substitutions at fixed positions.**
+
+---
+
+# 20. Jaro Similarity
+
+Jaro is especially useful for:
+
+* names
+* short strings
+* duplicate detection
+* entity matching
+
+Examples:
+
+```text
+MARTHA
+MARHTA
+```
+
+The characters are mostly the same but some are rearranged.
+
+Jaro looks at:
+
+1. matching characters
+2. character order
+3. lengths
+
+The basic Jaro similarity is:
+
+[
+J =
+\frac{1}{3}
+\left(
+\frac{m}{|s_1|}
++
+\frac{m}{|s_2|}
++
+\frac{m-t}{m}
+\right)
+]
+
+where:
+
+* `m` = number of matching characters
+* `t` = number of transpositions / half-transpositions
+
+The result is between:
+
+```text
+0 → completely different
+1 → identical
+```
+
+---
+
+# 21. What Does "Matching Character" Mean?
+
+Jaro doesn't simply compare:
+
+```text
+s1[i] == s2[i]
+```
+
+It allows a character to match within a certain **window**.
+
+The matching window is approximately:
+
+[
+\left\lfloor
+\frac{\max(|s_1|,|s_2|)}{2}
+\right\rfloor-1
+]
+
+This allows characters to move around somewhat.
+
+That's why Jaro works well for names.
+
+---
+
+# 22. Jaro–Winkler
+
+Jaro-Winkler adds a very useful idea:
+
+> Give extra weight to a common prefix.
+
+For example:
+
+```text
+MARTHA
+MARHTA
+```
+
+Both start with:
+
+```text
+MAR
+```
+
+A common prefix is strong evidence that the strings represent the same name.
+
+Jaro-Winkler:
+
+[
+JW = J + l p(1-J)
+]
+
+where:
+
+* `J` = Jaro similarity
+* `l` = common prefix length
+* `p` = scaling factor
+
+Usually:
+
+```text
+p = 0.1
+```
+
+and `l` is capped, commonly at 4.
+
+---
+
+# 23. Why Jaro-Winkler Is Good for Names
+
+Consider:
+
+```text
+Jonathan
+Jonathon
+```
+
+They share a long prefix:
+
+```text
+Jonath...
+```
+
+Jaro-Winkler boosts their similarity.
+
+This is why it is commonly associated with:
+
+```text
+Name matching
+Record linkage
+Customer deduplication
+Entity resolution
+```
+
+---
+
+# 24. Comparing the Similarity Algorithms
+
+A useful mental model:
+
+```text
+Hamming
+   ↓
+fixed-position comparison
+
+Levenshtein
+   ↓
+insert/delete/substitute
+
+Damerau-Levenshtein
+   ↓
++ transposition
+
+Jaro
+   ↓
+character matching + ordering
+
+Jaro-Winkler
+   ↓
+Jaro + prefix bonus
+```
+
+---
+
+# 25. Why Ordinary DP Becomes Expensive
+
+Suppose you have:
+
+```text
+query = "internationalization"
+dictionary = 10 million words
+```
+
+If you calculate Levenshtein distance against every dictionary word:
+
+```text
+query
+   ↓
+word 1 → DP
+word 2 → DP
+word 3 → DP
+...
+word 10,000,000 → DP
+```
+
+Each comparison costs roughly:
+
+[
+O(mn)
+]
+
+So this becomes expensive.
+
+That's why we need **search structures and algorithms**.
+
+This brings us to Ukkonen.
+
+---
+
+# 26. Ukkonen's Cutoff / Banded DP
+
+Suppose you only care about:
+
+```text
+edit distance ≤ 2
+```
+
+Why calculate the entire DP matrix?
+
+You don't need distances like:
+
+```text
+10
+15
+20
+```
+
+because you already know they're too large.
+
+Ukkonen-style thresholding limits computation to the region around the main diagonal.
+
+---
+
+# 27. Why the Diagonal Matters
+
+If two strings are very similar:
+
+```text
+A = kitten
+B = sitten
+```
+
+their alignment is close to:
+
+```text
+k i t t e n
+s i t t e n
+```
+
+The important DP cells are near:
+
+```text
+i ≈ j
+```
+
+Visualize:
+
+```text
+      j
+    0 1 2 3 4 5 6
+i 0 █ █
+  1 █ █ █
+  2   █ █ █
+  3     █ █ █
+  4       █ █ █
+  5         █ █ █
+  6           █
+```
+
+Instead of computing the whole matrix, calculate a **band**.
+
+---
+
+# 28. Banded DP
+
+If allowed distance is `k`, calculate only cells satisfying approximately:
+
+[
+|i-j|\le k
+]
+
+For:
+
+```text
+k = 2
+```
+
+we calculate a band of width:
+
+```text
+2k + 1 = 5
+```
+
+instead of the entire matrix.
+
+Therefore the work becomes approximately:
+
+[
+O(k\min(m,n))
+]
+
+when lengths are comparable.
+
+You'll often see this simplified as:
+
+[
+O(kn)
+]
+
+for fixed/small `k`.
+
+---
+
+# 29. Why This Is Powerful
+
+If:
+
+```text
+n = 1000
+k = 2
+```
+
+Full DP:
+
+[
+1000 \times 1000 = 1,000,000
+]
+
+Banded:
+
+[
+1000 \times 5 = 5,000
+]
+
+Huge difference.
+
+This is especially useful for:
+
+```text
+spell correction
+OCR correction
+fuzzy search
+approximate matching
+```
+
+---
+
+# 30. Levenshtein Automata
+
+Now we're going from:
+
+> "Calculate distance between two strings"
+
+to:
+
+> "Find all dictionary words within distance k of this query."
+
+This is a major conceptual shift.
+
+Suppose query:
+
+```text
+cat
+```
+
+and:
+
+```text
+k = 1
+```
+
+We want:
+
+```text
+cat
+bat
+cut
+cart
+at
+cats
+...
+```
+
+A **Levenshtein automaton** represents all strings whose edit distance from `"cat"` is ≤ 1.
+
+Think of it as:
+
+```text
+             accepted
+                ↓
+             ┌─────┐
+             │     │
+start → states → ...
+             │     │
+             └─────┘
+```
+
+Any string that causes the automaton to end in an accepting state is within the allowed edit distance.
+
+---
+
+# 31. What Does the Automaton State Represent?
+
+A state essentially represents:
+
+> How far through the query we are and how many edits we've used.
+
+For:
+
+```text
+query = cat
+k = 1
+```
+
+the automaton tracks something like:
+
+```text
+position in "cat"
++
+number of edits consumed
+```
+
+Conceptually:
+
+```text
+(q_position, edits_used)
+```
+
+For example:
+
+```text
+(0,0)
+(1,0)
+(1,1)
+(2,0)
+(2,1)
+...
+```
+
+You don't need to think of it as literally storing every possible string.
+
+It compactly represents the allowed edit states.
+
+---
+
+# 32. Why Automata Help Search
+
+Suppose your dictionary is:
+
+```text
+cat
+car
+cart
+cut
+dog
+apple
+```
+
+Instead of computing:
+
+```text
+distance(cat, cat)
+distance(cat, car)
+distance(cat, cart)
+distance(cat, cut)
+distance(cat, dog)
+distance(cat, apple)
+```
+
+we can traverse the dictionary structure while simultaneously traversing the automaton.
+
+This is where Lucene becomes interesting.
+
+---
+
+# 33. Lucene Fuzzy Search
+
+Lucene supports fuzzy queries such as conceptually:
+
+```text
+roam~
+```
+
+meaning:
+
+> Find terms approximately matching `"roam"`.
+
+Lucene uses **Levenshtein automata** to efficiently enumerate terms within the allowed edit distance.
+
+It doesn't simply calculate a full DP matrix against every dictionary term.
+
+---
+
+# 34. Lucene + FST
+
+Lucene's term dictionary is represented using highly optimized structures, including **FSTs** in relevant parts of the term dictionary implementation.
+
+FST:
+
+> Finite State Transducer
+
+Think of it as a compressed graph representing dictionary terms.
+
+For example:
+
+```text
+             c
+             |
+             a
+          /     \
+         t       r
+                 |
+                 t
+```
+
+Conceptually:
+
+```text
+cat
+car
+cart
+```
+
+share prefixes.
+
+Instead of storing:
+
+```text
+cat
+car
+cart
+```
+
+independently, the structure shares common paths.
+
+---
+
+# 35. Levenshtein Automaton + FST
+
+This is the important idea:
+
+```text
+              Query
+               │
+               ▼
+      Levenshtein Automaton
+               │
+               │ intersect
+               ▼
+          Dictionary FST
+               │
+               ▼
+        matching dictionary
+             terms
+```
+
+The intersection effectively finds:
+
+> Dictionary terms accepted by the fuzzy automaton.
+
+So Lucene doesn't need to compare the query with every term independently.
+
+---
+
+# 36. Why Lucene Caps Edit Distance at 2
+
+This is an engineering tradeoff.
+
+For fuzzy search:
+
+```text
+k = 1
+```
+
+is manageable.
+
+```text
+k = 2
+```
+
+is still practical.
+
+But:
+
+```text
+k = 5
+k = 10
+```
+
+causes the automaton/state space and candidate enumeration to grow significantly.
+
+Also, high edit distances produce terrible search quality.
+
+For example:
+
+```text
+query = apple
+distance <= 5
+```
+
+almost everything becomes a candidate.
+
+So Lucene historically caps fuzzy edit distance at:
+
+[
+k \le 2
+]
+
+This is both a **performance** and **relevance** decision.
+
+---
+
+# 37. BK-Trees
+
+Another solution to fuzzy lookup is a **BK-tree**.
+
+BK-tree means:
+
+> Burkhard–Keller tree.
+
+It works with a **metric distance**, such as Levenshtein distance.
+
+The key mathematical property is the triangle inequality:
+
+[
+d(a,c) \le d(a,b)+d(b,c)
+]
+
+and:
+
+[
+d(a,c) \ge |d(a,b)-d(b,c)|
+]
+
+---
+
+# 38. How BK-Tree Works
+
+Suppose root is:
+
+```text
+book
+```
+
+We calculate distance from `"book"` to other words.
+
+Suppose:
+
+```text
+back → 2
+cook → 1
+apple → 5
+```
+
+We organize children by distance:
+
+```text
+                book
+             /   |    \
+            1    2     5
+            |    |     |
+           cook back  apple
+```
+
+The edge number means:
+
+> Distance from parent to child.
+
+---
+
+# 39. Searching a BK-Tree
+
+Suppose query:
+
+```text
+boon
+```
+
+and allowed distance:
+
+```text
+k = 1
+```
+
+Calculate:
+
+```text
+d(boon, book) = 1
+```
+
+Because:
+
+```text
+boon
+book
+   ↑
+```
+
+Then we only need to explore child distances in a certain range.
+
+If:
+
+```text
+d(query, node) = d
+```
+
+then candidates can only occur in:
+
+[
+[d-k,\ d+k]
+]
+
+because of the triangle inequality.
+
+So if:
+
+```text
+d = 5
+k = 1
+```
+
+only child edges:
+
+```text
+4, 5, 6
+```
+
+need to be explored.
+
+That's the pruning mechanism.
+
+---
+
+# 40. BK-Tree Strength
+
+It is simple:
+
+```text
+dictionary
+     ↓
+BK-tree
+     ↓
+query
+     ↓
+distance-based pruning
+     ↓
+near matches
+```
+
+No huge DP matrix for every dictionary word.
+
+But performance depends heavily on:
+
+* dataset
+* language
+* distance threshold
+* distribution of words
+* tree shape
+
+---
+
+# 41. SymSpell
+
+SymSpell takes a very different approach.
+
+Created by **Wolf Garbe**, it is based on the idea:
+
+> Instead of generating every possible typo at query time, precompute deletions from dictionary words.
+
+This is extremely clever.
+
+---
+
+# 42. Why Only Deletes?
+
+Suppose dictionary word:
+
+```text
+hello
+```
+
+For edit distance `1`, deleting each character produces:
+
+```text
+ello
+hllo
+helo
+helo
+hell
+```
+
+Unique deletes:
+
+```text
+ello
+hllo
+helo
+hell
+```
+
+Now suppose the user types:
+
+```text
+helo
+```
+
+Instead of generating:
+
+```text
+insertions
+deletions
+substitutions
+transpositions
+```
+
+we can look up:
+
+```text
+helo
+```
+
+in a precomputed delete index.
+
+It may map back to:
+
+```text
+hello
+```
+
+Then we verify the actual edit distance.
+
+---
+
+# 43. Symmetric Delete Idea
+
+The key symmetry is surprising.
+
+Suppose:
+
+```text
+dictionary word = hello
+```
+
+Delete:
+
+```text
+hello → helo
+```
+
+The misspelled word:
+
+```text
+helo
+```
+
+can therefore act as a key pointing to:
+
+```text
+hello
+```
+
+So instead of generating all possible corruptions of the query, we store deletion forms of dictionary words.
+
+This dramatically reduces work.
+
+---
+
+# 44. Example
+
+Dictionary:
+
+```text
+hello
+help
+helmet
+```
+
+For:
+
+```text
+hello
+```
+
+precompute deletes.
+
+For distance 1:
+
+```text
+ello
+hllo
+helo
+helo
+hell
+```
+
+Store something like:
+
+```text
+"ello" → hello
+"hllo" → hello
+"helo" → hello
+"hell" → hello
+```
+
+Now query:
+
+```text
+helo
+```
+
+can immediately retrieve:
+
+```text
+hello
+```
+
+---
+
+# 45. Distance 2 and 3
+
+If maximum edit distance is larger, generate deletion combinations.
+
+For a word of length `L`, the number of ways to delete `d` characters is:
+
+[
+\binom{L}{d}
+]
+
+For example, with:
+
+```text
+L = 5
+d = 3
+```
+
+we get:
+
+[
+\binom{5}{3}=10
+]
+
+unique positional combinations before deduplication.
+
+Across **all deletion depths up to 3**:
+
+[
+\binom51+\binom52+\binom53
+]
+
+[
+=5+10+10=25
+]
+
+That's the source of the statement:
+
+> A 5-character word needs only 25 deletes for distance 3.
+
+That's much smaller than generating all possible substitutions/insertions/transpositions.
+
+---
+
+# 46. But There's a Catch
+
+SymSpell trades:
+
+```text
+runtime
+```
+
+for:
+
+```text
+memory
+```
+
+You must precompute and store deletion keys.
+
+For large:
+
+```text
+dictionary
++
+maximum distance
+```
+
+the number of deletion entries can become huge.
+
+Therefore:
+
+```text
+small k → excellent
+large k → space grows rapidly
+```
+
+---
+
+# 47. SymSpell Search Pipeline
+
+Conceptually:
+
+```text
+                 Dictionary
+                     │
+                     ▼
+             generate deletes
+                     │
+                     ▼
+              delete index
+                     │
+                     │
+Query ───────────────┘
+                     │
+                     ▼
+               candidates
+                     │
+                     ▼
+          calculate actual distance
+                     │
+                     ▼
+             rank candidates
+```
+
+Important:
+
+> SymSpell uses deletes to generate candidates, but you still generally verify candidates using actual edit distance.
+
+---
+
+# 48. SymSpell vs BK-tree
+
+|                     | SymSpell              | BK-tree            |
+| ------------------- | --------------------- | ------------------ |
+| Main idea           | Precompute deletes    | Metric tree        |
+| Query speed         | Very fast             | Can be fast        |
+| Memory              | High                  | Lower              |
+| Preprocessing       | Significant           | Tree construction  |
+| Large dictionary    | Excellent query speed | Depends            |
+| Large edit distance | Space grows quickly   | Search grows       |
+| Metric required     | No                    | Yes                |
+| Typical use         | Spell correction      | Approximate lookup |
+
+The famous performance claims such as "1M× faster than naive" or "~100× faster than BK-trees" are **benchmark-dependent claims**, not universal complexity guarantees.
+
+That's important when evaluating such statements.
+
+---
+
+# 49. Norvig's Spell Corrector
+
+Peter Norvig demonstrated a very simple spell-correction system.
+
+The basic strategy:
+
+1. Generate words within edit distance 1.
+2. If no candidates, generate distance 2.
+3. Choose the most frequent candidate.
+
+For example:
+
+```text
+query = "speling"
+```
+
+Generate candidates:
+
+```text
+spelling
+...
+```
+
+If `"spelling"` appears frequently in the corpus, select it.
+
+---
+
+# 50. Norvig's Candidate Generation
+
+For a word:
+
+```text
+abc
+```
+
+distance-1 edits include:
+
+### Deletes
+
+```text
+bc
+ac
+ab
+```
+
+### Transposes
+
+```text
+bac
+acb
+```
+
+### Replaces
+
+```text
+bbc
+cbc
+...
+```
+
+### Inserts
+
+```text
+aabc
+babc
+...
+```
+
+This produces many possibilities.
+
+Then filter against a dictionary.
+
+---
+
+# 51. Why Frequency Matters
+
+Suppose query:
+
+```text
+teh
+```
+
+Possible corrections:
+
+```text
+the
+ten
+tech
+```
+
+Edit distance alone may not tell us which is intended.
+
+Frequency gives us:
+
+```text
+P("the") >> P("ten")
+```
+
+So:
+
+```text
+the
+```
+
+is much more likely.
+
+This leads naturally to the **noisy-channel model**.
+
+---
+
+# 52. Noisy-Channel Model
+
+This is a more principled way of thinking about spelling correction.
+
+Suppose the user typed:
+
+```text
+teh
+```
+
+We want the intended word:
+
+```text
+the
+```
+
+We want:
+
+[
+\arg\max_c P(c|w)
+]
+
+where:
+
+* `w` = observed word
+* `c` = intended/correct word
+
+Using Bayes:
+
+[
+P(c|w)
+\propto
+P(c)P(w|c)
+]
+
+Therefore:
+
+[
+\boxed{
+\hat c = \arg\max_c P(c)P(w|c)
+}
+]
+
+This is the equation you quoted.
+
+---
+
+# 53. What Does (P(c)) Mean?
+
+[
+P(c)
+]
+
+is the probability that `c` is the intended word.
+
+Usually estimated from corpus frequency.
+
+For example:
+
+```text
+the     5%
+ten     0.1%
+tech    0.05%
+```
+
+So:
+
+```text
+P(the)
+```
+
+is much larger.
+
+This is called the:
+
+> **language model / prior probability**
+
+---
+
+# 54. What Does (P(w|c)) Mean?
+
+This means:
+
+> Probability that the user would type `w` if they intended `c`.
+
+For:
+
+```text
+c = the
+w = teh
+```
+
+we might have:
+
+[
+P(teh|the)
+]
+
+which is relatively high because:
+
+```text
+the → teh
+```
+
+is a common transposition.
+
+But:
+
+```text
+the → xyz
+```
+
+would have an extremely low probability.
+
+This is the:
+
+> **error model / channel model**
+
+---
+
+# 55. Noisy Channel Example
+
+Suppose candidates:
+
+```text
+the
+ten
+tech
+```
+
+Observed:
+
+```text
+teh
+```
+
+Imagine:
+
+| Candidate |   P(c) | P(teh|c) |
+| --------- | -----: | -------: |
+| the       |   0.05 |     0.01 |
+| ten       |  0.001 |   0.0001 |
+| tech      | 0.0005 |  0.00001 |
+
+Calculate:
+
+```text
+the:
+0.05 × 0.01 = 0.0005
+
+ten:
+0.001 × 0.0001 = 0.0000001
+
+tech:
+0.0005 × 0.00001 = 0.000000005
+```
+
+Therefore:
+
+```text
+the
+```
+
+wins.
+
+---
+
+# 56. Norvig vs Noisy Channel
+
+These ideas are related but not identical.
+
+### Norvig
+
+Simplified:
+
+```text
+generate candidates
+        ↓
+filter dictionary
+        ↓
+choose highest frequency
+```
+
+Essentially:
+
+[
+\arg\max_c P(c)
+]
+
+among plausible edit-distance candidates.
+
+### Noisy channel
+
+More sophisticated:
+
+```text
+generate candidates
+        ↓
+language probability
+        +
+typing/error probability
+        ↓
+best candidate
+```
+
+[
+\arg\max_c P(c)P(w|c)
+]
+
+So noisy channel accounts for **both word frequency and error likelihood**.
+
+---
+
+# 57. How All These Fit Together
+
+This is the most important overall picture.
+
+There are actually **three different problems**:
+
+### Problem 1 — Measure similarity
+
+```text
+"kitten"
+"sitting"
+
+       ↓
+
+Levenshtein = 3
+```
+
+Algorithms:
+
+```text
+Levenshtein
+Damerau-Levenshtein
+Hamming
+Jaro
+Jaro-Winkler
+```
+
+---
+
+### Problem 2 — Align sequences
+
+```text
+sequence A
+     ↕
+sequence B
+```
+
+Algorithms:
+
+```text
+Needleman-Wunsch → global
+Smith-Waterman  → local
+```
+
+---
+
+### Problem 3 — Search a huge dictionary efficiently
+
+```text
+query
+  ↓
+millions of dictionary words
+  ↓
+find words within distance k
+```
+
+Techniques:
+
+```text
+Ukkonen / banded DP
+Levenshtein automata
+FST intersection
+BK-trees
+SymSpell
+```
+
+---
+
+# 58. Big Picture Architecture
+
+Imagine a search engine receives:
+
+```text
+"recieve"
+```
+
+Dictionary contains:
+
+```text
+receive
+receiver
+recipe
+...
+```
+
+A fuzzy-search system might do:
+
+```text
+                  "recieve"
+                      │
+                      ▼
+             approximate matching
+                      │
+          ┌───────────┼───────────┐
+          │           │           │
+     Levenshtein   Damerau    Jaro-Winkler
+          │       Levenshtein
+          │
+          ▼
+     distance ≤ 2
+          │
+          ▼
+     candidate generation
+          │
+     ┌────┼────────┐
+     │    │        │
+   FST  BK-tree  SymSpell
+     │    │        │
+     └────┼────────┘
+          ▼
+      candidates
+          │
+          ▼
+    ranking/scoring
+          │
+          ▼
+       "receive"
+```
+
+---
+
+# 59. The Algorithms on One Spectrum
+
+You can remember them like this:
+
+```text
+                     STRING SIMILARITY
+                            │
+        ┌───────────────────┼──────────────────┐
+        │                   │                  │
+    Edit distance       Alignment          Similarity
+        │                   │                  │
+   ┌────┼────┐         ┌────┴────┐       ┌────┴────┐
+   │    │    │         │         │       │         │
+Leven DL  Hamming    Needleman Smith   Jaro    Jaro-Winkler
+             │          │        │
+             │       Global     Local
+             │
+             ▼
+        Ukkonen
+             │
+             ▼
+   Efficient distance
+```
+
+And then:
+
+```text
+          FUZZY DICTIONARY SEARCH
+                    │
+       ┌────────────┼────────────┐
+       │            │            │
+ Levenshtein      BK-tree     SymSpell
+ Automaton
+       │
+       ▼
+      FST
+       │
+       ▼
+   Lucene fuzzy
+```
+
+---
+
+# 60. Complexity Cheat Sheet
+
+| Algorithm             | Main purpose                    | Typical complexity                                     |
+| --------------------- | ------------------------------- | ------------------------------------------------------ |
+| Hamming               | Fixed-length comparison         | (O(n))                                                 |
+| Levenshtein           | Edit distance                   | (O(mn))                                                |
+| Damerau-Levenshtein   | Edit + transposition            | (O(mn)) for common DP variants                         |
+| Needleman-Wunsch      | Global alignment                | (O(mn))                                                |
+| Smith-Waterman        | Local alignment                 | (O(mn))                                                |
+| Jaro                  | String similarity               | roughly (O(m+n)) for bounded matching work             |
+| Jaro-Winkler          | Jaro + prefix                   | roughly same order                                     |
+| Banded/Ukkonen        | Thresholded edit distance       | (O(kn)) approximately                                  |
+| Levenshtein automaton | Approximate dictionary matching | depends on (k), query length, and dictionary traversal |
+| BK-tree               | Metric search                   | data-dependent                                         |
+| SymSpell              | Spell correction                | very fast lookup, memory-heavy preprocessing           |
+| Norvig                | Spell correction                | candidate-generation dependent                         |
+
+---
+
+# 61. One Very Important Concept: Candidate Generation vs Ranking
+
+Modern search systems often separate these two.
+
+## Candidate generation
+
+Find things that **could** be matches.
+
+For example:
+
+```text
+query = recieve
+```
+
+Generate:
+
+```text
+receive
+receiver
+recipe
+```
+
+Methods:
+
+```text
+Levenshtein automaton
+BK-tree
+SymSpell
+```
+
+---
+
+## Ranking
+
+Now decide which candidate is best.
+
+Possible signals:
+
+```text
+edit distance
+word frequency
+Jaro-Winkler
+language model probability
+context
+document frequency
+query likelihood
+```
+
+So:
+
+```text
+                   QUERY
+                     │
+                     ▼
+             Candidate generation
+                     │
+          ┌──────────┼─────────┐
+          ▼          ▼         ▼
+       receive    recipe    receiver
+          │          │         │
+          └──────────┼─────────┘
+                     ▼
+                   ranking
+                     │
+                     ▼
+                  receive
+```
+
+This distinction is extremely important in real search engines.
+
+---
+
+# 62. How I'd Remember Each One
+
+### Levenshtein
+
+> **How many insert/delete/substitute operations?**
+
+```text
+cat → cut = 1
+```
+
+### Damerau-Levenshtein
+
+> **Levenshtein + adjacent swap**
+
+```text
+teh → the = 1
+```
+
+### Hamming
+
+> **How many positions differ?**
+
+```text
+10110
+10010
+  ↑
+= 1
+```
+
+### Needleman-Wunsch
+
+> **Align the entire sequences**
+
+```text
+GLOBAL
+```
+
+### Smith-Waterman
+
+> **Find the best matching region**
+
+```text
+LOCAL
+```
+
+### Jaro
+
+> **How well do characters match, considering order?**
+
+Good for names.
+
+### Jaro-Winkler
+
+> **Jaro + bonus for same prefix**
+
+```text
+MARTHA
+MARHTA
+^^^^
+prefix bonus
+```
+
+### Ukkonen
+
+> **Don't calculate DP cells that cannot possibly matter**
+
+```text
+full matrix → narrow band
+```
+
+### Levenshtein automaton
+
+> **Turn "distance ≤ k" into a finite-state machine.**
+
+### Lucene
+
+> **Intersect that fuzzy automaton with its dictionary FST.**
+
+### BK-tree
+
+> **Use triangle inequality to prune dictionary words.**
+
+### SymSpell
+
+> **Precompute deletes instead of generating all typo possibilities.**
+
+### Norvig
+
+> **Generate close candidates and choose the common one.**
+
+### Noisy channel
+
+> **Choose the candidate maximizing frequency × probability of the observed typo.**
+
+[
+\boxed{\hat c=\arg\max_c P(c)P(w|c)}
+]
+
+---
+
+## The key mental model
+
+If you're learning **information retrieval/search**, I would organize this entire topic into:
+
+```text
+                FUZZY MATCHING
+                      │
+       ┌──────────────┴──────────────┐
+       │                             │
+  Similarity / Distance        Efficient Search
+       │                             │
+       ├─ Levenshtein               ├─ Ukkonen
+       ├─ Damerau                    ├─ Levenshtein automata
+       ├─ Hamming                    ├─ FST intersection
+       ├─ Jaro                       ├─ BK-tree
+       └─ Jaro-Winkler               └─ SymSpell
+       │
+       ▼
+    Alignment
+       │
+       ├─ Needleman-Wunsch → global
+       └─ Smith-Waterman   → local
+                      │
+                      ▼
+                Spell Correction
+                      │
+                 ┌────┴────┐
+                 │         │
+              Norvig   Noisy Channel
+```
+
+The **most important progression to understand deeply** is:
+
+**Levenshtein DP → banded/Ukkonen → Levenshtein automata → FST intersection → Lucene fuzzy search.**
+
+That progression explains how you go from **"compare two strings in (O(mn))"** to **"search millions of dictionary terms approximately without running full DP against every term."**

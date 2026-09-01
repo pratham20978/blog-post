@@ -140,6 +140,71 @@ async def list_all_blogs(
     return success(page)
 
 
+# ── Announcements ───────────────────────────────────────────────────────────
+
+
+class AnnounceResponse(ContractModel):
+    """What actually happened, per address where it matters.
+
+    ``sent`` and ``failed`` are separate counts rather than a boolean because a
+    partial send is the normal outcome at any real list size, and the caller
+    needs to know which addresses to retry rather than re-sending to everyone.
+    """
+
+    blog_id: str
+    slug: str
+    sent: int
+    failed: int
+    #: Non-address cells encountered. A large number here usually means the
+    #: wrong file, or a sheet whose addresses are images rather than text.
+    skipped_cells: int
+    duplicates: int
+    #: Up to 50 addresses that did not get through.
+    failures: tuple[str, ...]
+
+
+@router.post("/blogs/{blog_id}/announce")
+async def announce_blog(
+    blog_id: str,
+    admin: AdminUser,
+    assembled: Assembled,
+    correlation: CorrelationId,
+    sheet: Annotated[UploadFile, File(description="An .xlsx holding the addresses")],
+) -> APIResponse[AnnounceResponse]:
+    """Email everyone in the sheet about a published article.
+
+    Every cell of every worksheet is scanned and anything shaped like an
+    address is taken, so a header row, extra columns and a stray note are all
+    fine. Addresses are lowercased and de-duplicated.
+
+    One message is sent per recipient — never one message addressed to
+    everybody — so no recipient learns who else is on the list.
+
+    Nothing is stored: no subscriber table, no send history, and therefore **no
+    unsubscribe.** Removing someone means editing the sheet. That is a real
+    limitation of the one-shot design, not an oversight; see
+    ``services/announce_service.py``.
+    """
+    result = await assembled.announce_service.announce(
+        principal=admin,
+        blog_id=blog_id,
+        sheet=await sheet.read(),
+        correlation_id=correlation,
+    )
+    return success(
+        AnnounceResponse(
+            blog_id=result.blog_id,
+            slug=result.slug,
+            sent=result.sent,
+            failed=result.failed,
+            skipped_cells=result.skipped_cells,
+            duplicates=result.duplicates,
+            failures=result.failures,
+        ),
+        message=f"Sent to {result.sent} of {result.sent + result.failed} recipients.",
+    )
+
+
 # ── Reference pins ──────────────────────────────────────────────────────────
 
 

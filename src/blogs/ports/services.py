@@ -6,6 +6,8 @@ layer. The domain names the capability; an adapter supplies it.
 
 from __future__ import annotations
 
+from collections.abc import Sequence
+from dataclasses import dataclass
 from datetime import datetime
 from typing import Protocol
 
@@ -102,6 +104,63 @@ class PasswordHasher(Protocol):
     def verify(self, password: str, stored: bytes | None) -> bool:
         """Must take the same time whether or not ``stored`` is present, or the
         response becomes an oracle for which accounts have credentials."""
+        ...
+
+
+@dataclass(frozen=True, slots=True)
+class EmailMessage:
+    """One message to one recipient.
+
+    Deliberately single-recipient. A list here would invite putting every
+    address in one ``to:`` header, which discloses the whole mailing list to
+    everyone on it — the classic bulk-mail leak. Sending to many people is a
+    loop over many messages, and the adapter is free to batch them on the wire.
+    """
+
+    to: str
+    subject: str
+    #: Plain text. Always required: an HTML-only message is unreadable in a
+    #: text client and scores badly with spam filters.
+    text: str
+    html: str | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class EmailResult:
+    """Per-recipient outcome, so a partial failure can be reported precisely."""
+
+    to: str
+    sent: bool
+    #: Provider-side id when sent, or a short reason when not. Never the body.
+    detail: str | None = None
+
+
+class EmailSender(Protocol):
+    """Outbound email. F2 owns delivery; this is the seam it plugs into.
+
+    Nothing above this knows which provider is in use, or whether one exists at
+    all — an unconfigured deployment supplies an adapter that refuses, rather
+    than a null object that silently discards mail. Silently discarding is the
+    worse failure by a distance: sign-in appears to work and no code ever
+    arrives, and nothing in the logs says why.
+    """
+
+    async def send(self, message: EmailMessage) -> EmailResult:
+        """Raises ``BlogPlatformError(EMAIL_SEND_FAILED)`` if the provider
+        could not be reached. A refusal *by* the provider for one address is
+        reported in the result rather than raised."""
+        ...
+
+    async def send_many(self, messages: Sequence[EmailMessage]) -> tuple[EmailResult, ...]:
+        """Send a batch, one message per recipient.
+
+        Separate from ``send`` because providers charge a round trip per call
+        and offer a batch endpoint; announcing a post to several hundred people
+        one HTTP request at a time is minutes of latency for no reason.
+
+        Must return one result per input, in order, and must not raise for a
+        partial failure — the caller needs to know which addresses got through.
+        """
         ...
 
 

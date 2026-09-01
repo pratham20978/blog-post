@@ -8,7 +8,7 @@ deployment fails at startup with a named field instead of at 3am with a
 from __future__ import annotations
 
 from enum import StrEnum
-from typing import Self
+from typing import Literal, Self
 
 from pydantic import Field, SecretStr, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -93,6 +93,29 @@ class Settings(BaseSettings):
     #: below refuses to start when it is set there, the same way it refuses
     #: `otp_log_codes`. Leave it unset and the real challenge is the only path.
     otp_dev_bypass_code: SecretStr | None = None
+
+    # ── Email ───────────────────────────────────────────────────────────────
+    #: The provider. ``none`` supplies an adapter that refuses every send, so a
+    #: deployment without email fails loudly at the point of use instead of
+    #: accepting messages and dropping them.
+    email_provider: Literal["none", "resend"] = "none"
+    resend_api_key: SecretStr | None = None
+    #: The From header, e.g. ``Canerly <noreply@example.com>``. Resend's
+    #: ``onboarding@resend.dev`` works with no DNS setup and delivers only to
+    #: the account owner — enough to exercise the whole path before a sending
+    #: domain exists.
+    email_from: str | None = None
+    email_reply_to: str | None = None
+    email_timeout_s: float = Field(default=15.0, gt=0)
+
+    #: Where a link in an email should point. The reader-facing origin, not
+    #: this API's — an emailed article link goes to the site, not to JSON.
+    public_site_url: str = "http://localhost:3000"
+
+    #: Ceiling on one announcement. Not a provider limit — a blast radius. A
+    #: mistyped spreadsheet should cost a bounded number of emails, and the
+    #: request should be refused outright rather than half-sent.
+    announce_max_recipients: int = Field(default=5_000, ge=1)
 
     # ── OAuth ───────────────────────────────────────────────────────────────
     oauth_redirect_base_url: str = "http://127.0.0.1:8080"
@@ -184,6 +207,26 @@ class Settings(BaseSettings):
             raise ValueError(
                 "admin_path_prefix must be at least 16 characters to be unguessable"
             )
+        return self
+
+    @model_validator(mode="after")
+    def _email_provider_is_complete(self) -> Self:
+        """A half-configured provider is worse than none.
+
+        With a key but no ``email_from``, every send is refused by Resend and
+        the failure looks like a provider outage. Naming the missing field here
+        costs one check and saves that hunt.
+        """
+        if self.email_provider == "resend":
+            missing = [
+                name
+                for name in ("resend_api_key", "email_from")
+                if getattr(self, name) is None
+            ]
+            if missing:
+                raise ValueError(
+                    f"email_provider is 'resend' but {sorted(missing)} are not set"
+                )
         return self
 
     @model_validator(mode="after")

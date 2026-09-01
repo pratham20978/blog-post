@@ -191,6 +191,12 @@ class ErrorCategory(StrEnum):
     STORAGE_UNAVAILABLE = "STORAGE_UNAVAILABLE"
     STORAGE_OBJECT_NOT_FOUND = "STORAGE_OBJECT_NOT_FOUND"
     DATABASE_UNAVAILABLE = "DATABASE_UNAVAILABLE"
+    #: No email sender is configured, so a code or announcement that was asked
+    #: for cannot be delivered. Distinct from a send failure: nothing was
+    #: attempted, and no amount of retrying will change it.
+    EMAIL_NOT_CONFIGURED = "EMAIL_NOT_CONFIGURED"
+    #: The provider refused or could not be reached.
+    EMAIL_SEND_FAILED = "EMAIL_SEND_FAILED"
 
     # ── Generic ─────────────────────────────────────────────────────────────
     RATE_LIMITED = "RATE_LIMITED"

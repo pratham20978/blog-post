@@ -18,6 +18,9 @@ dependencies = [
     # no HTML to sanitise and no sanitiser dependency.
     "markdown-it-py>=4.0",
     "python-frontmatter>=1.1",
+    # Reading the recipient sheet for an announcement. Read-only use;
+    # nothing here writes a spreadsheet.
+    "openpyxl>=3.1",
 ]
 
 [project.optional-dependencies]
@@ -71,3 +74,9 @@ mypy_path = "src"
 packages = ["blogs"]
 strict = true
 warn_unreachable = true
+
+# openpyxl ships no type stubs and `types-openpyxl` lags the release we pin.
+# Scoped to the one module that imports it rather than loosening mypy globally.
+[[tool.mypy.overrides]]
+module = ["openpyxl.*"]
+ignore_missing_imports = true

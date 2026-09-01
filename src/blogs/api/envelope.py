@@ -75,6 +75,10 @@ HTTP_STATUS_BY_ERROR_CATEGORY: dict[ErrorCategory, int] = {
     # 503: ours, and temporary. The caller should come back.
     _C.STORAGE_UNAVAILABLE: 503,
     _C.DATABASE_UNAVAILABLE: 503,
+    _C.EMAIL_SEND_FAILED: 503,
+    # 500, not 503: a missing configuration will still be missing on the next
+    # request, so inviting a retry would be a lie.
+    _C.EMAIL_NOT_CONFIGURED: 500,
     # 500, not 404: the article exists and its bytes do not. That is our gap,
     # not a missing resource.
     _C.STORAGE_OBJECT_NOT_FOUND: 500,
