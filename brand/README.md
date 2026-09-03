@@ -1,15 +1,12 @@
 # Canerly — logo
 
-Monochrome black. All files are outlined SVG: no font dependency, no external
-references, scales cleanly to any size.
+Monochrome. All files are outlined SVG: no font dependency, no external
+references, scales cleanly to any size. Two files, and only these two:
 
-| File | Use |
-| --- | --- |
-| `canerly-symbol.svg` | Symbol alone — avatars, favicons, tight spaces, app chrome |
-| `canerly-wordmark.svg` | Wordmark alone — when the bird already appears nearby |
-| `canerly-lockup-horizontal.svg` | Primary logo — site headers, docs, signatures |
-| `canerly-lockup-stacked.svg` | Vertical spaces — cards, merch, centred layouts |
-| `canerly-app-icon.svg` | Bird reversed out of a black squircle — app / social tile |
+| File | Ships as | Use |
+| --- | --- | --- |
+| `canerly-lockup-horizontal.svg` | black | The logo — site headers, docs, signatures |
+| `canerly-symbol.svg` | white | The icon — favicon, avatars, tight spaces, app chrome |
 
 ## The mark
 
@@ -28,7 +25,11 @@ Black `#000000` on light, white `#FFFFFF` on dark. To reverse, set `fill` on the
 
 ```html
 <img src="canerly-lockup-horizontal.svg" alt="Canerly">   <!-- black, as shipped -->
+<img src="canerly-symbol.svg" alt="Canerly">              <!-- white, as shipped -->
 ```
+
+The symbol ships white on a transparent ground, so it needs a dark surface behind
+it. On a light one it disappears — set `fill="#000"` there.
 
 Inline, for a colour that follows the theme, swap `fill="#000"` on the root
 `<svg>` for `fill="currentColor"`.
@@ -44,9 +45,8 @@ type, rules, image edges — inside that.
 | --- | --- |
 | Symbol | 16 px tall |
 | Horizontal lockup | 100 px wide |
-| Stacked lockup | 84 px wide |
 
-Below 16 px the tail thins out; use the app icon instead.
+Below 16 px the tail thins out.
 
 ## Don't
 
