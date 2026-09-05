@@ -48,6 +48,10 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         finally:
             await close_container(container)
 
+    # `debug` implies it, so a clone still gets docs with no configuration; a
+    # deployment that wants them without debug's wildcard CORS sets the flag.
+    serve_docs = resolved.debug or resolved.docs_enabled
+
     app = FastAPI(
         title="Blogs",
         version="0.1.0",
@@ -59,14 +63,13 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         # types straight to JSON bytes through pydantic, which is faster than
         # routing them through an encoder and deprecates ORJSONResponse.
         lifespan=lifespan,
-        # The schema lists every route path, so publishing it would hand out
-        # the secret admin prefix to anyone who fetched /openapi.json — the one
-        # thing the prefix exists to withhold. Admin routes are additionally
-        # excluded from the schema below, so this is belt and braces; outside
-        # development neither the schema nor the docs are served at all.
-        openapi_url="/openapi.json" if resolved.debug else None,
-        docs_url="/docs" if resolved.debug else None,
-        redoc_url="/redoc" if resolved.debug else None,
+        # Admin routes are excluded from the schema below, so /openapi.json
+        # never names the secret admin prefix — the one thing the prefix exists
+        # to withhold — however this resolves. What publishing it does reveal is
+        # the shape of every other endpoint, which for a public API is ordinary.
+        openapi_url="/openapi.json" if serve_docs else None,
+        docs_url="/docs" if serve_docs else None,
+        redoc_url="/redoc" if serve_docs else None,
     )
 
     # Registered before any router, so a failure inside a route is always shaped.

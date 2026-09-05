@@ -1,0 +1,263 @@
+# The whole site, on one machine, in one command: `./scripts/up.sh`.
+#
+# Only nginx publishes a host port. Postgres and the MinIO S3 API are reachable
+# on this network and nowhere else — that is deliberate, and it is what makes it
+# safe to point a public domain at this box. Adding a `ports:` entry to any
+# other service silently undoes it.
+#
+# Images are pulled, never built here. The UI image in particular has its public
+# origin compiled in at build time, so a change of domain is a `publish.sh` job:
+#   NEXT_PUBLIC_SITE_URL=https://canery.in ./scripts/publish.sh
+
+name: canerly
+
+services:
+  db:
+    image: ${POSTGRES_IMAGE:-postgres:17-alpine}
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-blogs}
+      POSTGRES_USER: ${POSTGRES_USER:?set POSTGRES_USER in .env}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      # The API opens its connection pool before it binds a port and gives up
+      # after 30s, so "started" is not good enough to depend on — this is.
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    networks: [edge]
+
+  minio:
+    # Pinned deliberately. MinIO stripped user, policy, bucket and config
+    # management out of the community console in 2025; this is the last tag that
+    # still has the full UI, which is the entire point of minioview.canery.in.
+    # It is therefore frozen — no upstream fixes land here. Track a current tag
+    # instead (MINIO_IMAGE in .env) if you would rather have patches and drive
+    # administration with `mc`; you keep a plain object browser either way.
+    image: ${MINIO_IMAGE:-minio/minio:RELEASE.2025-04-22T22-12-26Z}
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      # One set of credentials, not two: these are the same values the backend
+      # authenticates with, so they cannot drift apart. MinIO refuses a root
+      # password shorter than 8 characters.
+      MINIO_ROOT_USER: ${BLOGS_OBJECT_STORE_ACCESS_KEY:?set BLOGS_OBJECT_STORE_ACCESS_KEY in .env}
+      MINIO_ROOT_PASSWORD: ${BLOGS_OBJECT_STORE_SECRET_KEY:?set BLOGS_OBJECT_STORE_SECRET_KEY in .env}
+      # The console builds absolute redirects; without this it sends the browser
+      # to its own container address. Must match the scheme nginx is serving —
+      # set PUBLIC_SCHEME=http in .env until the certificate is issued.
+      MINIO_BROWSER_REDIRECT_URL: ${PUBLIC_SCHEME:-https}://minioview.${DOMAIN:?set DOMAIN in .env}
+    volumes:
+      - miniodata:/data
+    healthcheck:
+      # MinIO's own recommendation; `mc` ships inside the image. If this reports
+      # unhealthy forever, check `docker compose exec minio which mc` first.
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    networks: [edge]
+
+  # Creates the public media bucket and opens it for anonymous reads.
+  #
+  # Two buckets, not one, and the split is the whole point. The backend's own
+  # bucket holds article Markdown — drafts included — so it must never be
+  # readable from outside. This one holds nothing but bytes meant to be fetched
+  # by a browser over a plain link, which is why it can be world-readable.
+  # Anything written to the wrong one of these is either a leak or a broken
+  # image.
+  #
+  # Idempotent, so it runs on every `up` and re-asserts the policy.
+  minio-init:
+    image: ${MINIO_IMAGE:-minio/minio:RELEASE.2025-04-22T22-12-26Z}
+    restart: "no"
+    entrypoint: /bin/sh
+    command:
+      - -c
+      - |
+        set -e
+        mc alias set local http://minio:9000 "$$MC_USER" "$$MC_PASS"
+        mc mb --ignore-existing "local/$$MEDIA_BUCKET"
+        mc anonymous set download "local/$$MEDIA_BUCKET"
+        echo "media bucket ready: $$MEDIA_BUCKET (anonymous download)"
+    environment:
+      MC_USER: ${BLOGS_OBJECT_STORE_ACCESS_KEY}
+      MC_PASS: ${BLOGS_OBJECT_STORE_SECRET_KEY}
+      MEDIA_BUCKET: ${MEDIA_BUCKET:-media}
+    depends_on:
+      minio: {condition: service_healthy}
+    networks: [edge]
+
+  # Runs to completion, then the API waits on its exit code. Migrations are kept
+  # out of application startup on purpose — N replicas starting at once would
+  # race over the same table, and a schema change is a decision rather than a
+  # side effect of a deploy. One container, once, is the compromise.
+  migrate:
+    image: ${BACKEND_IMAGE:-prathamverma0803/blog-backend:latest}
+    command: ["python", "-m", "blogs.database.migrator", "up"]
+    restart: "no"
+    env_file: [.env]
+    environment: &backend_env
+      # Built here rather than read from .env: the BLOGS_DATABASE_URL in .env
+      # points at 127.0.0.1 for running the app outside Docker, which inside a
+      # container means the container itself.
+      BLOGS_DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-blogs}
+      BLOGS_OBJECT_STORE_ENDPOINT: minio:9000
+      BLOGS_OBJECT_STORE_SECURE: "false"
+      BLOGS_PUBLIC_SITE_URL: ${PUBLIC_SCHEME:-https}://${DOMAIN}
+      BLOGS_OAUTH_REDIRECT_BASE_URL: ${PUBLIC_SCHEME:-https}://${DOMAIN}
+      BLOGS_ENVIRONMENT: ${BLOGS_ENVIRONMENT:-local}
+      # Independent of environment, and off because api.canery.in is public:
+      # debug serves /openapi.json and /docs, and installs a CORS policy that
+      # allows every origin. Nothing needs either — the browser talks to the
+      # Next.js BFF, which talks to this over the private network.
+      BLOGS_DEBUG: "false"
+      # Swagger at api.canery.in/docs without any of the above. Set
+      # BLOGS_DOCS_ENABLED=false in .env to take the schema back off the
+      # internet; nothing else changes with it.
+      BLOGS_DOCS_ENABLED: ${BLOGS_DOCS_ENABLED:-true}
+    depends_on:
+      db: {condition: service_healthy}
+    networks: [edge]
+
+  api:
+    image: ${BACKEND_IMAGE:-prathamverma0803/blog-backend:latest}
+    restart: unless-stopped
+    env_file: [.env]
+    environment: *backend_env
+    depends_on:
+      db: {condition: service_healthy}
+      minio: {condition: service_healthy}
+      migrate: {condition: service_completed_successfully}
+    networks: [edge]
+
+  web:
+    image: ${UI_IMAGE:-prathamverma0803/blog-ui:latest}
+    restart: unless-stopped
+    environment:
+      # Server-side only, all of it. The public origin is not here because it is
+      # not settable here — NEXT_PUBLIC_SITE_URL was inlined into the browser
+      # bundle when the image was built.
+      BLOGS_API_URL: http://api:8000
+      BLOGS_DATA_SOURCE: api
+      BLOGS_ADMIN_PATH_PREFIX: ${BLOGS_ADMIN_PATH_PREFIX:?set BLOGS_ADMIN_PATH_PREFIX in .env}
+      BLOGS_OTP_DEV_BYPASS_CODE: ${BLOGS_OTP_DEV_BYPASS_CODE:-}
+    depends_on:
+      api: {condition: service_healthy}
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+    networks: [edge]
+
+  pgadmin:
+    image: ${PGADMIN_IMAGE:-dpage/pgadmin4:latest}
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:?set PGADMIN_EMAIL in .env}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:?set PGADMIN_PASSWORD in .env}
+      PGADMIN_LISTEN_PORT: "80"
+      # It sits behind exactly one proxy, so it can trust exactly one hop of
+      # X-Forwarded-* — without this it builds links to its own container name.
+      PGADMIN_CONFIG_PROXY_X_HOST_COUNT: "1"
+      PGADMIN_CONFIG_PROXY_X_PREFIX_COUNT: "1"
+      PGADMIN_CONFIG_ENHANCED_COOKIE_PROTECTION: "True"
+    volumes:
+      - pgadmindata:/var/lib/pgadmin
+    depends_on: [db]
+    networks: [edge]
+
+  nginx:
+    image: ${NGINX_IMAGE:-nginx:stable-alpine}
+    restart: unless-stopped
+    # The only service that publishes anything.
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      DOMAIN: ${DOMAIN}
+    volumes:
+      - ./deploy/nginx/snippets:/etc/nginx/snippets:ro
+      - ./deploy/nginx/site-templates:/etc/nginx/site-templates:ro
+      - ./deploy/nginx/docker-entrypoint.d/30-enable-tls.sh:/docker-entrypoint.d/30-enable-tls.sh:ro
+      - ./deploy/nginx/docker-entrypoint.d/40-reload-loop.sh:/docker-entrypoint.d/40-reload-loop.sh:ro
+      - certbot-conf:/etc/letsencrypt:ro
+      - certbot-www:/var/www/certbot
+    # portainer.canery.in proxies to the Portainer you already run on the host,
+    # rather than adopting it into this stack: it manages these containers, so
+    # restarting it as one of them is a rope around your own ankles.
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    # No `command:` override, deliberately. The image's entrypoint runs the
+    # init scripts above only when the command starts with `nginx`, so replacing
+    # it — even with something that ends in `exec nginx` — silently skips the
+    # script that generates the site configuration and leaves the default
+    # welcome page serving on every name. The certificate-reload loop that used
+    # to live here is now 40-reload-loop.sh.
+    #
+    # Deliberately depends on nothing. It resolves its upstreams per request, so
+    # it comes up whatever else is broken — which is when you most need
+    # portainer.canery.in to answer, and when certbot needs :80 to reach the
+    # ACME challenge. A failed migration takes down the site, not the machine.
+    networks:
+      edge:
+        # Article cover images render through next/image, so the Next.js server
+        # — not the browser — fetches the image URL to optimise it. Without this
+        # alias that request goes from inside this machine out to the public IP
+        # and back in through the router, which many home routers refuse to do
+        # (no NAT hairpinning). The symptom is body images working while covers
+        # break, for reasons nothing in the logs explains.
+        #
+        # Pointed at nginx rather than at MinIO so the name still gets its
+        # certificate and its read-only /media/ scoping on the way through.
+        aliases:
+          - minio.${DOMAIN}
+
+  # The only thing that makes this machine reachable from the internet. It dials
+  # out to Cloudflare and holds the connection open; traffic arrives back down
+  # that pipe. Nothing here listens on a public port, so there is no port to
+  # forward, no public IP to publish, and no A record to go stale when this
+  # laptop moves to another network.
+  #
+  # It carries the hostname through untouched, so nginx keeps doing all the
+  # routing exactly as before — the tunnel is a delivery mechanism, not a router.
+  # Configured by scripts/tunnel-setup.sh — run that once before the first `up`.
+  # A locally-managed tunnel rather than a dashboard-managed one: the Zero Trust
+  # dashboard will not open its Tunnels page without a payment method on file,
+  # even on the free plan, and the CLI produces the same tunnel without one.
+  cloudflared:
+    image: ${CLOUDFLARED_IMAGE:-cloudflare/cloudflared:latest}
+    restart: unless-stopped
+    command: tunnel --no-autoupdate --config /etc/cloudflared/config.yml run
+    volumes:
+      - ./deploy/cloudflared/config.yml:/etc/cloudflared/config.yml:ro
+      - ./deploy/cloudflared/creds:/etc/cloudflared/creds:ro
+    # Deliberately depends on nothing, for the same reason nginx does not: it
+    # should reconnect and answer even while something behind it is broken.
+    networks: [edge]
+
+  # There is deliberately no certbot service. Cloudflare terminates TLS at its
+  # edge and issues that certificate itself, so Let's Encrypt has nothing left to
+  # do here — and a certificate appearing in certbot-conf would actively break
+  # the site: 30-enable-tls.sh would switch nginx to the config that redirects
+  # HTTP to HTTPS, cloudflared speaks HTTP to nginx, and the redirect would send
+  # it back around the tunnel into itself. The volumes below are kept only so
+  # nginx has something to mount.
+
+networks:
+  edge:
+    driver: bridge
+
+volumes:
+  pgdata:
+  miniodata:
+  pgadmindata:
+  certbot-conf:
+  certbot-www:

@@ -15,3 +15,5 @@ wheels/
 node_modules/
 brand/
 seed/
+# Tunnel private keys, written by scripts/tunnel-setup.sh.
+deploy/cloudflared/creds/

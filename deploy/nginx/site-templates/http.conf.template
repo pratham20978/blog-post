@@ -1,0 +1,77 @@
+# Installed when no certificate exists yet.
+#
+# Everything is served over plain HTTP so the whole stack can be proved out
+# before DNS resolves and before Let's Encrypt has ever been asked for
+# anything — you can reach each site from this machine with a Host header:
+#
+#   curl -H 'Host: api.${DOMAIN}' http://localhost/healthz
+#
+# Run scripts/issue-certs.sh and restart nginx to replace this with the TLS
+# configuration. Do not leave a public site here: sign-in cookies would cross
+# the internet in the clear.
+
+map $http_upgrade $connection_upgrade {
+    default upgrade;
+    ''      close;
+}
+
+# Docker's embedded DNS. The site snippets proxy through a variable so that
+# upstream names are resolved per request instead of once at startup, and this
+# is what makes that possible. Without it nginx will not start while any one of
+# the containers behind it is down.
+resolver 127.0.0.11 valid=10s ipv6=off;
+resolver_timeout 5s;
+
+server {
+    listen 80 default_server;
+    listen [::]:80 default_server;
+    server_name ${DOMAIN} www.${DOMAIN};
+
+    include /etc/nginx/snippets/acme.conf;
+    include /etc/nginx/snippets/site-web.conf;
+}
+
+server {
+    listen 80;
+    listen [::]:80;
+    server_name api.${DOMAIN};
+
+    include /etc/nginx/snippets/acme.conf;
+    include /etc/nginx/snippets/site-api.conf;
+}
+
+server {
+    listen 80;
+    listen [::]:80;
+    server_name pgadmin.${DOMAIN};
+
+    include /etc/nginx/snippets/acme.conf;
+    include /etc/nginx/snippets/site-pgadmin.conf;
+}
+
+server {
+    listen 80;
+    listen [::]:80;
+    server_name minioview.${DOMAIN};
+
+    include /etc/nginx/snippets/acme.conf;
+    include /etc/nginx/snippets/site-minioview.conf;
+}
+
+server {
+    listen 80;
+    listen [::]:80;
+    server_name minio.${DOMAIN};
+
+    include /etc/nginx/snippets/acme.conf;
+    include /etc/nginx/snippets/site-minio.conf;
+}
+
+server {
+    listen 80;
+    listen [::]:80;
+    server_name portainer.${DOMAIN};
+
+    include /etc/nginx/snippets/acme.conf;
+    include /etc/nginx/snippets/site-portainer.conf;
+}

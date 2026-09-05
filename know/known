@@ -6813,3 +6813,1718 @@ The **most important progression to understand deeply** is:
 **Levenshtein DP → banded/Ukkonen → Levenshtein automata → FST intersection → Lucene fuzzy search.**
 
 That progression explains how you go from **"compare two strings in (O(mn))"** to **"search millions of dictionary terms approximately without running full DP against every term."**
+
+
+
+
+
+These three techniques are closely related, but they answer slightly different notions of “similar.” The key idea is that you can detect near-duplicates without generating embeddings or doing expensive all-pairs comparisons.
+
+A useful mental model is:
+
+MinHash → Jaccard similarity of sets
+LSH → fast retrieval of likely-similar MinHash signatures
+SimHash → cosine/angular similarity of weighted token vectors
+
+They are particularly good for surface-level similarity: shared words, shingles, phrases, character sequences, etc. They generally do not understand that “car” and “automobile” mean the same thing.
+
+1. Start with the problem
+
+Suppose you have 10 million documents and want to find near-duplicates.
+
+A naïve approach is:
+
+Compare document 1 against document 2.
+Compare document 1 against document 3.
+...
+Compare every possible pair.
+
+That's roughly
+
+(
+𝑁
+2
+)
+=
+𝑂
+(
+𝑁
+2
+)
+
+comparisons.
+
+For 
+𝑁
+=
+10
+7
+, that's about 
+5
+×
+10
+13
+ pairs — completely impractical.
+
+The trick is to turn every document into a tiny fingerprint and then use that fingerprint to avoid comparing most pairs.
+
+That's where MinHash and LSH come in.
+
+2. MinHash
+2.1 First turn a document into a set
+
+Take a document:
+
+"The quick brown fox jumps over the lazy dog."
+
+Instead of treating the document as raw text, break it into shingles (n-grams).
+
+For example, with word 3-grams:
+
+the quick brown
+quick brown fox
+brown fox jumps
+fox jumps over
+jumps over the
+over the lazy
+the lazy dog
+
+
+So the document becomes a set:
+
+𝐴
+=
+{
+the quick brown
+,
+quick brown fox
+,
+.
+.
+.
+}
+
+For two documents, we can measure their overlap with Jaccard similarity:
+
+𝐽
+(
+𝐴
+,
+𝐵
+)
+=
+∣
+𝐴
+∩
+𝐵
+∣
+∣
+𝐴
+∪
+𝐵
+∣
+
+Interpretation:
+
+𝐽
+=
+1
+: identical shingle sets
+𝐽
+=
+0
+: no shared shingles
+𝐽
+=
+0.8
+: substantial overlap
+𝐽
+=
+0.2
+: relatively little overlap
+
+This is already a very useful near-duplicate metric.
+
+The problem is that calculating the intersection/union for millions of pairs is still expensive.
+
+3. The MinHash trick
+
+MinHash gives us a small random fingerprint whose collision probability is exactly the Jaccard similarity.
+
+Suppose you have a hash function 
+ℎ
+ that hashes each shingle.
+
+For document 
+𝐴
+, calculate:
+
+𝜎
+(
+𝐴
+)
+=
+min
+⁡
+𝑥
+∈
+𝐴
+ℎ
+(
+𝑥
+)
+
+So instead of storing thousands of shingles, you store just one number.
+
+The remarkable property is:
+
+𝑃
+[
+𝜎
+(
+𝐴
+)
+=
+𝜎
+(
+𝐵
+)
+]
+=
+𝐽
+(
+𝐴
+,
+𝐵
+)
+
+This is the fundamental MinHash result. Min-wise hashing is one of the classic locality-sensitive hashing constructions for Jaccard similarity. 
+P
+Princeton Computer Science
++1
+
+Why does this work?
+
+Imagine randomly ordering every possible shingle.
+
+Take the first shingle in that random ordering that appears in either 
+𝐴
+ or 
+𝐵
+.
+
+There are two possibilities:
+
+A only       B only       A ∩ B
+  |             |            |
+  +-------------+------------+
+                ↑
+         first element
+
+
+If that first element belongs to 
+𝐴
+∩
+𝐵
+, both documents select the same element.
+
+The probability of that happening is:
+
+∣
+𝐴
+∩
+𝐵
+∣
+∣
+𝐴
+∪
+𝐵
+∣
+
+which is precisely Jaccard similarity.
+
+Hashing is a practical way of implementing this random ordering.
+
+4. One MinHash isn't enough
+
+Suppose:
+
+𝐽
+(
+𝐴
+,
+𝐵
+)
+=
+0.7
+
+With one MinHash:
+
+𝑃
+[
+collision
+]
+=
+0.7
+
+So there is still a 30% chance that they don't collide.
+
+Instead, use 
+𝑘
+ independent MinHash functions:
+
+𝜎
+(
+𝐴
+)
+=
+(
+𝜎
+1
+(
+𝐴
+)
+,
+𝜎
+2
+(
+𝐴
+)
+,
+.
+.
+.
+,
+𝜎
+𝑘
+(
+𝐴
+)
+)
+
+For example:
+
+Document A:
+
+[17392, 918273, 38291, 77123, ...]
+
+
+Each coordinate gives you another noisy observation of Jaccard similarity.
+
+Estimate:
+
+𝐽
+^
+(
+𝐴
+,
+𝐵
+)
+=
+1
+𝑘
+∑
+𝑖
+=
+1
+𝑘
+1
+[
+𝜎
+𝑖
+(
+𝐴
+)
+=
+𝜎
+𝑖
+(
+𝐵
+)
+]
+
+In other words:
+
+Just count how many MinHash positions are equal.
+
+If 51 out of 64 positions match:
+
+𝐽
+^
+=
+51
+64
+=
+0.797
+
+So your estimated Jaccard similarity is about 0.80.
+
+5. Why the standard error is 
+𝐽
+(
+1
+−
+𝐽
+)
+/
+𝑘
+
+Each MinHash coordinate is effectively a Bernoulli experiment:
+
+𝑋
+𝑖
+=
+{
+1
+	
+if hashes match
+
+
+0
+	
+otherwise
+
+with
+
+𝑃
+(
+𝑋
+𝑖
+=
+1
+)
+=
+𝐽
+
+Therefore:
+
+𝑋
+𝑖
+∼
+Bernoulli
+(
+𝐽
+)
+
+and
+
+Var
+⁡
+(
+𝑋
+𝑖
+)
+=
+𝐽
+(
+1
+−
+𝐽
+)
+
+The average of 
+𝑘
+ independent observations has variance
+
+𝐽
+(
+1
+−
+𝐽
+)
+𝑘
+
+and hence standard error
+
+𝑆
+𝐸
+=
+𝐽
+(
+1
+−
+𝐽
+)
+𝑘
+
+At 
+𝐽
+=
+0.5
+:
+
+𝑆
+𝐸
+=
+0.25
+𝑘
+
+For 
+𝑘
+=
+64
+:
+
+𝑆
+𝐸
+=
+0.5
+8
+=
+0.0625
+
+So yes: about 0.06.
+
+This means 64 hashes aren't giving you a magical exact Jaccard value. They're giving you a statistical estimate.
+
+For example, if the true Jaccard is 0.5, estimates around 0.44–0.56 are quite normal.
+
+6. What MinHash is really good at
+
+Imagine:
+
+Document A
+
+Apple released a new iPhone model yesterday. The company said the phone has a faster processor.
+
+Document B
+
+Apple released a new iPhone model yesterday. The company said the phone has a faster processor and better battery life.
+
+Their shingles overlap heavily.
+
+MinHash will probably identify them as highly similar.
+
+But:
+
+Document C
+
+Apple unveiled its latest smartphone. The device features an improved chipset.
+
+Humans recognize that A and C are semantically related.
+
+MinHash may not.
+
+Why?
+
+Because the actual surface tokens are different.
+
+That's what you meant by:
+
+"These hash surface tokens, not semantics."
+
+Exactly.
+
+7. Important distinction: shingles matter enormously
+
+MinHash doesn't intrinsically know what a "document" is.
+
+You decide what the set elements are.
+
+They could be:
+
+words
+word bigrams
+word 5-grams
+character 3-grams
+character 5-grams
+normalized tokens
+URLs
+code tokens
+HTML tokens
+etc.
+
+This choice determines what "similarity" means.
+
+Character shingles
+
+For:
+
+hello world
+
+
+you might have:
+
+hel
+ell
+llo
+lo 
+o w
+ wo
+wor
+orl
+rld
+
+
+This is useful for:
+
+typos
+OCR errors
+small edits
+formatting variations
+Word shingles
+the cat sat on the mat
+
+
+3-grams:
+
+the cat sat
+cat sat on
+sat on the
+on the mat
+
+
+These are usually better for detecting copied or near-copied text.
+
+8. The big limitation of MinHash
+
+Suppose:
+
+A = {a,b,c,d,e}
+B = {a,b,c,d,f}
+
+
+Then:
+
+𝐽
+(
+𝐴
+,
+𝐵
+)
+=
+4
+6
+=
+0.667
+
+Good.
+
+But consider weighted text.
+
+Document A:
+
+cat cat cat cat dog
+
+
+Document B:
+
+cat dog
+
+
+Ordinary set-based MinHash sees:
+
+A = {cat, dog}
+B = {cat, dog}
+
+
+and therefore:
+
+𝐽
+=
+1
+
+even though the frequency distributions are completely different.
+
+That's why there are weighted MinHash variants when token frequencies matter. 
+A
+arXiv
+
+9. LSH
+
+Now we reach the really important distinction.
+
+MinHash estimates similarity.
+
+LSH makes searching for similar objects fast.
+
+Suppose you have:
+
+10 million documents
+
+
+and each has:
+
+128 MinHash values
+
+
+You don't want to compare a query's 128 values against all 10 million documents.
+
+LSH creates buckets.
+
+The basic idea is:
+
+Similar objects should have a reasonable probability of landing in the same bucket.
+
+10. LSH banding
+
+Suppose the MinHash signature has:
+
+𝑘
+=
+112
+
+components.
+
+You split it into:
+
+𝑏
+=
+14
+
+bands, each containing:
+
+𝑟
+=
+8
+
+rows.
+
+Because:
+
+𝑘
+=
+𝑏
+⋅
+𝑟
+
+we get:
+
+112
+=
+14
+×
+8
+
+A signature looks conceptually like:
+
+             112 MinHash values
+                    |
+       +------------+------------+
+       |            |            |
+      band 1       band 2       ...
+      8 hashes     8 hashes
+       |            |
+    bucket       bucket
+
+
+For every band, you hash the entire 8-value block into a bucket.
+
+11. When does a candidate get generated?
+
+Two documents become an LSH candidate if:
+
+They match completely in at least one band.
+
+So if:
+
+A band 1 = [12, 45, 92, 17, 31, 8, 66, 91]
+B band 1 = [12, 45, 92, 17, 31, 8, 66, 91]
+
+
+then they collide in band 1.
+
+Candidate!
+
+But if:
+
+A band 1 = [12, 45, 92, 17, 31, 8, 66, 91]
+B band 1 = [12, 45, 92, 17, 31, 8, 66, 92]
+
+
+they don't match that band.
+
+They might still match another band.
+
+This gives LSH its characteristic S-curve.
+
+12. Deriving the candidate probability
+
+Assume the true Jaccard similarity is 
+𝑠
+.
+
+For one row:
+
+𝑃
+[
+match
+]
+=
+𝑠
+
+For all 
+𝑟
+ rows in a band:
+
+𝑃
+[
+entire band matches
+]
+=
+𝑠
+𝑟
+
+Therefore:
+
+𝑃
+[
+band doesn’t match
+]
+=
+1
+−
+𝑠
+𝑟
+
+There are 
+𝑏
+ independent-ish bands.
+
+Probability that none match:
+
+(
+1
+−
+𝑠
+𝑟
+)
+𝑏
+
+Therefore probability that at least one matches:
+
+𝑃
+(
+candidate
+)
+=
+1
+−
+(
+1
+−
+𝑠
+𝑟
+)
+𝑏
+
+That's the equation you quoted.
+
+13. Why this produces an S-curve
+
+Consider:
+
+𝑏
+=
+14
+,
+𝑟
+=
+8
+
+At low similarity, say:
+
+𝑠
+=
+0.3
+
+Then:
+
+𝑠
+8
+=
+0.3
+8
+≈
+0.000066
+
+Very unlikely to match a complete band.
+
+So:
+
+𝑃
+(
+candidate
+)
+≈
+14
+(
+0.000066
+)
+≈
+0.0009
+
+Almost certainly rejected.
+
+Now consider:
+
+𝑠
+=
+0.9
+
+Then:
+
+0.9
+8
+≈
+0.430
+
+So:
+
+𝑃
+(
+candidate
+)
+=
+1
+−
+(
+1
+−
+0.430
+)
+14
+
+which is extremely close to 1.
+
+So:
+
+similarity
+
+0.0 ────────────────┐
+                    │
+                    │
+                    │
+                    └────────────── 1.0
+
+
+The transition happens fairly sharply.
+
+That's why LSH is useful for candidate generation.
+
+14. What does 
+𝑟
+ do?
+
+Increasing 
+𝑟
+ makes a band harder to match.
+
+Because:
+
+𝑃
+(
+band match
+)
+=
+𝑠
+𝑟
+
+For example:
+
+𝑠
+=
+0.8
+
+With 
+𝑟
+=
+2
+:
+
+0.8
+2
+=
+0.64
+
+With 
+𝑟
+=
+8
+:
+
+0.8
+8
+≈
+0.168
+
+With 
+𝑟
+=
+16
+:
+
+0.8
+16
+≈
+0.028
+
+So increasing 
+𝑟
+ makes LSH more selective.
+
+15. What does 
+𝑏
+ do?
+
+Increasing the number of bands makes it easier for at least one band to match.
+
+Because:
+
+𝑃
+(
+candidate
+)
+=
+1
+−
+(
+1
+−
+𝑠
+𝑟
+)
+𝑏
+
+More bands means:
+
+"I'll give you more opportunities to collide."
+
+So:
+
+larger 
+𝑏
+ → more candidates / higher recall
+larger 
+𝑟
+ → fewer candidates / higher precision
+
+This is the fundamental tuning tradeoff.
+
+16. The famous threshold approximation
+
+A rough way of thinking about the LSH threshold is:
+
+𝑠
+𝑟
+≈
+1
+𝑏
+
+Therefore:
+
+𝑠
+≈
+𝑏
+−
+1
+/
+𝑟
+
+For:
+
+𝑏
+=
+14
+,
+𝑟
+=
+8
+
+we get:
+
+𝑠
+≈
+14
+−
+1
+/
+8
+≈
+0.72
+
+So the transition region is somewhere around the 0.7-ish similarity range.
+
+But this isn't a hard threshold.
+
+That's extremely important.
+
+LSH doesn't say:
+
+"Jaccard ≥ 0.72 → match, otherwise reject."
+
+Instead it says:
+
+"At similarity 0.72, the probability of becoming a candidate is around the transition region."
+
+You still normally compute the actual similarity for candidates afterward.
+
+17. LSH therefore has two stages
+
+A production system commonly looks like:
+
+                  Documents
+                      |
+                      v
+               tokenize/shingle
+                      |
+                      v
+                   MinHash
+                      |
+                      v
+                 LSH buckets
+                      |
+          +-----------+-----------+
+          |                       |
+     candidate                  rejected
+       pairs
+          |
+          v
+    exact Jaccard /
+    MinHash estimate /
+    other verification
+          |
+          v
+       matches
+
+
+This distinction is crucial.
+
+LSH isn't necessarily the final similarity test.
+
+It's primarily a cheap candidate-generation mechanism.
+
+18. Why this is dramatically faster
+
+Suppose:
+
+10,000,000 documents
+
+
+A query could theoretically compare against:
+
+9,999,999 documents
+
+
+With LSH, it might retrieve only:
+
+500 candidates
+
+
+Then perform expensive comparisons on those 500.
+
+So the computational pattern becomes approximately:
+
+𝑂
+(
+𝑁
+)
+→
+hash/bucket lookup
++
+𝑂
+(
+small candidate set
+)
+
+rather than:
+
+𝑂
+(
+𝑁
+2
+)
+
+This is the reason LSH became important for massive-scale similarity search. The broader LSH framework was developed specifically to support approximate nearest-neighbor search without exhaustive comparison. 
+P
+Princeton Computer Science
++1
+
+19. MinHash + LSH are not actually the same thing
+
+This distinction is often blurred.
+
+MinHash
+
+Answers:
+
+"How similar are these two sets according to Jaccard?"
+
+LSH
+
+Answers:
+
+"Which objects are likely to be similar enough that I should compare them?"
+
+So:
+
+MinHash = compact similarity sketch
+
+LSH = indexing/search strategy over sketches
+
+
+You can use MinHash without LSH.
+
+You can also use LSH with other hash families.
+
+20. b-bit MinHash
+
+Standard MinHash might store:
+
+64-bit integer
+
+
+per hash.
+
+Suppose you have 128 hashes.
+
+That's:
+
+128
+×
+64
+=
+8192
+ bits
+
+per document.
+
+That's not enormous, but at hundreds of millions of documents it adds up.
+
+b-bit MinHash keeps only the lowest 
+𝑏
+ bits of each MinHash value.
+
+For example:
+
+full MinHash:
+
+101101011001101010010101...
+
+keep 4 bits:
+
+0101
+
+
+This massively reduces storage.
+
+The tradeoff is that collisions become more common for reasons unrelated to actual MinHash equality, so the estimator needs adjustment and its statistical properties change.
+
+The general motivation is:
+
+keep only enough information from the MinHash signature to preserve useful similarity information while reducing memory/bandwidth.
+
+21. SimHash is a different animal
+
+SimHash is another compact fingerprint, famously associated with Charikar's work on similarity estimation. Charikar's paper frames locality-sensitive hashing as constructing compact representations whose collision probability corresponds to an underlying similarity measure. 
+P
+Princeton Computer Science
+
+But the similarity notion is different.
+
+MinHash:
+
+Jaccard
+
+SimHash:
+
+cosine/angular similarity
+
+That's a major distinction.
+
+22. How SimHash works
+
+Imagine representing a document as a vector of token weights.
+
+For example:
+
+              cat   dog   car   apple
+Document A     3     2     0      1
+Document B     2     2     1      0
+
+
+So:
+
+𝐴
+=
+(
+3
+,
+2
+,
+0
+,
+1
+)
+
+and
+
+𝐵
+=
+(
+2
+,
+2
+,
+1
+,
+0
+)
+
+You can compare these vectors using cosine similarity:
+
+cos
+⁡
+(
+𝐴
+,
+𝐵
+)
+=
+𝐴
+⋅
+𝐵
+∥
+𝐴
+∥
+∥
+𝐵
+∥
+
+SimHash compresses this high-dimensional vector into a small binary fingerprint.
+
+Often:
+
+64
+-bit SimHash
+
+23. The random-hyperplane intuition
+
+Imagine your high-dimensional vector space.
+
+Pick a random hyperplane.
+
+For each document/vector:
+
+             hyperplane
+          ----------------
+             /       \
+            /         \
+          A             B
+
+
+Assign:
+
+0 = one side
+1 = other side
+
+
+That gives one bit.
+
+Repeat 64 times.
+
+You get:
+
+A = 1011010010110110...
+B = 1011010010010110...
+
+
+The more similar the vectors' directions, the more likely they are to land on the same side of a random hyperplane.
+
+Thus:
+
+cosine similarity → probability of bit agreement
+
+This is why SimHash is naturally associated with cosine/angular similarity. 
+A
+arXiv
++1
+
+24. SimHash comparison becomes Hamming distance
+
+Once you have:
+
+A = 101101001011
+B = 101001001111
+
+
+you XOR:
+
+A XOR B
+= 000100000100
+
+
+Then count the 1s.
+
+That's Hamming distance.
+
+So if:
+
+Hamming(A,B) = 3
+
+
+the two 64-bit fingerprints differ in 3 positions.
+
+This is incredibly cheap computationally:
+
+XOR
++
+popcount
+
+
+Modern CPUs can do these operations extremely quickly.
+
+25. MinHash vs SimHash
+
+Here's the most important comparison:
+
+	MinHash	SimHash
+Basic representation	Set	Weighted vector
+Similarity	Jaccard	Cosine/angular
+Fingerprint	Multiple integer hashes	Binary bits
+Comparison	Equal MinHash positions	Hamming distance
+Great for	Shingle overlap	Vector/token-weight similarity
+Frequency information	Usually no	Yes, naturally
+Typical use	Near-duplicate detection	Near-duplicate / similarity fingerprinting
+Semantic understanding	No	No
+
+Research comparing the two emphasizes precisely this distinction: MinHash's collision behavior is tied to resemblance/Jaccard similarity, whereas SimHash's is tied to cosine similarity. 
+A
+arXiv
+
+26. A concrete example
+
+Suppose we have:
+
+A
+
+The cat sat on the mat
+
+B
+
+The cat sat on a mat
+
+C
+
+A feline was sitting on a rug
+
+For word 2-grams:
+
+A
+the cat
+cat sat
+sat on
+on the
+the mat
+
+B
+the cat
+cat sat
+sat on
+on a
+a mat
+
+
+They share:
+
+the cat
+cat sat
+sat on
+
+
+So Jaccard is:
+
+𝐽
+=
+3
+7
+≈
+0.429
+
+MinHash will estimate something around 0.43.
+
+But C has almost none of those exact shingles:
+
+a feline
+feline was
+was sitting
+sitting on
+on a
+a rug
+
+
+So MinHash will probably regard C as quite different.
+
+A language model, however, recognizes:
+
+cat ≈ feline
+sat ≈ was sitting
+mat ≈ rug
+
+
+That's the crucial distinction.
+
+27. "Non-embedding approximate" is a very useful category
+
+Your framing is good because these methods sit in a different part of the similarity-search design space.
+
+You can roughly divide similarity into:
+
+Exact lexical
+string equality
+
+
+Very precise, but misses small changes.
+
+Approximate lexical
+edit distance
+character shingles
+MinHash
+SimHash
+LSH
+
+
+Good at detecting textual overlap and near-duplicates.
+
+Semantic
+embeddings
+vector search
+transformers
+
+
+Good at:
+
+"car"
+≈
+"automobile"
+
+
+even when the actual words differ.
+
+The tradeoff is that embeddings introduce a model and a semantic representation, whereas MinHash/SimHash can be extremely lightweight.
+
+28. Why these are particularly good for deduplication
+
+Consider web crawling.
+
+You might encounter:
+
+URL 1:
+https://example.com/article
+
+URL 2:
+https://example.com/article?utm_source=twitter
+
+URL 3:
+https://example.com/article?ref=homepage
+
+
+All three might contain essentially identical text.
+
+You don't need semantic understanding.
+
+You want:
+
+"Are these pages basically the same content?"
+
+That's exactly where shingling + MinHash/LSH shines.
+
+This is also why MinHash-style techniques appear in large-scale document deduplication pipelines; for example, recent large-corpus work describes using n-gram sets and MinHash LSH to reduce the number of pairwise comparisons required for near-duplicate detection. 
+A
+arXiv
+
+29. A practical architecture
+
+If I were designing a large document-deduplication system, I'd think about it like this:
+
+                 Raw documents
+                       |
+                       v
+               Normalization
+          /        |          \
+       case     whitespace    HTML
+      folding    cleanup     removal
+          \        |          /
+           \       |         /
+                shingles
+                    |
+                    v
+                 MinHash
+                128 hashes
+                    |
+                    v
+              LSH indexing
+             /    |     \
+          bucket bucket bucket
+             \    |     /
+              candidates
+                   |
+                   v
+           similarity check
+                   |
+             +-----+------+
+             |            |
+          duplicate    different
+
+
+The normalization stage is surprisingly important.
+
+If one document says:
+
+Hello, world!
+
+
+and another says:
+
+hello world
+
+
+you probably don't want punctuation/capitalization to cause unnecessary differences.
+
+30. Choosing between MinHash and SimHash
+
+A useful rule:
+
+Use MinHash when your natural similarity is:
+
+Jaccard
+
+For example:
+
+"What fraction of their shingles overlap?"
+
+This is often excellent for copied text and near-duplicate web pages.
+
+Use SimHash when your natural representation is:
+
+a weighted feature vector
+
+and you care about angular/cosine similarity.
+
+For example:
+
+"Do these documents have similar token-weight profiles?"
+
+31. And LSH is the scaling layer
+
+You can think of the complete stack as:
+
+               What similarity?
+                     |
+          +----------+----------+
+          |                     |
+       Jaccard                Cosine
+          |                     |
+       MinHash               SimHash
+          |                     |
+          +----------+----------+
+                     |
+               LSH indexing
+                     |
+                     v
+            Fast candidate search
+
+
+That is the conceptual picture I would keep in your head.
+
+32. One subtle but important point about "approximate"
+
+There are actually two different approximations happening in many systems.
+
+Approximation #1: sketching
+
+Instead of retaining the entire document/set/vector, retain:
+
+64 / 128 / 256 hash values
+
+
+That's the MinHash/SimHash compression.
+
+Approximation #2: search
+
+Instead of comparing the query against every object:
+
+10,000,000 comparisons
+
+
+use LSH to examine:
+
+maybe hundreds/thousands of candidates
+
+
+So:
+
+Full representation
+       ↓
+ compact sketch
+       ↓
+ approximate candidate search
+       ↓
+ exact/stronger verification
+
+
+These are conceptually separate.
+
+33. The most useful way to think about the three
+
+If you're building a system, I'd summarize them as:
+
+MinHash
+
+"Give me a tiny fingerprint that preserves Jaccard similarity."
+
+𝑃
+[
+same hash
+]
+=
+𝐽
+(
+𝐴
+,
+𝐵
+)
+
+LSH
+
+"Use those fingerprints to avoid comparing everything with everything."
+
+𝑃
+[
+candidate
+]
+=
+1
+−
+(
+1
+−
+𝑠
+𝑟
+)
+𝑏
+
+SimHash
+
+"Give me a tiny binary fingerprint whose Hamming distance reflects angular/cosine similarity."
+
+similar vectors
+       ↓
+similar random-hyperplane bits
+       ↓
+small Hamming distance
+
+
+And all three have the same fundamental limitation:
+
+They are representations of surface/features, not meaning.
+
+If two texts use completely different vocabulary but express the same idea, these methods can miss the match. Conversely, two texts that share lots of boilerplate can look highly similar even when their meanings differ.
+
+That's the fundamental difference from embedding-based semantic retrieval.
+
+
+
+
+
+

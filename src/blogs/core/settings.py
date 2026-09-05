@@ -30,6 +30,13 @@ class Settings(BaseSettings):
 
     environment: Environment = Environment.LOCAL
     debug: bool = True
+    #: Serves /docs, /redoc and /openapi.json. Separate from `debug` on purpose:
+    #: debug also installs a wildcard CORS policy, and publishing the schema of a
+    #: public API is no reason to accept credentials from every origin on the
+    #: internet. Implied by `debug`, so development is unaffected by leaving it
+    #: off. The schema never names the admin routes whatever this is set to —
+    #: they are registered with include_in_schema=False.
+    docs_enabled: bool = False
 
     # ── Database ────────────────────────────────────────────────────────────
     database_url: str = "postgresql://lucifer:password123@127.0.0.1:5432/blogs"

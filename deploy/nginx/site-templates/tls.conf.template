@@ -1,0 +1,89 @@
+# Installed once a certificate exists for ${DOMAIN}.
+#
+# One certificate covers every name, so the paths are set here at http level
+# and inherited by all five server blocks rather than repeated in each.
+
+map $http_upgrade $connection_upgrade {
+    default upgrade;
+    ''      close;
+}
+
+# Docker's embedded DNS. The site snippets proxy through a variable so that
+# upstream names are resolved per request instead of once at startup, and this
+# is what makes that possible. Without it nginx will not start while any one of
+# the containers behind it is down.
+resolver 127.0.0.11 valid=10s ipv6=off;
+resolver_timeout 5s;
+
+ssl_certificate     /etc/letsencrypt/live/${DOMAIN}/fullchain.pem;
+ssl_certificate_key /etc/letsencrypt/live/${DOMAIN}/privkey.pem;
+include /etc/nginx/snippets/tls-params.conf;
+
+# Port 80 keeps serving the ACME challenge — renewal in 60 days depends on it —
+# and redirects everything else. default_server catches requests for names that
+# are not ours, so an unknown Host does not fall through to the site.
+server {
+    listen 80 default_server;
+    listen [::]:80 default_server;
+    server_name _;
+
+    include /etc/nginx/snippets/acme.conf;
+
+    location / {
+        return 301 https://$host$request_uri;
+    }
+}
+
+server {
+    listen 443 ssl default_server;
+    listen [::]:443 ssl default_server;
+    http2 on;
+    server_name ${DOMAIN} www.${DOMAIN};
+
+    include /etc/nginx/snippets/site-web.conf;
+}
+
+server {
+    listen 443 ssl;
+    listen [::]:443 ssl;
+    http2 on;
+    server_name api.${DOMAIN};
+
+    include /etc/nginx/snippets/site-api.conf;
+}
+
+server {
+    listen 443 ssl;
+    listen [::]:443 ssl;
+    http2 on;
+    server_name pgadmin.${DOMAIN};
+
+    include /etc/nginx/snippets/site-pgadmin.conf;
+}
+
+server {
+    listen 443 ssl;
+    listen [::]:443 ssl;
+    http2 on;
+    server_name minioview.${DOMAIN};
+
+    include /etc/nginx/snippets/site-minioview.conf;
+}
+
+server {
+    listen 443 ssl;
+    listen [::]:443 ssl;
+    http2 on;
+    server_name minio.${DOMAIN};
+
+    include /etc/nginx/snippets/site-minio.conf;
+}
+
+server {
+    listen 443 ssl;
+    listen [::]:443 ssl;
+    http2 on;
+    server_name portainer.${DOMAIN};
+
+    include /etc/nginx/snippets/site-portainer.conf;
+}

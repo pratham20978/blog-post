@@ -1,0 +1,40 @@
+# The backend build needs pyproject.toml, uv.lock, README.md and src/ only.
+
+.venv/
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info/
+
+# Secrets stay out of the build context entirely. Settings also read a .env file
+# from the working directory at startup, so one copied in would silently
+# outrank the environment the container was actually run with.
+.env
+.env.*
+!.env.example
+
+# The Next.js app is a submodule with its own Dockerfile and its own context.
+# Left in, its node_modules alone would dominate the upload.
+web/
+node_modules/
+
+# Local-only data: both are gitignored, and neither is read at runtime.
+seed/
+brand/
+
+# Deployment. Read by compose and nginx on this machine, never by the image.
+compose.yaml
+deploy/
+scripts/
+
+.git/
+.gitignore
+.claude/
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+Dockerfile
+.dockerignore
+.DS_Store
