@@ -6,8 +6,8 @@ layer. The domain names the capability; an adapter supplies it.
 
 from __future__ import annotations
 
-from collections.abc import Sequence
-from dataclasses import dataclass
+from collections.abc import Mapping, Sequence
+from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Protocol
 
@@ -123,6 +123,10 @@ class EmailMessage:
     #: text client and scores badly with spam filters.
     text: str
     html: str | None = None
+    headers: Mapping[str, str] = field(default_factory=dict)
+    #: Stable across retries. Adapters that support provider-side
+    #: idempotency attach it to the request rather than the message body.
+    idempotency_key: str | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -133,6 +137,7 @@ class EmailResult:
     sent: bool
     #: Provider-side id when sent, or a short reason when not. Never the body.
     detail: str | None = None
+    retry_after_seconds: float | None = None
 
 
 class EmailSender(Protocol):

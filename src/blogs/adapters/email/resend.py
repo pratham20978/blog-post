@@ -79,11 +79,20 @@ class ResendEmailSender:
             payload["html"] = message.html
         if self._reply_to:
             payload["reply_to"] = self._reply_to
+        if message.headers:
+            payload["headers"] = dict(message.headers)
         return payload
 
     async def send(self, message: EmailMessage) -> EmailResult:
         try:
-            response = await self._client.post("/emails", json=self._payload(message))
+            headers = (
+                {"Idempotency-Key": message.idempotency_key}
+                if message.idempotency_key
+                else None
+            )
+            response = await self._client.post(
+                "/emails", json=self._payload(message), headers=headers
+            )
         except httpx.HTTPError as exc:
             # Unreachable provider. This one raises: the caller asked for a
             # single message and there is no partial outcome to report.
@@ -132,11 +141,20 @@ class ResendEmailSender:
 
         if response.status_code >= 400:
             reason = _reason_from(response)
+            retry_after = _retry_after(response)
             logger.warning(
                 "email batch refused",
                 extra={"status": response.status_code, "recipients": len(chunk)},
             )
-            return [EmailResult(to=m.to, sent=False, detail=reason) for m in chunk]
+            return [
+                EmailResult(
+                    to=m.to,
+                    sent=False,
+                    detail=reason,
+                    retry_after_seconds=retry_after,
+                )
+                for m in chunk
+            ]
 
         # Resend answers `{"data": [{"id": ...}, ...]}` in request order. If the
         # shape is not what we expect, the mail may well have been sent — so
@@ -150,7 +168,12 @@ class ResendEmailSender:
 
     def _result_for(self, to: str, response: httpx.Response) -> EmailResult:
         if response.status_code >= 400:
-            return EmailResult(to=to, sent=False, detail=_reason_from(response))
+            return EmailResult(
+                to=to,
+                sent=False,
+                detail=_reason_from(response),
+                retry_after_seconds=_retry_after(response),
+            )
         ids = _ids_from(response)
         return EmailResult(to=to, sent=True, detail=ids[0] if ids else None)
 
@@ -181,3 +204,13 @@ def _ids_from(response: httpx.Response) -> list[str]:
         if isinstance(body.get("id"), str):
             return [body["id"]]
     return []
+
+
+def _retry_after(response: httpx.Response) -> float | None:
+    value = response.headers.get("retry-after")
+    if not value:
+        return None
+    try:
+        return max(0.0, float(value))
+    except ValueError:
+        return None
