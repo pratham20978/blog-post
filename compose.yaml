@@ -150,6 +150,20 @@ services:
       metadata-backfill: {condition: service_completed_successfully}
     networks: [edge]
 
+  # Relays transactional outbox events and drains durable new-blog email
+  # deliveries. Publication never waits on the provider, and the advisory lock
+  # inside the process makes an accidental second replica harmless.
+  outbox-worker:
+    image: ${BACKEND_IMAGE:-prathamverma0803/blog-backend:latest}
+    command: ["python", "-m", "blogs.workers.outbox"]
+    restart: unless-stopped
+    env_file: [.env]
+    environment: *backend_env
+    depends_on:
+      db: {condition: service_healthy}
+      migrate: {condition: service_completed_successfully}
+    networks: [edge]
+
   web:
     image: ${UI_IMAGE:-prathamverma0803/blog-ui:latest}
     restart: unless-stopped

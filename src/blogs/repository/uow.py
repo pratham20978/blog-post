@@ -9,11 +9,13 @@ from __future__ import annotations
 
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
+from typing import cast
 
 from psycopg import AsyncConnection
 from psycopg.rows import DictRow
 
 from blogs.database.session import Database
+from blogs.ports.uow import UnitOfWork
 from blogs.repository.announcement import SqlAnnouncementRepository
 from blogs.repository.content import (
     SqlBlogRepository,
@@ -114,7 +116,7 @@ class SqlUnitOfWorkFactory:
         self._database = database
 
     @asynccontextmanager
-    async def begin(self) -> AsyncIterator[SqlUnitOfWork]:
+    async def begin(self) -> AsyncIterator[UnitOfWork]:
         """A transaction.
 
         Everything written through the yielded unit of work commits together.
@@ -122,14 +124,17 @@ class SqlUnitOfWorkFactory:
         outlive a rollback of the change it describes.
         """
         async with self._database.transaction() as conn:
-            yield SqlUnitOfWork(conn)
+            # Repository protocols expose writable attributes and are therefore
+            # invariant to mypy even though every concrete SQL adapter fulfils
+            # its corresponding protocol at runtime.
+            yield cast(UnitOfWork, SqlUnitOfWork(conn))
 
     @asynccontextmanager
-    async def read(self) -> AsyncIterator[SqlUnitOfWork]:
+    async def read(self) -> AsyncIterator[UnitOfWork]:
         """Autocommit, for reads.
 
         No transaction is held open, so serialising a large result set cannot
         pin a transaction id and hold back vacuum on the engagement log.
         """
         async with self._database.connection() as conn:
-            yield SqlUnitOfWork(conn)
+            yield cast(UnitOfWork, SqlUnitOfWork(conn))

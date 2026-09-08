@@ -27,8 +27,7 @@ from blogs.contracts.engagement import (
 )
 from blogs.contracts.events import ArticleCompleted, ArticleSaved
 from blogs.contracts.identity import Principal, UserPrincipal, UserStatus
-from blogs.contracts.interaction import BlogEngagementSummary
-from blogs.contracts.interaction import RecentView
+from blogs.contracts.interaction import BlogEngagementSummary, RecentView
 from blogs.core.clock import Clock
 from blogs.core.errors import raise_error
 from blogs.core.ids import IdGenerator

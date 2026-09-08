@@ -22,6 +22,7 @@ from blogs.api.envelope import success
 from blogs.contracts.common import APIResponse, ContractModel, NonEmptyStr, Page
 from blogs.contracts.engagement import RecordEngagementCommand
 from blogs.contracts.interaction import (
+    BlogEngagementSummary,
     Catalog,
     CatalogItem,
     Comment,
@@ -58,6 +59,45 @@ async def record_engagement(
         principal=caller, command=body, client_ip=ip, correlation_id=correlation
     )
     return success({"recorded": recorded})
+
+
+@router.get("/blogs/{blog_id}/engagement")
+async def blog_engagement(
+    blog_id: str,
+    caller: CurrentPrincipal,
+    assembled: Assembled,
+    correlation: CorrelationId,
+) -> APIResponse[BlogEngagementSummary]:
+    summary = await assembled.engagement_service.summary(
+        principal=caller, blog_id=blog_id, correlation_id=correlation
+    )
+    return success(summary)
+
+
+@router.put("/blogs/{blog_id}/like")
+async def like_blog(
+    blog_id: str,
+    user: CurrentUser,
+    assembled: Assembled,
+    correlation: CorrelationId,
+) -> APIResponse[BlogEngagementSummary]:
+    summary = await assembled.engagement_service.like(
+        principal=user, blog_id=blog_id, liked=True, correlation_id=correlation
+    )
+    return success(summary, message="Liked.")
+
+
+@router.delete("/blogs/{blog_id}/like")
+async def unlike_blog(
+    blog_id: str,
+    user: CurrentUser,
+    assembled: Assembled,
+    correlation: CorrelationId,
+) -> APIResponse[BlogEngagementSummary]:
+    summary = await assembled.engagement_service.like(
+        principal=user, blog_id=blog_id, liked=False, correlation_id=correlation
+    )
+    return success(summary, message="Like removed.")
 
 
 @router.get("/me/recent")

@@ -58,3 +58,18 @@ python -m blogs.database.migrator up
 python -m blogs.database.backfill_metadata
 python -m blogs.database.backfill_metadata --apply
 ```
+
+## Reader engagement and announcements
+
+Migration `010` starts qualified view counters at zero, adds member likes and
+creates durable announcement campaigns. Apply it before deploying the API and
+web, then run the outbox worker as its own process:
+
+```bash
+python -m blogs.database.migrator up
+python -m blogs.workers.outbox
+```
+
+The worker uses the same Resend configuration as OTP delivery. Publication is
+not coupled to email availability; failed deliveries are leased and retried,
+and readers can manage new-blog email preferences from their profile.

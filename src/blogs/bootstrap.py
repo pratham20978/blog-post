@@ -36,6 +36,7 @@ from blogs.repository.uow import SqlUnitOfWorkFactory
 from blogs.services.actor_service import ActorService
 from blogs.services.admin_read_service import AdminReadService
 from blogs.services.announce_service import AnnounceService
+from blogs.services.announcement_service import AnnouncementService
 from blogs.services.auth_service import AuthService, OtpSettings
 from blogs.services.blog_service import BlogService
 from blogs.services.engagement_service import EngagementService
@@ -76,6 +77,7 @@ class Container:
     engagement_service: EngagementService
     admin_read_service: AdminReadService
     announce_service: AnnounceService
+    announcement_service: AnnouncementService
 
 
 async def build_container(settings: Settings) -> Container:
@@ -106,7 +108,7 @@ async def build_container(settings: Settings) -> Container:
     )
     await object_store.ensure_bucket()
 
-    email = _build_email_sender(settings)
+    email = build_email_sender(settings)
 
     clock: Clock = SystemClock()
     ids: IdGenerator = Uuid7Generator()
@@ -208,6 +210,16 @@ async def build_container(settings: Settings) -> Container:
             site_url=settings.public_site_url,
             max_recipients=settings.announce_max_recipients,
         ),
+        announcement_service=AnnouncementService(
+            uow=uow,
+            clock=clock,
+            ids=ids,
+            policy=policy,
+            public_site_url=settings.public_site_url,
+            # Domain separation inside the codec ensures an unsubscribe token
+            # can never be interpreted as an access, refresh, or actor token.
+            token_secret=settings.jwt_secret.get_secret_value(),
+        ),
     )
 
     await _seed_admin(container)
@@ -232,7 +244,7 @@ async def close_container(container: Container) -> None:
     logger.info("application shut down")
 
 
-def _build_email_sender(settings: Settings) -> EmailSender:
+def build_email_sender(settings: Settings) -> EmailSender:
     """Pick the adapter, or the one that refuses.
 
     ``UnconfiguredEmailSender`` is not a null object — it raises. A deployment

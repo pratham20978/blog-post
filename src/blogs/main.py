@@ -18,6 +18,7 @@ from blogs.api.routers import (
     admin_blogs,
     admin_console,
     analytics,
+    announcements,
     auth,
     blogs,
     health,
@@ -102,6 +103,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(auth.router, prefix=API_PREFIX)
     app.include_router(blogs.router, prefix=API_PREFIX)
     app.include_router(interaction.router, prefix=API_PREFIX)
+    app.include_router(announcements.router, prefix=API_PREFIX)
     app.include_router(taxonomy.router, prefix=API_PREFIX)
 
     # The admin surface, mounted only under the secret prefix — nothing

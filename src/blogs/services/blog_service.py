@@ -367,6 +367,40 @@ class BlogService:
                 )
                 changed.append("content")
 
+            updated = await uow.blogs.get(blog_id)
+            assert updated is not None
+
+            first_publish = (
+                existing.published_at is None
+                and updated.status is BlogStatus.PUBLISHED
+            )
+            if first_publish:
+                await uow.outbox.add(
+                    BlogPublished(
+                        id=self._ids.new_id(),
+                        occurred_at=now,
+                        blog_id=updated.id,
+                        slug=updated.slug,
+                        title=updated.title,
+                        summary=updated.summary,
+                        cover_image_url=updated.cover_image_url,
+                        cover_image_alt=updated.cover_image_alt,
+                        tag_keys=updated.tag_keys,
+                        tier=updated.tier,
+                        difficulty=updated.difficulty,
+                        prerequisites=updated.prerequisites,
+                        canonical_url=updated.canonical_url,
+                        published_on=updated.published_on,
+                        content_updated_on=updated.content_updated_on,
+                        category_keys=updated.category_keys,
+                        series_id=updated.series_id,
+                        author_id=updated.author_id,
+                        published_at=updated.published_at or now,
+                    ),
+                    aggregate_type="blog",
+                    aggregate_id=blog_id,
+                )
+
             if changed:
                 await uow.outbox.add(
                     BlogUpdated(
@@ -380,9 +414,6 @@ class BlogService:
                     aggregate_id=blog_id,
                 )
 
-            updated = await uow.blogs.get(blog_id)
-
-        assert updated is not None
         return updated
 
     async def archive(

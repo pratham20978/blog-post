@@ -192,7 +192,7 @@ class SqlAnnouncementRepository(SqlRepository):
             """
             UPDATE blog_announcement_deliveries
             SET status = 'cancelled', locked_at = NULL, last_error = NULL
-            WHERE user_id = %(user)s AND status IN ('pending', 'sending')
+            WHERE user_id = %(user)s AND status = 'pending'
             """,
             {"user": user_id, "now": as_utc(now)},
         )
@@ -202,26 +202,31 @@ class SqlAnnouncementRepository(SqlRepository):
             """
             WITH counts AS (
                 SELECT c.id,
-                       count(d.id) FILTER (WHERE d.status IN ('pending', 'sending')) AS open,
+                       count(d.id) FILTER (WHERE d.status = 'pending') AS pending,
+                       count(d.id) FILTER (WHERE d.status = 'sending') AS sending,
                        count(d.id) FILTER (WHERE d.status = 'dead') AS dead
                 FROM blog_announcement_campaigns c
                 LEFT JOIN blog_announcement_deliveries d ON d.campaign_id = c.id
                 GROUP BY c.id
+            ), projected AS (
+                SELECT id,
+                       CASE
+                           WHEN sending > 0 THEN 'sending'
+                           WHEN pending > 0 THEN 'queued'
+                           WHEN dead > 0 THEN 'partial'
+                           ELSE 'completed'
+                       END AS next_status
+                FROM counts
             )
             UPDATE blog_announcement_campaigns c
-            SET status = CASE
-                    WHEN x.open > 0 THEN 'sending'
-                    WHEN x.dead > 0 THEN 'partial'
-                    ELSE 'completed'
-                END,
-                completed_at = CASE WHEN x.open > 0 THEN NULL ELSE %(now)s END
-            FROM counts x
+            SET status = x.next_status,
+                completed_at = CASE
+                    WHEN x.next_status IN ('completed', 'partial') THEN %(now)s
+                    ELSE NULL
+                END
+            FROM projected x
             WHERE c.id = x.id
-              AND (
-                  (x.open > 0 AND c.status <> 'sending')
-                  OR (x.open = 0 AND x.dead > 0 AND c.status <> 'partial')
-                  OR (x.open = 0 AND x.dead = 0 AND c.status <> 'completed')
-              )
+              AND c.status <> x.next_status
             """,
             {"now": as_utc(now)},
         )

@@ -30,10 +30,18 @@ from datetime import UTC, datetime, timedelta
 
 from psycopg import errors
 
+from blogs.bootstrap import build_email_sender
+from blogs.contracts.events import BlogPublished
+from blogs.core.clock import SystemClock
+from blogs.core.errors import BlogPlatformError
+from blogs.core.ids import Uuid7Generator
 from blogs.core.logging import configure_logging
 from blogs.core.settings import Settings
 from blogs.database.session import Database
+from blogs.ports.services import EmailSender
 from blogs.repository.uow import SqlUnitOfWorkFactory
+from blogs.services.announcement_service import AnnouncementService
+from blogs.services.policy import DefaultAuthorizationPolicy
 
 logger = logging.getLogger(__name__)
 
@@ -61,12 +69,25 @@ class OutboxWorker:
         batch_size: int,
         poll_interval_s: float,
         max_attempts: int,
+        announcements: AnnouncementService,
+        email: EmailSender,
+        announcement_batch_size: int,
+        announcement_max_attempts: int,
+        announcement_lease_s: int,
+        announcement_send_rate_per_s: float,
     ) -> None:
         self._database = database
         self._uow = uow
         self._batch_size = batch_size
         self._poll_interval = poll_interval_s
         self._max_attempts = max_attempts
+        self._announcements = announcements
+        self._email = email
+        self._announcement_batch_size = announcement_batch_size
+        self._announcement_max_attempts = announcement_max_attempts
+        self._announcement_lease_s = announcement_lease_s
+        self._announcement_send_interval = 1.0 / announcement_send_rate_per_s
+        self._next_announcement_send_at = 0.0
         self._stopping = asyncio.Event()
         self._woken = asyncio.Event()
 
@@ -79,7 +100,8 @@ class OutboxWorker:
         try:
             while not self._stopping.is_set():
                 published = await self._drain()
-                if published == 0:
+                delivered = await self._drain_deliveries()
+                if published == 0 and delivered == 0:
                     # Nothing to do — wait for a notification or the fallback
                     # tick, whichever comes first.
                     with contextlib.suppress(TimeoutError):
@@ -158,16 +180,94 @@ class OutboxWorker:
     async def _publish(self, *, event_id: str, event_name: str, payload: dict) -> None:  # type: ignore[type-arg]
         """Hand the event to its subscribers.
 
-        F3 emits and does not consume, and F1/F2/F4 do not exist yet, so today
-        this only records that the event was relayed. When a consumer arrives it
-        subscribes here — and because delivery is at-least-once it must dedupe
-        on ``event_id`` through ``consumed_events``.
+        New-blog delivery is the first local consumer. Campaign uniqueness makes
+        its at-least-once handling idempotent; unrelated events remain available
+        for future recommendation and notification consumers.
         """
+        if event_name == BlogPublished.event_name:
+            event = BlogPublished.model_validate(payload)
+            created = await self._announcements.stage_published(event)
+            logger.info(
+                "blog announcement staged",
+                extra={"event_id": event_id, "blog_id": event.blog_id, "created": created},
+            )
+            return
+
         logger.info(
             "event published",
             extra={"event": event_name, "event_id": event_id, "keys": sorted(payload)},
         )
 
+    async def _drain_deliveries(self) -> int:
+        now = datetime.now(UTC)
+        async with self._uow.begin() as uow:
+            deliveries = await uow.announcements.claim_due(
+                now=now,
+                lease_before=now - timedelta(seconds=self._announcement_lease_s),
+                limit=self._announcement_batch_size,
+            )
+            if deliveries:
+                await uow.announcements.settle_campaigns(now=now)
+        if not deliveries:
+            return 0
+
+        for delivery in deliveries:
+            await self._pace_announcement_send()
+            async with self._uow.read() as uow:
+                enabled = await uow.announcements.preference_enabled(delivery.user_id)
+            if not enabled:
+                async with self._uow.begin() as uow:
+                    await uow.announcements.mark_cancelled(
+                        delivery_id=delivery.id, now=datetime.now(UTC)
+                    )
+                continue
+
+            result = None
+            error = "UNREACHABLE"
+            try:
+                result = await self._email.send(
+                    self._announcements.message_for(delivery)
+                )
+                error = result.detail or "PROVIDER_REFUSED"
+            except BlogPlatformError as exc:
+                error = exc.category.value
+            except Exception as exc:  # one delivery cannot abandon the batch
+                error = type(exc).__name__
+
+            settled_at = datetime.now(UTC)
+            async with self._uow.begin() as uow:
+                if result is not None and result.sent:
+                    await uow.announcements.mark_sent(
+                        delivery_id=delivery.id,
+                        provider_message_id=result.detail,
+                        now=settled_at,
+                    )
+                else:
+                    dead = delivery.attempts >= self._announcement_max_attempts
+                    retry_after = result.retry_after_seconds if result is not None else None
+                    next_at = (
+                        settled_at + timedelta(seconds=retry_after)
+                        if retry_after is not None
+                        else _next_attempt_at(delivery.attempts, settled_at)
+                    )
+                    await uow.announcements.mark_failed(
+                        delivery_id=delivery.id,
+                        error=error,
+                        next_attempt_at=next_at,
+                        dead=dead,
+                    )
+                await uow.announcements.settle_campaigns(now=settled_at)
+
+        return len(deliveries)
+
+    async def _pace_announcement_send(self) -> None:
+        """Apply one global send rate across batches, retries, and wakeups."""
+        loop = asyncio.get_running_loop()
+        now = loop.time()
+        if self._next_announcement_send_at > now:
+            await asyncio.sleep(self._next_announcement_send_at - now)
+            now = loop.time()
+        self._next_announcement_send_at = now + self._announcement_send_interval
 
 async def _main() -> int:
     settings = Settings()
@@ -181,6 +281,17 @@ async def _main() -> int:
         statement_timeout_ms=settings.db_statement_timeout_ms,
     )
     await database.open()
+    email = build_email_sender(settings)
+    uow = SqlUnitOfWorkFactory(database)
+    clock = SystemClock()
+    announcements = AnnouncementService(
+        uow=uow,
+        clock=clock,
+        ids=Uuid7Generator(),
+        policy=DefaultAuthorizationPolicy(),
+        public_site_url=settings.public_site_url,
+        token_secret=settings.jwt_secret.get_secret_value(),
+    )
 
     # Second guard against a duplicate worker. SKIP LOCKED already makes two
     # correct, but two is still wasted effort and a confusing thing to find.
@@ -191,15 +302,24 @@ async def _main() -> int:
         row = await cursor.fetchone()
         if not (row and row["acquired"]):
             logger.error("another outbox worker holds the lock; exiting")
+            closer = getattr(email, "aclose", None)
+            if closer is not None:
+                await closer()
             await database.close()
             return 1
 
         worker = OutboxWorker(
             database=database,
-            uow=SqlUnitOfWorkFactory(database),
+            uow=uow,
             batch_size=settings.outbox_batch_size,
             poll_interval_s=settings.outbox_poll_interval_s,
             max_attempts=settings.outbox_max_attempts,
+            announcements=announcements,
+            email=email,
+            announcement_batch_size=settings.announcement_batch_size,
+            announcement_max_attempts=settings.announcement_max_attempts,
+            announcement_lease_s=settings.announcement_lease_s,
+            announcement_send_rate_per_s=settings.announcement_send_rate_per_s,
         )
 
         loop = asyncio.get_running_loop()
@@ -209,6 +329,9 @@ async def _main() -> int:
         try:
             await worker.run()
         finally:
+            closer = getattr(email, "aclose", None)
+            if closer is not None:
+                await closer()
             await database.close()
     return 0
 

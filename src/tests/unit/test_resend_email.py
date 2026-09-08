@@ -77,6 +77,37 @@ async def test_provider_refusal_is_returned_without_exposing_its_body() -> None:
     assert "reader@example.com" not in (result.detail or "")
 
 
+async def test_headers_and_idempotency_key_reach_resend() -> None:
+    requests: list[httpx.Request] = []
+
+    async def accept(request: httpx.Request) -> httpx.Response:
+        requests.append(request)
+        return httpx.Response(200, json={"id": "email_456"})
+
+    sender = ResendEmailSender(
+        api_key="re_secret",
+        sender="Canery <auth@canery.in>",
+        transport=httpx.MockTransport(accept),
+    )
+    try:
+        result = await sender.send(
+            EmailMessage(
+                to="reader@example.com",
+                subject="New article",
+                text="Read it",
+                headers={"List-Unsubscribe": "<https://canery.in/u>"},
+                idempotency_key="campaign-user",
+            )
+        )
+    finally:
+        await sender.aclose()
+
+    assert result.sent is True
+    assert requests[0].headers["idempotency-key"] == "campaign-user"
+    payload = json.loads(requests[0].content)
+    assert payload["headers"] == {"List-Unsubscribe": "<https://canery.in/u>"}
+
+
 async def test_provider_timeout_becomes_a_safe_domain_error() -> None:
     async def timeout(request: httpx.Request) -> httpx.Response:
         raise httpx.ReadTimeout("provider timed out", request=request)

@@ -11,6 +11,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Protocol
 
+from blogs.contracts.announcement import BlogEmailPreference
 from blogs.contracts.identity import (
     AnonymousActor,
     AuthPurpose,
@@ -20,7 +21,6 @@ from blogs.contracts.identity import (
     User,
     UserStatus,
 )
-from blogs.contracts.announcement import BlogEmailPreference
 
 
 class UserRepository(Protocol):

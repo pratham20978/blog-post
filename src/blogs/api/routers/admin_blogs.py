@@ -10,6 +10,7 @@ from fastapi import APIRouter, File, Form, Query, UploadFile
 
 from blogs.api.deps import AdminUser, Assembled, CorrelationId
 from blogs.api.envelope import success
+from blogs.contracts.announcement import AnnouncementCampaignSummary
 from blogs.contracts.blog import (
     BlogDetail,
     BlogDifficulty,
@@ -188,6 +189,32 @@ async def list_all_blogs(
 
 
 # ── Announcements ───────────────────────────────────────────────────────────
+
+
+@router.get("/blogs/{blog_id}/announcement")
+async def get_announcement_campaign(
+    blog_id: str,
+    admin: AdminUser,
+    assembled: Assembled,
+    correlation: CorrelationId,
+) -> APIResponse[AnnouncementCampaignSummary]:
+    campaign = await assembled.announcement_service.campaign(
+        principal=admin, blog_id=blog_id, correlation_id=correlation
+    )
+    return success(campaign)
+
+
+@router.post("/blogs/{blog_id}/announcement/retry")
+async def retry_announcement_campaign(
+    blog_id: str,
+    admin: AdminUser,
+    assembled: Assembled,
+    correlation: CorrelationId,
+) -> APIResponse[dict[str, int]]:
+    retried = await assembled.announcement_service.retry_campaign(
+        principal=admin, blog_id=blog_id, correlation_id=correlation
+    )
+    return success({"retried": retried}, message=f"Queued {retried} deliveries.")
 
 
 class AnnounceResponse(ContractModel):

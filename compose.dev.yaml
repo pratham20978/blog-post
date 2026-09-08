@@ -82,6 +82,19 @@ services:
       metadata-backfill-dev: {condition: service_completed_successfully}
     networks: [edge]
 
+  outbox-worker-dev:
+    build:
+      context: .
+      target: development
+    command: ["python", "-m", "blogs.workers.outbox"]
+    restart: unless-stopped
+    environment: *backend-dev-env
+    volumes:
+      - ./src:/app/src:ro
+    depends_on:
+      migrate-dev: {condition: service_completed_successfully}
+    networks: [edge]
+
   web-dev:
     build:
       context: ./web

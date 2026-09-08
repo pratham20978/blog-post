@@ -107,7 +107,7 @@ class Settings(BaseSettings):
     #: accepting messages and dropping them.
     email_provider: Literal["none", "resend"] = "none"
     resend_api_key: SecretStr | None = None
-    #: The From header, e.g. ``Canerly <noreply@example.com>``. Resend's
+    #: The From header, e.g. ``Canery <noreply@example.com>``. Resend's
     #: ``onboarding@resend.dev`` works with no DNS setup and delivers only to
     #: the account owner — enough to exercise the whole path before a sending
     #: domain exists.
@@ -168,6 +168,10 @@ class Settings(BaseSettings):
     outbox_batch_size: int = Field(default=50, ge=1)
     outbox_poll_interval_s: float = Field(default=1.0, gt=0)
     outbox_max_attempts: int = Field(default=8, ge=1)
+    announcement_batch_size: int = Field(default=25, ge=1, le=100)
+    announcement_max_attempts: int = Field(default=8, ge=1)
+    announcement_lease_s: int = Field(default=300, ge=30)
+    announcement_send_rate_per_s: float = Field(default=2.0, gt=0, le=5)
     engagement_partition_months_ahead: int = Field(default=3, ge=1)
 
     @model_validator(mode="after")

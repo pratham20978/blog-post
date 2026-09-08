@@ -178,7 +178,7 @@ class TestPolicyMatrix:
         "can_read_analytics",
         "can_moderate",
     )
-    USER_ONLY = ("can_comment", "can_mark", "can_save")
+    USER_ONLY = ("can_comment", "can_mark", "can_save", "can_like")
 
     @pytest.fixture
     def policy(self) -> DefaultAuthorizationPolicy:
