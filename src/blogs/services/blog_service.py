@@ -103,8 +103,37 @@ class BlogService:
 
         now = self._clock.now()
         blog_id = self._ids.new_id()
-        categories = command.category_keys or document.category_keys
+        categories = (
+            command.category_keys
+            if command.category_keys is not None
+            else document.category_keys
+        )
         series_key = command.series_key or document.series_key
+        summary = self._command_value(command, "summary", document.summary)
+        series_position = self._command_value(
+            command, "series_position", document.series_position
+        )
+        cover_image_url = self._command_value(
+            command, "cover_image_url", document.cover_image_url
+        )
+        cover_image_alt = self._command_value(
+            command, "cover_image_alt", document.cover_image_alt
+        )
+        tag_keys = self._command_value(command, "tag_keys", document.tag_keys)
+        tier = self._command_value(command, "tier", document.tier)
+        difficulty = self._command_value(command, "difficulty", document.difficulty)
+        prerequisites = self._command_value(
+            command, "prerequisites", document.prerequisites
+        )
+        canonical_url = self._command_value(
+            command, "canonical_url", document.canonical_url
+        )
+        published_on = self._command_value(command, "published_on", document.published_on)
+        if command.status is BlogStatus.PUBLISHED and published_on is None:
+            published_on = now.date()
+        content_updated_on = self._command_value(
+            command, "content_updated_on", document.content_updated_on
+        ) or published_on
 
         async with self._uow.read() as uow:
             slug = await self._resolve_slug(
@@ -128,10 +157,19 @@ class BlogService:
                 blog_id=blog_id,
                 slug=slug,
                 title=title,
-                summary=command.summary or document.summary,
+                summary=summary,
                 author_id=principal.user_id,
                 series_id=series_id,
-                series_position=command.series_position or document.series_position,
+                series_position=series_position,
+                cover_image_url=cover_image_url,
+                cover_image_alt=cover_image_alt,
+                tag_keys=tag_keys,
+                tier=tier,
+                difficulty=difficulty,
+                prerequisites=prerequisites,
+                canonical_url=canonical_url,
+                published_on=published_on,
+                content_updated_on=content_updated_on,
                 markdown_uri=markdown_uri,
                 content_sha256=bytes.fromhex(document.content_sha256),
                 word_count=document.word_count,
@@ -153,6 +191,16 @@ class BlogService:
                         blog_id=blog_id,
                         slug=slug,
                         title=title,
+                        summary=summary,
+                        cover_image_url=cover_image_url,
+                        cover_image_alt=cover_image_alt,
+                        tag_keys=tag_keys,
+                        tier=tier,
+                        difficulty=difficulty,
+                        prerequisites=prerequisites,
+                        canonical_url=canonical_url,
+                        published_on=published_on,
+                        content_updated_on=content_updated_on,
                         category_keys=categories,
                         series_id=series_id,
                         author_id=principal.user_id,
@@ -199,30 +247,110 @@ class BlogService:
             if existing is None:
                 raise_error(ErrorCategory.BLOG_NOT_FOUND, correlation_id=correlation_id)
 
-            series_id = await self._resolve_series(
-                uow, patch.series_key, correlation_id=correlation_id
+            source_authoritative = document is not None
+            series_key = (
+                patch.series_key
+                if patch.series_key is not None
+                else document.series_key if document is not None else None
             )
-            for field in ("title", "summary", "series_position", "status"):
-                if getattr(patch, field) is not None:
+            series_id = await self._resolve_series(
+                uow, series_key, correlation_id=correlation_id
+            )
+
+            def value(field: str):  # type: ignore[no-untyped-def]
+                explicit = getattr(patch, field)
+                if explicit is not None:
+                    return explicit
+                return getattr(document, field) if document is not None else None
+
+            title = value("title")
+            summary = value("summary")
+            series_position = value("series_position")
+            cover_image_url = value("cover_image_url")
+            cover_image_alt = value("cover_image_alt")
+            tag_keys = value("tag_keys")
+            tier = value("tier")
+            difficulty = value("difficulty")
+            prerequisites = value("prerequisites")
+            canonical_url = value("canonical_url")
+            published_on = value("published_on")
+            content_updated_on = value("content_updated_on")
+
+            if source_authoritative:
+                if existing.status is BlogStatus.PUBLISHED and published_on is None:
+                    published_on = existing.published_on or now.date()
+                content_updated_on = content_updated_on or now.date()
+            elif patch.status is BlogStatus.PUBLISHED and existing.published_on is None:
+                published_on = now.date()
+
+            comparable = {
+                "title": title,
+                "summary": summary,
+                "series_id": series_id,
+                "series_position": series_position,
+                "cover_image_url": cover_image_url,
+                "cover_image_alt": cover_image_alt,
+                "tag_keys": tag_keys,
+                "tier": tier,
+                "difficulty": difficulty,
+                "prerequisites": prerequisites,
+                "canonical_url": canonical_url,
+                "published_on": published_on,
+                "content_updated_on": content_updated_on,
+                "status": patch.status,
+            }
+            for field, candidate in comparable.items():
+                if candidate is not None and candidate != getattr(existing, field):
                     changed.append(field)
-            if patch.series_key is not None:
-                changed.append("series_id")
+            if source_authoritative:
+                for field in (
+                    "summary",
+                    "series_id",
+                    "series_position",
+                    "cover_image_url",
+                    "cover_image_alt",
+                    "tag_keys",
+                    "tier",
+                    "difficulty",
+                    "prerequisites",
+                    "canonical_url",
+                    "published_on",
+                    "content_updated_on",
+                ):
+                    if field not in changed and comparable[field] != getattr(existing, field):
+                        changed.append(field)
 
             await uow.blogs.update_metadata(
                 blog_id=blog_id,
-                title=patch.title,
-                summary=patch.summary,
+                title=title,
+                summary=summary,
                 series_id=series_id,
-                series_position=patch.series_position,
+                series_position=series_position,
+                cover_image_url=cover_image_url,
+                cover_image_alt=cover_image_alt,
+                tag_keys=tag_keys,
+                tier=tier,
+                difficulty=difficulty,
+                prerequisites=prerequisites,
+                canonical_url=canonical_url,
+                published_on=published_on,
+                content_updated_on=content_updated_on,
+                source_authoritative=source_authoritative,
                 status=patch.status,
                 published_at=now,
             )
 
-            if patch.category_keys is not None:
+            category_keys = (
+                patch.category_keys
+                if patch.category_keys is not None
+                else document.category_keys if document is not None else None
+            )
+            if category_keys is not None:
                 await uow.blogs.set_categories(
-                    blog_id=blog_id, category_keys=patch.category_keys
+                    blog_id=blog_id, category_keys=category_keys
                 )
-                changed.append("category_keys")
+                if category_keys != existing.category_keys:
+                    changed.append("category_keys")
 
             if document is not None and markdown_uri is not None:
                 await uow.blogs.update_content(
@@ -239,8 +367,6 @@ class BlogService:
                 )
                 changed.append("content")
 
-            # There is no tag branch here and there will not be one: foundation
-            # §6.1 gives F4 the only write path to tags-on-blog.
             if changed:
                 await uow.outbox.add(
                     BlogUpdated(
@@ -385,6 +511,12 @@ class BlogService:
                 safe_details={"series_key": series_key},
             )
         return series.id
+
+    @staticmethod
+    def _command_value(command: PublishBlogCommand, field: str, fallback):  # type: ignore[no-untyped-def]
+        """Use an explicit multipart value, including an empty tuple, otherwise
+        take the value parsed from the canonical Markdown source."""
+        return getattr(command, field) if field in command.model_fields_set else fallback
 
 
 __all__ = ["BlogService", "PublishResult"]

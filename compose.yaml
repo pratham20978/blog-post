@@ -125,6 +125,20 @@ services:
       db: {condition: service_healthy}
     networks: [edge]
 
+  # Reads the canonical Markdown objects only after the schema exists. It is
+  # idempotent, but remains a separate release step so application startup has
+  # no hidden schema or data mutations.
+  metadata-backfill:
+    image: ${BACKEND_IMAGE:-prathamverma0803/blog-backend:latest}
+    command: ["python", "-m", "blogs.database.backfill_metadata", "--apply"]
+    restart: "no"
+    env_file: [.env]
+    environment: *backend_env
+    depends_on:
+      migrate: {condition: service_completed_successfully}
+      minio: {condition: service_healthy}
+    networks: [edge]
+
   api:
     image: ${BACKEND_IMAGE:-prathamverma0803/blog-backend:latest}
     restart: unless-stopped
@@ -133,7 +147,7 @@ services:
     depends_on:
       db: {condition: service_healthy}
       minio: {condition: service_healthy}
-      migrate: {condition: service_completed_successfully}
+      metadata-backfill: {condition: service_completed_successfully}
     networks: [edge]
 
   web:

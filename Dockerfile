@@ -33,6 +33,20 @@ RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --frozen --no-editable --no-dev
 
 
+FROM builder AS development
+
+# Add development dependencies and switch the project install back to editable.
+# The source is bind-mounted by compose.dev.yaml, so uvicorn reloads real edits.
+RUN --mount=type=cache,target=/root/.cache/uv uv sync --frozen
+
+ENV PATH="/app/.venv/bin:$PATH" \
+    PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1
+
+EXPOSE 8000
+CMD ["uvicorn", "blogs.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+
+
 FROM python:3.14-slim-bookworm AS runtime
 
 # Settings are read from the environment under a BLOGS_ prefix at startup, so

@@ -20,6 +20,7 @@ from blogs.contracts.identity import (
     User,
     UserStatus,
 )
+from blogs.contracts.announcement import BlogEmailPreference
 
 
 class UserRepository(Protocol):
@@ -66,6 +67,12 @@ class UserRepository(Protocol):
     ) -> None:
         """Set or rotate a password. A no-op for a non-admin, by constraint."""
         ...
+
+    async def get_blog_email_preference(self, user_id: str) -> BlogEmailPreference | None: ...
+
+    async def set_blog_email_preference(
+        self, *, user_id: str, enabled: bool, at: datetime
+    ) -> BlogEmailPreference | None: ...
 
 
 class AdminLoginAttemptRepository(Protocol):

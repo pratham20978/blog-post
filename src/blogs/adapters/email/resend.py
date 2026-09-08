@@ -1,9 +1,9 @@
 """Resend, over its HTTP API.
 
-Chosen for one property that matters while F2 is unbuilt: ``onboarding@resend.dev``
-sends to the account owner's own inbox with no DNS, no domain verification and
-no warm-up. The whole OTP path is testable the moment an API key exists, and
-moving to a real sending domain later is a change to ``BLOGS_EMAIL_FROM`` alone.
+The adapter accepts the verified sender through configuration, so application
+code does not know the provider account, API key, or sending domain. Resend's
+testing domain is intentionally not a default: it can deliver only to the
+account owner's inbox and therefore cannot authenticate real users.
 
 Two things here are deliberate rather than incidental:
 
@@ -48,6 +48,7 @@ class ResendEmailSender:
         sender: str,
         reply_to: str | None = None,
         timeout_s: float = 15.0,
+        transport: httpx.AsyncBaseTransport | None = None,
     ) -> None:
         self._sender = sender
         self._reply_to = reply_to
@@ -58,6 +59,7 @@ class ResendEmailSender:
                 "authorization": f"Bearer {api_key}",
                 "content-type": "application/json",
             },
+            transport=transport,
         )
 
     async def aclose(self) -> None:

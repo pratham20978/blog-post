@@ -11,6 +11,7 @@ wheels/
 
 # Local configuration and secrets
 .env
+.env.dev
 
 node_modules/
 brand/

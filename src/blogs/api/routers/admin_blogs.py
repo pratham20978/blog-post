@@ -3,7 +3,8 @@ dependency before the handler body runs."""
 
 from __future__ import annotations
 
-from typing import Annotated
+from datetime import date
+from typing import Annotated, Any
 
 from fastapi import APIRouter, File, Form, Query, UploadFile
 
@@ -11,9 +12,11 @@ from blogs.api.deps import AdminUser, Assembled, CorrelationId
 from blogs.api.envelope import success
 from blogs.contracts.blog import (
     BlogDetail,
+    BlogDifficulty,
     BlogFilter,
     BlogStatus,
     BlogSummary,
+    BlogTier,
     Category,
     PublishBlogCommand,
     ReferencePin,
@@ -44,6 +47,15 @@ async def publish_blog(
     categories: Annotated[str | None, Form()] = None,
     series: Annotated[str | None, Form()] = None,
     series_position: Annotated[int | None, Form()] = None,
+    cover_image_url: Annotated[str | None, Form()] = None,
+    cover_image_alt: Annotated[str | None, Form()] = None,
+    tags: Annotated[str | None, Form()] = None,
+    tier: Annotated[BlogTier | None, Form()] = None,
+    difficulty: Annotated[BlogDifficulty | None, Form()] = None,
+    prerequisites: Annotated[str | None, Form()] = None,
+    canonical_url: Annotated[str | None, Form()] = None,
+    published_on: Annotated[date | None, Form()] = None,
+    content_updated_on: Annotated[date | None, Form()] = None,
     status: Annotated[BlogStatus, Form()] = BlogStatus.PUBLISHED,
 ) -> APIResponse[BlogDetail]:
     """Publish an article from an uploaded Markdown file.
@@ -52,18 +64,33 @@ async def publish_blog(
     document can be corrected at upload without editing and re-uploading it.
     """
     source = await file.read()
+    values: dict[str, Any] = {"status": status}
+    optional = {
+        "title": title,
+        "summary": summary,
+        "slug": slug,
+        "series_key": series,
+        "series_position": series_position,
+        "cover_image_url": cover_image_url,
+        "cover_image_alt": cover_image_alt,
+        "tier": tier,
+        "difficulty": difficulty,
+        "canonical_url": canonical_url,
+        "published_on": published_on,
+        "content_updated_on": content_updated_on,
+    }
+    values.update({key: value for key, value in optional.items() if value is not None})
+    if categories is not None:
+        values["category_keys"] = _csv_keys(categories)
+    if tags is not None:
+        values["tag_keys"] = _csv_keys(tags)
+    if prerequisites is not None:
+        values["prerequisites"] = _csv_keys(prerequisites)
+
     result = await assembled.blog_service.publish_from_markdown(
         principal=admin,
         source=source,
-        command=PublishBlogCommand(
-            title=title,
-            summary=summary,
-            slug=slug,
-            category_keys=_csv_keys(categories),
-            series_key=series,
-            series_position=series_position,
-            status=status,
-        ),
+        command=PublishBlogCommand.model_validate(values),
         correlation_id=correlation,
     )
     return success(result.blog, message="Published.")
@@ -81,12 +108,21 @@ async def update_blog(
     categories: Annotated[str | None, Form()] = None,
     series: Annotated[str | None, Form()] = None,
     series_position: Annotated[int | None, Form()] = None,
+    cover_image_url: Annotated[str | None, Form()] = None,
+    cover_image_alt: Annotated[str | None, Form()] = None,
+    tags: Annotated[str | None, Form()] = None,
+    tier: Annotated[BlogTier | None, Form()] = None,
+    difficulty: Annotated[BlogDifficulty | None, Form()] = None,
+    prerequisites: Annotated[str | None, Form()] = None,
+    canonical_url: Annotated[str | None, Form()] = None,
+    published_on: Annotated[date | None, Form()] = None,
+    content_updated_on: Annotated[date | None, Form()] = None,
     status: Annotated[BlogStatus | None, Form()] = None,
 ) -> APIResponse[BlogDetail]:
     """Amend metadata, replace the source, or both.
 
-    There is no tag parameter, and there will not be one even after F4 lands:
-    foundation §6.1 gives F4 the only write path to tags-on-blog.
+    When a file is supplied, its frontmatter is authoritative; form fields
+    supplied alongside it override the corresponding source values.
     """
     source = await file.read() if file is not None else None
     blog = await assembled.blog_service.update(
@@ -98,6 +134,17 @@ async def update_blog(
             category_keys=_csv_keys(categories) if categories is not None else None,
             series_key=series,
             series_position=series_position,
+            cover_image_url=cover_image_url,
+            cover_image_alt=cover_image_alt,
+            tag_keys=_csv_keys(tags) if tags is not None else None,
+            tier=tier,
+            difficulty=difficulty,
+            prerequisites=(
+                _csv_keys(prerequisites) if prerequisites is not None else None
+            ),
+            canonical_url=canonical_url,
+            published_on=published_on,
+            content_updated_on=content_updated_on,
             status=status,
         ),
         source=source,

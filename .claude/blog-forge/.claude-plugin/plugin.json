@@ -1,0 +1,6 @@
+{
+  "name": "blog-forge",
+  "version": "0.1.0",
+  "description": "Authoring pipeline for long-form computer-science education blog posts written as a single Markdown file. Research, structure, drafting, figures, and a pre-publish quality gate.",
+  "license": "MIT"
+}

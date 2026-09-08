@@ -40,9 +40,9 @@ if [[ "${PULL:-1}" == "1" ]]; then
 fi
 
 bold "Starting"
-# Migrations run first as their own container and the API waits on the exit
-# code, so a failed migration stops the deploy instead of half-applying under a
-# running site.
+# Migrations and the idempotent metadata backfill run as separate one-shot
+# containers. The API waits on both exit codes, so a failure stops the deploy
+# instead of exposing code against a partial schema or partial metadata set.
 "${compose[@]}" up -d --remove-orphans
 
 bold "Status"

@@ -1,0 +1,120 @@
+name: canerly-dev
+
+x-backend-env: &backend-dev-env
+  BLOGS_DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${DEV_POSTGRES_DB:-blog-test}
+  BLOGS_OBJECT_STORE_ENDPOINT: minio:9000
+  BLOGS_OBJECT_STORE_ACCESS_KEY: ${BLOGS_OBJECT_STORE_ACCESS_KEY}
+  BLOGS_OBJECT_STORE_SECRET_KEY: ${BLOGS_OBJECT_STORE_SECRET_KEY}
+  BLOGS_OBJECT_STORE_BUCKET: ${DEV_OBJECT_STORE_BUCKET:-blogs-test}
+  BLOGS_OBJECT_STORE_SECURE: "false"
+  BLOGS_PUBLIC_SITE_URL: http://localhost:3001
+  BLOGS_OAUTH_REDIRECT_BASE_URL: http://localhost:3001
+  BLOGS_ENVIRONMENT: local
+  BLOGS_DEBUG: "true"
+  BLOGS_JWT_SECRET: ${BLOGS_JWT_SECRET:-dev-insecure-change-me-jwt-secret-value}
+  BLOGS_ACTOR_TOKEN_SECRET: ${BLOGS_ACTOR_TOKEN_SECRET:-dev-insecure-change-me-actor-secret}
+  BLOGS_OTP_PEPPER: ${BLOGS_OTP_PEPPER:-dev-insecure-change-me-otp-pepper}
+  BLOGS_OTP_LOG_CODES: ${BLOGS_OTP_LOG_CODES:-false}
+  BLOGS_OTP_DEV_BYPASS_CODE: ${BLOGS_OTP_DEV_BYPASS_CODE:-}
+  BLOGS_EMAIL_PROVIDER: ${BLOGS_EMAIL_PROVIDER:-none}
+  BLOGS_RESEND_API_KEY: ${BLOGS_RESEND_API_KEY:-}
+  BLOGS_EMAIL_FROM: ${BLOGS_EMAIL_FROM:-}
+  BLOGS_EMAIL_REPLY_TO: ${BLOGS_EMAIL_REPLY_TO:-}
+  BLOGS_GOOGLE_CLIENT_ID: ${BLOGS_GOOGLE_CLIENT_ID:-}
+  BLOGS_GOOGLE_CLIENT_SECRET: ${BLOGS_GOOGLE_CLIENT_SECRET:-}
+  BLOGS_GITHUB_CLIENT_ID: ${BLOGS_GITHUB_CLIENT_ID:-}
+  BLOGS_GITHUB_CLIENT_SECRET: ${BLOGS_GITHUB_CLIENT_SECRET:-}
+  BLOGS_ADMIN_EMAIL: ${BLOGS_ADMIN_EMAIL:-}
+  BLOGS_ADMIN_INITIAL_PASSWORD: ${BLOGS_ADMIN_INITIAL_PASSWORD:-}
+  BLOGS_ADMIN_PATH_PREFIX: ${BLOGS_ADMIN_PATH_PREFIX:-/admin-console}
+
+services:
+  minio-init-dev:
+    image: ${MINIO_IMAGE:-minio/minio:RELEASE.2025-04-22T22-12-26Z}
+    entrypoint: /bin/sh
+    command:
+      - -c
+      - |
+        set -e
+        mc alias set local http://minio:9000 "$$MC_USER" "$$MC_PASS"
+        mc mb --ignore-existing "local/$$BLOG_BUCKET"
+        mc anonymous set none "local/$$BLOG_BUCKET"
+        echo "private development bucket ready: $$BLOG_BUCKET"
+    restart: "no"
+    environment:
+      MC_USER: ${BLOGS_OBJECT_STORE_ACCESS_KEY}
+      MC_PASS: ${BLOGS_OBJECT_STORE_SECRET_KEY}
+      BLOG_BUCKET: ${DEV_OBJECT_STORE_BUCKET:-blogs-test}
+    networks: [edge]
+
+  migrate-dev:
+    build:
+      context: .
+      target: development
+    command: ["python", "-m", "blogs.database.migrator", "up"]
+    restart: "no"
+    environment: *backend-dev-env
+    networks: [edge]
+
+  metadata-backfill-dev:
+    build:
+      context: .
+      target: development
+    command: ["python", "-m", "blogs.database.backfill_metadata", "--apply"]
+    restart: "no"
+    environment: *backend-dev-env
+    depends_on:
+      migrate-dev: {condition: service_completed_successfully}
+      minio-init-dev: {condition: service_completed_successfully}
+    networks: [edge]
+
+  api-dev:
+    build:
+      context: .
+      target: development
+    restart: unless-stopped
+    environment: *backend-dev-env
+    volumes:
+      - ./src:/app/src:ro
+    ports:
+      - "127.0.0.1:8001:8000"
+    depends_on:
+      metadata-backfill-dev: {condition: service_completed_successfully}
+    networks: [edge]
+
+  web-dev:
+    build:
+      context: ./web
+      target: development
+    restart: unless-stopped
+    environment:
+      BLOGS_API_URL: http://api-dev:8000
+      BLOGS_DATA_SOURCE: api
+      BLOGS_OTP_DEV_BYPASS_CODE: ${BLOGS_OTP_DEV_BYPASS_CODE:-}
+      NEXT_PUBLIC_SITE_URL: http://localhost:3001
+      NEXT_PUBLIC_SITE_NAME: Canerly Dev
+      NEXT_PUBLIC_SEARCH_ADAPTER: none
+    volumes:
+      - ./web/src:/app/src:ro
+      - ./web/public:/app/public:ro
+    ports:
+      - "127.0.0.1:3001:3000"
+    depends_on: [api-dev]
+    networks: [edge]
+
+  backend-test:
+    profiles: [test]
+    build:
+      context: .
+      target: development
+    command: ["pytest", "-q"]
+    environment:
+      BLOGS_TEST_ADMIN_DSN: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/postgres
+    volumes:
+      - ./src:/app/src:ro
+    networks: [edge]
+
+networks:
+  edge:
+    external: true
+    name: ${CANERLY_NETWORK:-canerly_edge}

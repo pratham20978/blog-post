@@ -23,6 +23,7 @@ from blogs.contracts.engagement import (
     EngagementEvent,
     EngagementKind,
 )
+from blogs.contracts.interaction import BlogEngagementSummary
 
 
 class EngagementLog(Protocol):
@@ -60,6 +61,26 @@ class EngagementLog(Protocol):
         ...
 
     async def count_for_actor(self, actor_id: str) -> int: ...
+
+
+class BlogEngagementStatsRepository(Protocol):
+    async def increment_view(self, *, blog_id: str, authenticated: bool) -> None: ...
+
+    async def increment_likes(self, *, blog_id: str, delta: int) -> None: ...
+
+    async def get(
+        self, *, blog_id: str, liked_by_user_id: str | None = None
+    ) -> BlogEngagementSummary: ...
+
+
+class BlogLikeRepository(Protocol):
+    async def add(self, *, blog_id: str, user_id: str, now: datetime) -> bool:
+        """Return True only when a new like row was inserted."""
+        ...
+
+    async def remove(self, *, blog_id: str, user_id: str) -> bool:
+        """Return True only when an existing like row was deleted."""
+        ...
 
 
 class AnalyticsRepository(Protocol):

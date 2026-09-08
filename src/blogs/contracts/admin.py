@@ -41,6 +41,8 @@ class TopViewedRow(ContractModel):
     clicks: int = Field(ge=0)
     completions: int = Field(ge=0)
     unique_actors: int = Field(ge=0)
+    member_views: int = Field(default=0, ge=0)
+    guest_views: int = Field(default=0, ge=0)
 
 
 class TrendingRow(ContractModel):
@@ -78,6 +80,13 @@ class BlogKpis(ContractModel):
     unique_actors: int = Field(ge=0)
     unique_users: int = Field(ge=0)
     median_dwell_ms: int | None = None
+    member_views: int = Field(default=0, ge=0)
+    guest_views: int = Field(default=0, ge=0)
+    member_unique_readers: int = Field(default=0, ge=0)
+    guest_unique_readers: int = Field(default=0, ge=0)
+    returning_member_readers: int = Field(default=0, ge=0)
+    like_count: int = Field(default=0, ge=0)
+    recoil_rate: float | None = Field(default=None, ge=0.0, le=1.0)
     #: Clicks over impressions. ``None`` rather than 0.0 when there were no
     #: impressions: "nobody saw it" and "everybody ignored it" are different
     #: facts, and a zero here would quietly merge them.
@@ -92,3 +101,5 @@ class EngagementOverTimeRow(ContractModel):
     saves: int = Field(ge=0)
     comments: int = Field(ge=0)
     unique_actors: int = Field(ge=0)
+    member_views: int = Field(default=0, ge=0)
+    guest_views: int = Field(default=0, ge=0)

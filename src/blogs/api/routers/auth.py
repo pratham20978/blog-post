@@ -43,6 +43,7 @@ class OtpRequestBody(ContractModel):
 class OtpVerifyBody(ContractModel):
     email: EmailStr
     code: NonEmptyStr
+    purpose: AuthPurpose = AuthPurpose.LOGIN
 
 
 class RefreshBody(ContractModel):
@@ -59,6 +60,14 @@ class OtpRequestAccepted(ContractModel):
 
     expires_at: str
     resend_after: str
+
+
+@router.get("/oauth/providers")
+async def oauth_providers(
+    assembled: Assembled,
+) -> APIResponse[tuple[OAuthProviderName, ...]]:
+    """OAuth capabilities available in this deployment, never credentials."""
+    return success(assembled.auth_service_oauth.enabled_providers())
 
 
 @router.post("/otp/request")
@@ -105,6 +114,7 @@ async def verify_otp(
         email=body.email,
         code=body.code,
         actor_id=caller.actor_id,
+        purpose=body.purpose,
         user_agent=agent,
         client_ip=ip,
         correlation_id=correlation,

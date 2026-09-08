@@ -55,6 +55,14 @@ class OAuthFlowService:
     def _redirect_uri(self, provider: OAuthProviderName) -> str:
         return f"{self._redirect_base}/api/v1/auth/oauth/{provider.value}/callback"
 
+    def enabled_providers(self) -> tuple[OAuthProviderName, ...]:
+        """Configured capabilities only; credentials never leave adapters."""
+        return tuple(
+            provider
+            for provider in OAuthProviderName
+            if provider.value in self._providers
+        )
+
     def _resolve(self, provider: OAuthProviderName, correlation_id: str | None) -> Any:
         adapter = self._providers.resolve(provider.value)
         if adapter is None:

@@ -2,15 +2,17 @@
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import date, datetime
 from typing import Protocol
 
 from blogs.contracts.blog import (
     BlogDetail,
+    BlogDifficulty,
     BlogFilter,
     BlogSection,
     BlogStatus,
     BlogSummary,
+    BlogTier,
     Category,
     ReferencePin,
     Series,
@@ -47,6 +49,15 @@ class BlogRepository(Protocol):
         word_count: int,
         status: BlogStatus,
         published_at: datetime | None,
+        cover_image_url: str | None = None,
+        cover_image_alt: str | None = None,
+        tag_keys: tuple[str, ...] = (),
+        tier: BlogTier | None = None,
+        difficulty: BlogDifficulty | None = None,
+        prerequisites: tuple[str, ...] = (),
+        canonical_url: str | None = None,
+        published_on: date | None = None,
+        content_updated_on: date | None = None,
     ) -> BlogDetail:
         """Raises ``SlugConflict`` when the slug is taken."""
         ...
@@ -61,6 +72,16 @@ class BlogRepository(Protocol):
         series_position: int | None,
         status: BlogStatus | None,
         published_at: datetime | None,
+        cover_image_url: str | None = None,
+        cover_image_alt: str | None = None,
+        tag_keys: tuple[str, ...] | None = None,
+        tier: BlogTier | None = None,
+        difficulty: BlogDifficulty | None = None,
+        prerequisites: tuple[str, ...] | None = None,
+        canonical_url: str | None = None,
+        published_on: date | None = None,
+        content_updated_on: date | None = None,
+        source_authoritative: bool = False,
     ) -> BlogDetail | None: ...
 
     async def update_content(

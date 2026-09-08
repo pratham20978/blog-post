@@ -32,6 +32,7 @@ class EngagementKind(StrEnum):
 
     IMPRESSION = "impression"
     CLICK = "click"
+    READ = "read"
     DWELL = "dwell"
     COMPLETE = "complete"
     SAVE = "save"
@@ -70,6 +71,10 @@ class EngagementEvent(ContractModel):
     scroll_depth: float | None = Field(default=None, ge=0.0, le=1.0)
     source: EngagementSource | None = None
     dedupe_key: NonEmptyStr
+    #: Immutable classification at event time. Anonymous history may later be
+    #: attributed to a user, but that must not turn an old guest view into a
+    #: public member view.
+    authenticated_at_event: bool = False
     metadata: dict[str, JsonValue] = Field(default_factory=dict)
 
 
@@ -120,6 +125,7 @@ class EngagedBlog(ContractModel):
 ENGAGEMENT_SIGNAL_WEIGHTS: dict[EngagementKind, float] = {
     EngagementKind.IMPRESSION: -0.1,
     EngagementKind.CLICK: 1.0,
+    EngagementKind.READ: 2.0,
     EngagementKind.DWELL: 2.0,
     EngagementKind.COMPLETE: 3.0,
     EngagementKind.SAVE: 5.0,

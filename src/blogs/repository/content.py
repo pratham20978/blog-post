@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import date, datetime
 from typing import Any
 
 from psycopg import errors
@@ -10,10 +10,12 @@ from psycopg.rows import DictRow
 
 from blogs.contracts.blog import (
     BlogDetail,
+    BlogDifficulty,
     BlogFilter,
     BlogSection,
     BlogStatus,
     BlogSummary,
+    BlogTier,
     Category,
     ReferencePin,
     Series,
@@ -30,6 +32,8 @@ from blogs.repository.base import (
 
 _BLOG_COLUMNS = """
     b.id, b.slug, b.title, b.summary, b.author_id, b.series_id, b.series_position,
+    b.cover_image_url, b.cover_image_alt, b.tag_keys, b.tier, b.difficulty,
+    b.prerequisites, b.canonical_url, b.published_on, b.content_updated_on,
     b.markdown_uri, b.content_sha256, b.word_count, b.reading_minutes,
     b.status, b.published_at, b.archived_at, b.created_at, b.updated_at
 """
@@ -44,6 +48,15 @@ _CATEGORY_AGG = """
             FILTER (WHERE bc.category_key IS NOT NULL),
         ARRAY[]::text[]
     ) AS category_keys
+"""
+
+_PUBLIC_ENGAGEMENT = """
+    COALESCE((
+        SELECT s.member_view_count FROM blog_engagement_stats s WHERE s.blog_id = b.id
+    ), 0) AS member_view_count,
+    COALESCE((
+        SELECT s.like_count FROM blog_engagement_stats s WHERE s.blog_id = b.id
+    ), 0) AS like_count
 """
 
 
@@ -62,11 +75,22 @@ def _to_detail(row: DictRow, sections: tuple[BlogSection, ...] = ()) -> BlogDeta
         series_id=str(row["series_id"]) if row["series_id"] else None,
         series_position=row["series_position"],
         category_keys=_categories(row),
+        cover_image_url=row["cover_image_url"],
+        cover_image_alt=row["cover_image_alt"],
+        tag_keys=tuple(row["tag_keys"] or ()),
+        tier=BlogTier(row["tier"]) if row["tier"] else None,
+        difficulty=BlogDifficulty(row["difficulty"]) if row["difficulty"] else None,
+        prerequisites=tuple(row["prerequisites"] or ()),
+        canonical_url=row["canonical_url"],
+        published_on=row["published_on"],
+        content_updated_on=row["content_updated_on"],
         sections=sections,
         markdown_uri=row["markdown_uri"],
         content_sha256=bytes(row["content_sha256"]).hex(),
         word_count=row["word_count"],
         reading_minutes=row["reading_minutes"],
+        member_view_count=int(row.get("member_view_count") or 0),
+        like_count=int(row.get("like_count") or 0),
         published_at=row["published_at"],
         created_at=row["created_at"],
         updated_at=row["updated_at"],
@@ -83,8 +107,19 @@ def _to_summary(row: DictRow) -> BlogSummary:
         series_id=str(row["series_id"]) if row["series_id"] else None,
         series_position=row["series_position"],
         category_keys=_categories(row),
+        cover_image_url=row["cover_image_url"],
+        cover_image_alt=row["cover_image_alt"],
+        tag_keys=tuple(row["tag_keys"] or ()),
+        tier=BlogTier(row["tier"]) if row["tier"] else None,
+        difficulty=BlogDifficulty(row["difficulty"]) if row["difficulty"] else None,
+        prerequisites=tuple(row["prerequisites"] or ()),
+        canonical_url=row["canonical_url"],
+        published_on=row["published_on"],
+        content_updated_on=row["content_updated_on"],
         word_count=row["word_count"],
         reading_minutes=row["reading_minutes"],
+        member_view_count=int(row.get("member_view_count") or 0),
+        like_count=int(row.get("like_count") or 0),
         published_at=row["published_at"],
         updated_at=row["updated_at"],
     )
@@ -105,7 +140,7 @@ class SqlBlogRepository(SqlRepository):
     async def _one(self, where: str, params: dict[str, Any]) -> BlogDetail | None:
         row = await self._fetch_one(
             f"""
-            SELECT {_BLOG_COLUMNS}, {_CATEGORY_AGG}
+            SELECT {_BLOG_COLUMNS}, {_PUBLIC_ENGAGEMENT}, {_CATEGORY_AGG}
             FROM blogs b
             LEFT JOIN blog_categories bc ON bc.blog_id = b.id
             WHERE {where}
@@ -149,16 +184,30 @@ class SqlBlogRepository(SqlRepository):
         word_count: int,
         status: BlogStatus,
         published_at: datetime | None,
+        cover_image_url: str | None = None,
+        cover_image_alt: str | None = None,
+        tag_keys: tuple[str, ...] = (),
+        tier: BlogTier | None = None,
+        difficulty: BlogDifficulty | None = None,
+        prerequisites: tuple[str, ...] = (),
+        canonical_url: str | None = None,
+        published_on: date | None = None,
+        content_updated_on: date | None = None,
     ) -> BlogDetail:
         try:
             row = await self._fetch_one(
                 f"""
                 INSERT INTO blogs
                     (id, slug, title, summary, author_id, series_id, series_position,
+                     cover_image_url, cover_image_alt, tag_keys, tier, difficulty,
+                     prerequisites, canonical_url, published_on, content_updated_on,
                      markdown_uri, content_sha256, word_count, status, published_at)
                 VALUES
                     (%(id)s, %(slug)s, %(title)s, %(summary)s, %(author)s,
-                     %(series)s, %(pos)s, %(uri)s, %(sha)s, %(words)s,
+                     %(series)s, %(pos)s, %(cover_url)s, %(cover_alt)s, %(tags)s,
+                     %(tier)s, %(difficulty)s, %(prerequisites)s, %(canonical_url)s,
+                     %(published_on)s, %(content_updated_on)s,
+                     %(uri)s, %(sha)s, %(words)s,
                      %(status)s, %(published)s)
                 RETURNING {_BLOG_COLUMNS.replace("b.", "")}
                 """,
@@ -170,6 +219,15 @@ class SqlBlogRepository(SqlRepository):
                     "author": author_id,
                     "series": series_id,
                     "pos": series_position,
+                    "cover_url": cover_image_url,
+                    "cover_alt": cover_image_alt,
+                    "tags": list(tag_keys),
+                    "tier": tier.value if tier else None,
+                    "difficulty": difficulty.value if difficulty else None,
+                    "prerequisites": list(prerequisites),
+                    "canonical_url": canonical_url,
+                    "published_on": published_on,
+                    "content_updated_on": content_updated_on,
                     "uri": markdown_uri,
                     "sha": content_sha256,
                     "words": word_count,
@@ -193,6 +251,16 @@ class SqlBlogRepository(SqlRepository):
         series_position: int | None,
         status: BlogStatus | None,
         published_at: datetime | None,
+        cover_image_url: str | None = None,
+        cover_image_alt: str | None = None,
+        tag_keys: tuple[str, ...] | None = None,
+        tier: BlogTier | None = None,
+        difficulty: BlogDifficulty | None = None,
+        prerequisites: tuple[str, ...] | None = None,
+        canonical_url: str | None = None,
+        published_on: date | None = None,
+        content_updated_on: date | None = None,
+        source_authoritative: bool = False,
     ) -> BlogDetail | None:
         # COALESCE per column so "not supplied" means "leave alone" without
         # building the SET clause by string concatenation.
@@ -201,9 +269,33 @@ class SqlBlogRepository(SqlRepository):
                 """
                 UPDATE blogs SET
                     title           = COALESCE(%(title)s, title),
-                    summary         = COALESCE(%(summary)s, summary),
-                    series_id       = COALESCE(%(series)s, series_id),
-                    series_position = COALESCE(%(pos)s, series_position),
+                    summary         = CASE WHEN %(source)s THEN %(summary)s
+                                           ELSE COALESCE(%(summary)s, summary) END,
+                    series_id       = CASE WHEN %(source)s THEN %(series)s
+                                           ELSE COALESCE(%(series)s, series_id) END,
+                    series_position = CASE WHEN %(source)s THEN %(pos)s
+                                           ELSE COALESCE(%(pos)s, series_position) END,
+                    cover_image_url = CASE WHEN %(source)s THEN %(cover_url)s
+                                           ELSE COALESCE(%(cover_url)s, cover_image_url) END,
+                    cover_image_alt = CASE WHEN %(source)s THEN %(cover_alt)s
+                                           ELSE COALESCE(%(cover_alt)s, cover_image_alt) END,
+                    tag_keys        = CASE
+                        WHEN %(source)s OR %(tags_supplied)s THEN %(tags)s::text[]
+                        ELSE tag_keys END,
+                    tier            = CASE WHEN %(source)s THEN %(tier)s
+                                           ELSE COALESCE(%(tier)s, tier) END,
+                    difficulty      = CASE WHEN %(source)s THEN %(difficulty)s
+                                           ELSE COALESCE(%(difficulty)s, difficulty) END,
+                    prerequisites   = CASE
+                        WHEN %(source)s OR %(prerequisites_supplied)s
+                        THEN %(prerequisites)s::text[] ELSE prerequisites END,
+                    canonical_url   = CASE WHEN %(source)s THEN %(canonical_url)s
+                                           ELSE COALESCE(%(canonical_url)s, canonical_url) END,
+                    published_on    = CASE WHEN %(source)s THEN %(published_on)s
+                                           ELSE COALESCE(%(published_on)s, published_on) END,
+                    content_updated_on = CASE WHEN %(source)s THEN %(content_updated_on)s
+                                              ELSE COALESCE(%(content_updated_on)s,
+                                                            content_updated_on) END,
                     status          = COALESCE(%(status)s, status),
                     published_at    = CASE
                         WHEN %(status)s = 'published' AND published_at IS NULL
@@ -217,6 +309,18 @@ class SqlBlogRepository(SqlRepository):
                     "summary": summary,
                     "series": series_id,
                     "pos": series_position,
+                    "source": source_authoritative,
+                    "cover_url": cover_image_url,
+                    "cover_alt": cover_image_alt,
+                    "tags": list(tag_keys or ()),
+                    "tags_supplied": tag_keys is not None,
+                    "tier": tier.value if tier else None,
+                    "difficulty": difficulty.value if difficulty else None,
+                    "prerequisites": list(prerequisites or ()),
+                    "prerequisites_supplied": prerequisites is not None,
+                    "canonical_url": canonical_url,
+                    "published_on": published_on,
+                    "content_updated_on": content_updated_on,
                     "status": status.value if status else None,
                     "published": as_utc(published_at) if published_at else None,
                 },
@@ -289,7 +393,7 @@ class SqlBlogRepository(SqlRepository):
 
         rows = await self._fetch_all(
             f"""
-            SELECT {_BLOG_COLUMNS}, {_CATEGORY_AGG}
+            SELECT {_BLOG_COLUMNS}, {_PUBLIC_ENGAGEMENT}, {_CATEGORY_AGG}
             FROM blogs b
             LEFT JOIN blog_categories bc ON bc.blog_id = b.id
             WHERE {" AND ".join(clauses)}

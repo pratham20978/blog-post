@@ -114,7 +114,7 @@ class AuthService:
         client_ip: str | None = None,
         correlation_id: str | None = None,
     ) -> OtpIssued:
-        """Issue a one-time code and stage the email for F2.
+        """Issue a one-time code and deliver it through the configured sender.
 
         The code is generated, hashed and forgotten. What goes on the bus is a
         ``token_ref`` — an opaque handle — because foundation §7 forbids putting
@@ -154,7 +154,7 @@ class AuthService:
                     occurred_at=now,
                     subject_user_id=existing_user.id if existing_user else None,
                     email=email,
-                    purpose=purpose.value,  # type: ignore[arg-type]
+                    purpose=purpose.value,
                     token_ref=challenge.id,
                     expires_at=expires_at,
                     requested_at=now,
@@ -168,7 +168,10 @@ class AuthService:
         # connection for the provider's latency and, on a timeout, roll back a
         # challenge whose email may already have gone out.
         await self._deliver_otp(
-            email=email, code=code, correlation_id=correlation_id
+            email=email,
+            code=code,
+            purpose=purpose,
+            correlation_id=correlation_id,
         )
 
         return OtpIssued(
@@ -183,6 +186,7 @@ class AuthService:
         email: str,
         code: str,
         actor_id: str,
+        purpose: AuthPurpose = AuthPurpose.LOGIN,
         user_agent: str | None = None,
         client_ip: str | None = None,
         correlation_id: str | None = None,
@@ -192,8 +196,8 @@ class AuthService:
         if self._is_dev_bypass(code):
             # Straight to the happy path: no challenge is looked up, none is
             # consumed, and the attempt counter is untouched. There may not be
-            # a challenge at all — that is the point, since nothing can send
-            # one until F2 lands.
+            # a challenge at all — that is the point of this providerless,
+            # isolated-development fallback.
             #
             # Everything downstream is the real flow, so the resulting session
             # is a genuine one: real tokens, real user row (created here if the
@@ -217,7 +221,7 @@ class AuthService:
 
         async with self._uow.begin() as uow:
             challenge, outcome = await uow.otp.consume_if_matching(
-                email=email, purpose=AuthPurpose.LOGIN, code_hash=code_hash, now=now
+                email=email, purpose=purpose, code_hash=code_hash, now=now
             )
             if outcome != "matched":
                 # Leave the block WITHOUT raising, so the attempt counter that
@@ -254,7 +258,12 @@ class AuthService:
         )
 
     async def _deliver_otp(
-        self, *, email: str, code: str, correlation_id: str | None
+        self,
+        *,
+        email: str,
+        code: str,
+        purpose: AuthPurpose,
+        correlation_id: str | None,
     ) -> None:
         """Send the code, or explain why it could not be sent.
 
@@ -269,16 +278,15 @@ class AuthService:
             logger.warning("DEV ONLY — OTP for %s is %s", email, code)
 
         minutes = max(1, round(self._otp.ttl_seconds / 60))
+        message = _otp_email(
+            email=email,
+            code=code,
+            purpose=purpose,
+            minutes=minutes,
+        )
 
         try:
-            result = await self._email.send(
-                EmailMessage(
-                    to=email,
-                    subject=f"{code} is your sign-in code",
-                    text=_OTP_TEXT.format(code=code, minutes=minutes),
-                    html=_OTP_HTML.format(code=code, minutes=minutes),
-                )
-            )
+            result = await self._email.send(message)
         except BlogPlatformError as error:
             # No provider configured. In development the log line above *is*
             # the delivery channel, so the flow continues; anywhere else this
@@ -772,24 +780,59 @@ class AuthService:
 __all__ = ["AuthService", "OtpSettings", "SignInResult"]
 
 
-_OTP_TEXT = """Your sign-in code is {code}
+@dataclass(frozen=True, slots=True)
+class _OtpEmailCopy:
+    subject: str
+    instruction: str
 
-It expires in {minutes} minutes and can be used once.
 
-If you did not ask to sign in, you can ignore this message \u2014 the code is
-useless without access to this inbox, and nobody has been signed in.
+_OTP_EMAIL_COPY: dict[AuthPurpose, _OtpEmailCopy] = {
+    AuthPurpose.LOGIN: _OtpEmailCopy(
+        subject="Your Canery sign-in code",
+        instruction="Use this code to sign in to Canery:",
+    ),
+    AuthPurpose.SIGNUP: _OtpEmailCopy(
+        subject="Your Canery signup code",
+        instruction="Use this code to create your Canery account:",
+    ),
+}
+
+
+def _otp_email(
+    *, email: str, code: str, purpose: AuthPurpose, minutes: int
+) -> EmailMessage:
+    """Render one provider-independent, multipart OTP message.
+
+    The two purposes deliberately share their security copy and visual shell.
+    Only the action changes, so signup and login cannot drift into subtly
+    different expiry or one-time-use promises.
+    """
+    copy = _OTP_EMAIL_COPY[purpose]
+    text = f"""{copy.instruction}
+
+{code}
+
+This code expires in {minutes} minutes and can be used once.
+
+If you did not request this code, you can ignore this message. Nobody can use
+the code without access to this inbox, and no sign-in has been completed.
 """
 
-#: Inline styles only: every mail client strips <style> blocks, and about half
-#: strip <head> entirely.
-_OTP_HTML = """\
+    # Inline styles only: mail clients commonly strip <style> and <head> blocks.
+    html = f"""\
 <div style="font-family:system-ui,-apple-system,sans-serif;font-size:15px;
             color:#0a0a0a;line-height:1.6">
-  <p>Your sign-in code is</p>
+  <p>{copy.instruction}</p>
   <p style="font-size:32px;font-weight:600;letter-spacing:0.15em;margin:24px 0">{code}</p>
-  <p style="color:#6b6b6b">It expires in {minutes} minutes and can be used once.</p>
-  <p style="color:#6b6b6b">If you did not ask to sign in, you can ignore this
-  message &mdash; the code is useless without access to this inbox, and nobody
-  has been signed in.</p>
+  <p style="color:#6b6b6b">This code expires in {minutes} minutes and can be used once.</p>
+  <p style="color:#6b6b6b">If you did not request this code, you can ignore this
+  message. Nobody can use the code without access to this inbox, and no sign-in
+  has been completed.</p>
 </div>
 """
+    return EmailMessage(
+        to=email,
+        subject=copy.subject,
+        text=text,
+        html=html,
+    )

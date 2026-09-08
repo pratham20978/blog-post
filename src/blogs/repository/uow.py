@@ -14,13 +14,19 @@ from psycopg import AsyncConnection
 from psycopg.rows import DictRow
 
 from blogs.database.session import Database
+from blogs.repository.announcement import SqlAnnouncementRepository
 from blogs.repository.content import (
     SqlBlogRepository,
     SqlBlogSectionRepository,
     SqlReferencePinRepository,
     SqlTaxonomyRepository,
 )
-from blogs.repository.engagement import SqlAnalyticsRepository, SqlEngagementLog
+from blogs.repository.engagement import (
+    SqlAnalyticsRepository,
+    SqlBlogEngagementStatsRepository,
+    SqlBlogLikeRepository,
+    SqlEngagementLog,
+)
 from blogs.repository.identity import (
     SqlAdminLoginAttemptRepository,
     SqlAnonymousActorRepository,
@@ -51,11 +57,14 @@ class SqlUnitOfWork:
         "actors",
         "admin_logins",
         "analytics",
+        "announcements",
         "blogs",
         "catalogs",
         "comments",
         "connection",
         "engagement",
+        "engagement_stats",
+        "likes",
         "markers",
         "oauth_identities",
         "otp",
@@ -89,7 +98,10 @@ class SqlUnitOfWork:
         self.recent_views = SqlRecentViewRepository(conn)
 
         self.engagement = SqlEngagementLog(conn)
+        self.engagement_stats = SqlBlogEngagementStatsRepository(conn)
+        self.likes = SqlBlogLikeRepository(conn)
         self.analytics = SqlAnalyticsRepository(conn)
+        self.announcements = SqlAnnouncementRepository(conn)
         self.outbox = SqlOutboxRepository(conn)
 
 

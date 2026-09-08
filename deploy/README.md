@@ -276,17 +276,19 @@ to `127.0.0.1`, not `0.0.0.0`, or it is on the internet again.
 
 ## What this deploy is not
 
-**It is staging, not production.** `BLOGS_ENVIRONMENT=local`, so the OTP dev
-bypass code still works and sign-in codes are written to the API log. That is
-deliberate — `BLOGS_EMAIL_PROVIDER=none` means no mail is sent, so without the
-bypass nobody could sign in at all except through Google or GitHub.
+**It is staging, not production.** `BLOGS_ENVIRONMENT=local` keeps the broader
+development secret policy, but native sign-in still uses real Resend delivery.
+Configure `BLOGS_EMAIL_PROVIDER=resend`, the sending-only API key, and
+`BLOGS_EMAIL_FROM=Canerly <auth@canery.in>`. Keep `BLOGS_OTP_LOG_CODES=false`
+and remove `BLOGS_OTP_DEV_BYPASS_CODE`; startup rejects either unsafe option
+while Resend is enabled.
 
 `BLOGS_DEBUG` is forced to `false` in `compose.yaml` regardless, because
 `api.canery.in` is public and debug mode serves `/docs` and allows every CORS
 origin.
 
-Going to production later means, in one sitting: a real email provider, then
-`BLOGS_ENVIRONMENT=production` — which makes the app **refuse to start** until
+Going to production later means setting `BLOGS_ENVIRONMENT=production`, which
+makes the app **refuse to start** until
 `BLOGS_JWT_SECRET`, `BLOGS_ACTOR_TOKEN_SECRET` and `BLOGS_OTP_PEPPER` are all
 set to non-default values, `BLOGS_OTP_LOG_CODES=false`,
 `BLOGS_OTP_DEV_BYPASS_CODE` is removed entirely, and `BLOGS_ADMIN_PATH_PREFIX`

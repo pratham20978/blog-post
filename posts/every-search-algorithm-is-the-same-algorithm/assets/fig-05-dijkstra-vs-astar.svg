@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg viewBox="0 0 1000 520" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <style>@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&amp;family=Geist:wght@400;500;600&amp;family=Geist+Mono:wght@400;500;600&amp;display=swap');</style>
+        <marker id="arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#4f5d75"/></marker>
+        <marker id="arrow-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#eb6c36"/></marker>
+        <marker id="arrow-link" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#2e5aa8"/></marker>
+      </defs>
+      <rect width="100%" height="100%" fill="#f5f5f5"/>
+      <text x="80" y="124" fill="#2d3142" font-size="8" font-weight="500" font-family="'Geist Mono', monospace" text-anchor="start" letter-spacing="0.14em">DIJKSTRA · h = 0</text>
+      <text x="80" y="138" fill="#7a8399" font-size="8" font-weight="400" font-family="'Geist Mono', monospace" text-anchor="start" letter-spacing="0.06em">orders the frontier by distance travelled</text>
+      <rect x="80" y="148" width="32" height="32" fill="rgba(79,93,117,0.22)" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="80" y="180" width="32" height="32" fill="rgba(79,93,117,0.22)" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="80" y="212" width="32" height="32" fill="rgba(79,93,117,0.22)" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="80" y="244" width="32" height="32" fill="rgba(79,93,117,0.22)" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="80" y="276" width="32" height="32" fill="rgba(79,93,117,0.22)" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="80" y="308" width="32" height="32" fill="rgba(79,93,117,0.22)" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="80" y="340" width="32" height="32" fill="rgba(79,93,117,0.22)" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="80" y="372" width="32" height="32" fill="rgba(79,93,117,0.22)" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="112" y="148" width="32" height="32" fill="rgba(79,93,117,0.22)" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="112" y="180" width="32" height="32" fill="rgba(79,93,117,0.22)" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="112" y="212" width="32" height="32" fill="rgba(79,93,117,0.22)" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="112" y="244" width="32" height="32" fill="rgba(79,93,117,0.22)" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="112" y="276" width="32" height="32" fill="rgba(79,93,117,0.22)" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="112" y="308" width="32" height="32" fill="rgba(79,93,117,0.22)" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="112" y="340" width="32" height="32" fill="rgba(79,93,117,0.22)" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="112" y="372" width="32" height="32" fill="rgba(79,93,117,0.22)" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="144" y="148" width="32" height="32" fill="rgba(79,93,117,0.22)" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="144" y="180" width="32" height="32" fill="rgba(79,93,117,0.22)" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="144" y="212" width="32" height="32" fill="rgba(79,93,117,0.22)" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="144" y="244" width="32" height="32" fill="rgba(79,93,117,0.22)" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="144" y="276" width="32" height="32" fill="rgba(79,93,117,0.22)" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="144" y="308" width="32" height="32" fill="rgba(79,93,117,0.22)" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="144" y="340" width="32" height="32" fill="rgba(79,93,117,0.22)" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="144" y="372" width="32" height="32" fill="rgba(79,93,117,0.22)" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="176" y="148" width="32" height="32" fill="rgba(79,93,117,0.22)" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="176" y="180" width="32" height="32" fill="rgba(79,93,117,0.22)" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="176" y="212" width="32" height="32" fill="rgba(79,93,117,0.22)" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="176" y="244" width="32" height="32" fill="rgba(79,93,117,0.22)" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="176" y="276" width="32" height="32" fill="rgba(79,93,117,0.22)" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="176" y="308" width="32" height="32" fill="rgba(79,93,117,0.22)" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="176" y="340" width="32" height="32" fill="rgba(79,93,117,0.22)" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="176" y="372" width="32" height="32" fill="rgba(79,93,117,0.22)" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="208" y="148" width="32" height="32" fill="rgba(79,93,117,0.22)" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="208" y="180" width="32" height="32" fill="rgba(79,93,117,0.22)" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="208" y="212" width="32" height="32" fill="rgba(79,93,117,0.22)" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="208" y="244" width="32" height="32" fill="rgba(79,93,117,0.22)" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="208" y="276" width="32" height="32" fill="rgba(79,93,117,0.22)" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="208" y="308" width="32" height="32" fill="rgba(79,93,117,0.22)" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="208" y="340" width="32" height="32" fill="rgba(79,93,117,0.22)" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="208" y="372" width="32" height="32" fill="rgba(79,93,117,0.22)" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="240" y="148" width="32" height="32" fill="rgba(45,49,66,0.55)" stroke="rgba(45,49,66,0.55)" stroke-width="0.8"/>
+      <rect x="240" y="180" width="32" height="32" fill="rgba(45,49,66,0.55)" stroke="rgba(45,49,66,0.55)" stroke-width="0.8"/>
+      <rect x="240" y="212" width="32" height="32" fill="rgba(45,49,66,0.55)" stroke="rgba(45,49,66,0.55)" stroke-width="0.8"/>
+      <rect x="240" y="244" width="32" height="32" fill="rgba(45,49,66,0.55)" stroke="rgba(45,49,66,0.55)" stroke-width="0.8"/>
+      <rect x="240" y="276" width="32" height="32" fill="rgba(45,49,66,0.55)" stroke="rgba(45,49,66,0.55)" stroke-width="0.8"/>
+      <rect x="240" y="308" width="32" height="32" fill="rgba(45,49,66,0.55)" stroke="rgba(45,49,66,0.55)" stroke-width="0.8"/>
+      <rect x="240" y="340" width="32" height="32" fill="rgba(79,93,117,0.22)" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="240" y="372" width="32" height="32" fill="rgba(79,93,117,0.22)" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="272" y="148" width="32" height="32" fill="#ffffff" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="272" y="180" width="32" height="32" fill="#ffffff" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="272" y="212" width="32" height="32" fill="rgba(79,93,117,0.22)" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="272" y="244" width="32" height="32" fill="rgba(79,93,117,0.22)" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="272" y="276" width="32" height="32" fill="rgba(79,93,117,0.22)" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="272" y="308" width="32" height="32" fill="rgba(79,93,117,0.22)" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="272" y="340" width="32" height="32" fill="rgba(79,93,117,0.22)" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="272" y="372" width="32" height="32" fill="rgba(79,93,117,0.22)" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="304" y="148" width="32" height="32" fill="#ffffff" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="304" y="180" width="32" height="32" fill="#ffffff" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="304" y="212" width="32" height="32" fill="#ffffff" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="304" y="244" width="32" height="32" fill="rgba(79,93,117,0.22)" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="304" y="276" width="32" height="32" fill="rgba(79,93,117,0.22)" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="304" y="308" width="32" height="32" fill="rgba(79,93,117,0.22)" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="304" y="340" width="32" height="32" fill="rgba(79,93,117,0.22)" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="304" y="372" width="32" height="32" fill="rgba(79,93,117,0.22)" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="336" y="148" width="32" height="32" fill="#ffffff" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="336" y="180" width="32" height="32" fill="#ffffff" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="336" y="212" width="32" height="32" fill="#ffffff" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="336" y="244" width="32" height="32" fill="#ffffff" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="336" y="276" width="32" height="32" fill="rgba(79,93,117,0.22)" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="336" y="308" width="32" height="32" fill="rgba(79,93,117,0.22)" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="336" y="340" width="32" height="32" fill="rgba(79,93,117,0.22)" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="336" y="372" width="32" height="32" fill="rgba(79,93,117,0.22)" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="368" y="148" width="32" height="32" fill="#ffffff" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="368" y="180" width="32" height="32" fill="#ffffff" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="368" y="212" width="32" height="32" fill="#ffffff" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="368" y="244" width="32" height="32" fill="#ffffff" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="368" y="276" width="32" height="32" fill="#ffffff" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="368" y="308" width="32" height="32" fill="#ffffff" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="368" y="340" width="32" height="32" fill="rgba(79,93,117,0.22)" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="368" y="372" width="32" height="32" fill="#ffffff" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <polyline points="128,292 128,324 128,356 160,356 192,356 224,356 256,356 288,356 288,324 288,292 320,292 352,292" fill="none" stroke="#eb6c36" stroke-width="1.2" stroke-linejoin="round"/>
+      <rect x="112" y="276" width="32" height="32" fill="rgba(235,108,54,0.08)" stroke="#eb6c36" stroke-width="1.2"/>
+      <text x="128" y="296" fill="#eb6c36" font-size="8" font-weight="600" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0">S</text>
+      <rect x="336" y="276" width="32" height="32" fill="rgba(235,108,54,0.08)" stroke="#eb6c36" stroke-width="1.2"/>
+      <text x="352" y="296" fill="#eb6c36" font-size="8" font-weight="600" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0">G</text>
+      <text x="80" y="436" fill="#4f5d75" font-size="8" font-weight="400" font-family="'Geist Mono', monospace" text-anchor="start" letter-spacing="0.06em">expands in every direction — nothing tells it where G is</text>
+      <text x="80" y="454" fill="#2d3142" font-size="8" font-weight="500" font-family="'Geist Mono', monospace" text-anchor="start" letter-spacing="0.10em">58 CELLS EXPANDED · PATH COST 11</text>
+      <text x="560" y="124" fill="#2d3142" font-size="8" font-weight="500" font-family="'Geist Mono', monospace" text-anchor="start" letter-spacing="0.14em">A* · h = MANHATTAN</text>
+      <text x="560" y="138" fill="#7a8399" font-size="8" font-weight="400" font-family="'Geist Mono', monospace" text-anchor="start" letter-spacing="0.06em">orders it by travelled + estimated remaining</text>
+      <rect x="560" y="148" width="32" height="32" fill="#ffffff" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="560" y="180" width="32" height="32" fill="#ffffff" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="560" y="212" width="32" height="32" fill="#ffffff" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="560" y="244" width="32" height="32" fill="rgba(79,93,117,0.22)" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="560" y="276" width="32" height="32" fill="rgba(79,93,117,0.22)" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="560" y="308" width="32" height="32" fill="rgba(79,93,117,0.22)" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="560" y="340" width="32" height="32" fill="#ffffff" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="560" y="372" width="32" height="32" fill="#ffffff" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="592" y="148" width="32" height="32" fill="#ffffff" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="592" y="180" width="32" height="32" fill="#ffffff" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="592" y="212" width="32" height="32" fill="rgba(79,93,117,0.22)" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="592" y="244" width="32" height="32" fill="rgba(79,93,117,0.22)" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="592" y="276" width="32" height="32" fill="rgba(79,93,117,0.22)" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="592" y="308" width="32" height="32" fill="rgba(79,93,117,0.22)" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="592" y="340" width="32" height="32" fill="rgba(79,93,117,0.22)" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="592" y="372" width="32" height="32" fill="#ffffff" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="624" y="148" width="32" height="32" fill="#ffffff" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="624" y="180" width="32" height="32" fill="#ffffff" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="624" y="212" width="32" height="32" fill="rgba(79,93,117,0.22)" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="624" y="244" width="32" height="32" fill="rgba(79,93,117,0.22)" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="624" y="276" width="32" height="32" fill="rgba(79,93,117,0.22)" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="624" y="308" width="32" height="32" fill="rgba(79,93,117,0.22)" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="624" y="340" width="32" height="32" fill="rgba(79,93,117,0.22)" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="624" y="372" width="32" height="32" fill="#ffffff" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="656" y="148" width="32" height="32" fill="#ffffff" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="656" y="180" width="32" height="32" fill="#ffffff" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="656" y="212" width="32" height="32" fill="rgba(79,93,117,0.22)" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="656" y="244" width="32" height="32" fill="rgba(79,93,117,0.22)" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="656" y="276" width="32" height="32" fill="rgba(79,93,117,0.22)" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="656" y="308" width="32" height="32" fill="rgba(79,93,117,0.22)" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="656" y="340" width="32" height="32" fill="rgba(79,93,117,0.22)" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="656" y="372" width="32" height="32" fill="#ffffff" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="688" y="148" width="32" height="32" fill="#ffffff" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="688" y="180" width="32" height="32" fill="#ffffff" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="688" y="212" width="32" height="32" fill="rgba(79,93,117,0.22)" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="688" y="244" width="32" height="32" fill="rgba(79,93,117,0.22)" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="688" y="276" width="32" height="32" fill="rgba(79,93,117,0.22)" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="688" y="308" width="32" height="32" fill="rgba(79,93,117,0.22)" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="688" y="340" width="32" height="32" fill="rgba(79,93,117,0.22)" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="688" y="372" width="32" height="32" fill="#ffffff" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="720" y="148" width="32" height="32" fill="rgba(45,49,66,0.55)" stroke="rgba(45,49,66,0.55)" stroke-width="0.8"/>
+      <rect x="720" y="180" width="32" height="32" fill="rgba(45,49,66,0.55)" stroke="rgba(45,49,66,0.55)" stroke-width="0.8"/>
+      <rect x="720" y="212" width="32" height="32" fill="rgba(45,49,66,0.55)" stroke="rgba(45,49,66,0.55)" stroke-width="0.8"/>
+      <rect x="720" y="244" width="32" height="32" fill="rgba(45,49,66,0.55)" stroke="rgba(45,49,66,0.55)" stroke-width="0.8"/>
+      <rect x="720" y="276" width="32" height="32" fill="rgba(45,49,66,0.55)" stroke="rgba(45,49,66,0.55)" stroke-width="0.8"/>
+      <rect x="720" y="308" width="32" height="32" fill="rgba(45,49,66,0.55)" stroke="rgba(45,49,66,0.55)" stroke-width="0.8"/>
+      <rect x="720" y="340" width="32" height="32" fill="rgba(79,93,117,0.22)" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="720" y="372" width="32" height="32" fill="#ffffff" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="752" y="148" width="32" height="32" fill="#ffffff" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="752" y="180" width="32" height="32" fill="#ffffff" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="752" y="212" width="32" height="32" fill="#ffffff" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="752" y="244" width="32" height="32" fill="#ffffff" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="752" y="276" width="32" height="32" fill="rgba(79,93,117,0.22)" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="752" y="308" width="32" height="32" fill="rgba(79,93,117,0.22)" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="752" y="340" width="32" height="32" fill="rgba(79,93,117,0.22)" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="752" y="372" width="32" height="32" fill="#ffffff" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="784" y="148" width="32" height="32" fill="#ffffff" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="784" y="180" width="32" height="32" fill="#ffffff" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="784" y="212" width="32" height="32" fill="#ffffff" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="784" y="244" width="32" height="32" fill="#ffffff" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="784" y="276" width="32" height="32" fill="rgba(79,93,117,0.22)" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="784" y="308" width="32" height="32" fill="rgba(79,93,117,0.22)" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="784" y="340" width="32" height="32" fill="rgba(79,93,117,0.22)" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="784" y="372" width="32" height="32" fill="#ffffff" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="816" y="148" width="32" height="32" fill="#ffffff" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="816" y="180" width="32" height="32" fill="#ffffff" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="816" y="212" width="32" height="32" fill="#ffffff" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="816" y="244" width="32" height="32" fill="#ffffff" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="816" y="276" width="32" height="32" fill="rgba(79,93,117,0.22)" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="816" y="308" width="32" height="32" fill="rgba(79,93,117,0.22)" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="816" y="340" width="32" height="32" fill="rgba(79,93,117,0.22)" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="816" y="372" width="32" height="32" fill="#ffffff" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="848" y="148" width="32" height="32" fill="#ffffff" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="848" y="180" width="32" height="32" fill="#ffffff" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="848" y="212" width="32" height="32" fill="#ffffff" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="848" y="244" width="32" height="32" fill="#ffffff" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="848" y="276" width="32" height="32" fill="#ffffff" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="848" y="308" width="32" height="32" fill="#ffffff" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="848" y="340" width="32" height="32" fill="#ffffff" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <rect x="848" y="372" width="32" height="32" fill="#ffffff" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <polyline points="608,292 640,292 672,292 704,292 704,324 704,356 736,356 768,356 768,324 768,292 800,292 832,292" fill="none" stroke="#eb6c36" stroke-width="1.2" stroke-linejoin="round"/>
+      <rect x="592" y="276" width="32" height="32" fill="rgba(235,108,54,0.08)" stroke="#eb6c36" stroke-width="1.2"/>
+      <text x="608" y="296" fill="#eb6c36" font-size="8" font-weight="600" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0">S</text>
+      <rect x="816" y="276" width="32" height="32" fill="rgba(235,108,54,0.08)" stroke="#eb6c36" stroke-width="1.2"/>
+      <text x="832" y="296" fill="#eb6c36" font-size="8" font-weight="600" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0">G</text>
+      <text x="560" y="436" fill="#4f5d75" font-size="8" font-weight="400" font-family="'Geist Mono', monospace" text-anchor="start" letter-spacing="0.06em">spends its probes toward G — same cost, fewer cells</text>
+      <text x="560" y="454" fill="#2d3142" font-size="8" font-weight="500" font-family="'Geist Mono', monospace" text-anchor="start" letter-spacing="0.10em">33 CELLS EXPANDED · PATH COST 11</text>
+      <line x1="30" y1="468" x2="970" y2="468" stroke="rgba(45,49,66,0.10)" stroke-width="0.8"/>
+      <text x="30" y="488" fill="#4f5d75" font-size="8" font-weight="400" font-family="'Geist Mono', monospace" text-anchor="start" letter-spacing="0.14em">LEGEND</text>
+      <rect x="120" y="476" width="16" height="12" rx="2" fill="#ffffff" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <text x="144" y="486" fill="#4f5d75" font-size="8" font-weight="400" font-family="'Geist Mono', monospace" text-anchor="start" letter-spacing="0.06em">NEVER EXAMINED</text>
+      <rect x="272" y="476" width="16" height="12" rx="2" fill="rgba(79,93,117,0.22)" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+      <text x="296" y="486" fill="#4f5d75" font-size="8" font-weight="400" font-family="'Geist Mono', monospace" text-anchor="start" letter-spacing="0.06em">EXPANDED</text>
+      <rect x="388" y="476" width="16" height="12" rx="2" fill="rgba(45,49,66,0.55)" stroke="rgba(45,49,66,0.55)" stroke-width="0.8"/>
+      <text x="412" y="486" fill="#4f5d75" font-size="8" font-weight="400" font-family="'Geist Mono', monospace" text-anchor="start" letter-spacing="0.06em">WALL</text>
+      <rect x="480" y="476" width="16" height="12" rx="2" fill="rgba(235,108,54,0.08)" stroke="#eb6c36" stroke-width="0.8"/>
+      <text x="504" y="486" fill="#4f5d75" font-size="8" font-weight="400" font-family="'Geist Mono', monospace" text-anchor="start" letter-spacing="0.06em">START / GOAL / PATH</text>
+    </svg>

@@ -83,22 +83,22 @@ class Settings(BaseSettings):
     #: Mixed into the code before hashing, so a leaked database alone does not
     #: let an attacker precompute the 10^6 possible six-digit codes.
     otp_pepper: SecretStr = SecretStr("dev-insecure-change-me-otp-pepper")
-    #: Development convenience: log the code so a local sign-in works before F2
-    #: exists to email it. Refused in production by the validator below.
-    otp_log_codes: bool = True
+    #: Explicit local fallback when no email provider is available. Off by
+    #: default and refused in production or alongside Resend.
+    otp_log_codes: bool = False
 
     #: A fixed code accepted for any address, in place of an emailed one.
     #:
-    #: There is no email adapter yet (F2), so without this every local sign-in
-    #: means reading a code out of the server log. Set it to something like
-    #: "000000" in development and the OTP flow works end to end.
+    #: When no email provider is configured, this can keep a purely local demo
+    #: usable without reading a generated code. Set it to something like
+    #: "000000" only for that isolated development case.
     #:
     #: Be clear about what this is: **it is an unauthenticated sign-in as any
     #: address, the admin included.** It bypasses the challenge entirely — no
     #: code is sent, none is consumed, and the attempt counter never advances.
     #: That is only tolerable because it cannot reach production: the validator
-    #: below refuses to start when it is set there, the same way it refuses
-    #: `otp_log_codes`. Leave it unset and the real challenge is the only path.
+    #: below refuses to start when it is set in production or alongside Resend.
+    #: Leave it unset and the real challenge is the only path.
     otp_dev_bypass_code: SecretStr | None = None
 
     # ── Email ───────────────────────────────────────────────────────────────
@@ -195,7 +195,10 @@ class Settings(BaseSettings):
         # The one that would matter most. A fixed code in production is an
         # unauthenticated sign-in as anybody, so it fails at assembly rather
         # than being caught in review.
-        if self.otp_dev_bypass_code is not None:
+        if (
+            self.otp_dev_bypass_code is not None
+            and self.otp_dev_bypass_code.get_secret_value()
+        ):
             raise ValueError(
                 "refusing to start in production with otp_dev_bypass_code set; "
                 "it accepts a fixed code for any address, including the admin"
@@ -218,21 +221,42 @@ class Settings(BaseSettings):
 
     @model_validator(mode="after")
     def _email_provider_is_complete(self) -> Self:
-        """A half-configured provider is worse than none.
+        """A half-configured or credential-leaking provider is worse than none.
 
         With a key but no ``email_from``, every send is refused by Resend and
         the failure looks like a provider outage. Naming the missing field here
-        costs one check and saves that hunt.
+        costs one check and saves that hunt. Once real delivery is enabled, the
+        plaintext code must have exactly one channel: the recipient's inbox.
         """
         if self.email_provider == "resend":
-            missing = [
-                name
-                for name in ("resend_api_key", "email_from")
-                if getattr(self, name) is None
-            ]
+            api_key = (
+                self.resend_api_key.get_secret_value().strip()
+                if self.resend_api_key is not None
+                else ""
+            )
+            missing = []
+            if not api_key:
+                missing.append("resend_api_key")
+            if not self.email_from or not self.email_from.strip():
+                missing.append("email_from")
             if missing:
                 raise ValueError(
                     f"email_provider is 'resend' but {sorted(missing)} are not set"
+                )
+            if self.otp_log_codes:
+                raise ValueError(
+                    "email_provider is 'resend' but otp_log_codes is enabled; "
+                    "real OTPs must not be written to logs"
+                )
+            bypass = (
+                self.otp_dev_bypass_code.get_secret_value()
+                if self.otp_dev_bypass_code is not None
+                else ""
+            )
+            if bypass:
+                raise ValueError(
+                    "email_provider is 'resend' but otp_dev_bypass_code is set; "
+                    "real email verification must not have a fixed bypass"
                 )
         return self
 

@@ -7,6 +7,7 @@ from datetime import datetime
 from psycopg import errors
 from psycopg.rows import DictRow
 
+from blogs.contracts.announcement import BlogEmailPreference
 from blogs.contracts.identity import (
     AnonymousActor,
     AuthPurpose,
@@ -135,6 +136,41 @@ class SqlUserRepository(SqlRepository):
             )
         except errors.IntegrityError as exc:
             raise translate_integrity_error(exc) from exc
+
+    async def get_blog_email_preference(
+        self, user_id: str
+    ) -> BlogEmailPreference | None:
+        row = await self._fetch_one(
+            """
+            SELECT id, blog_announcements_enabled, blog_announcements_updated_at
+            FROM users WHERE id = %(id)s
+            """,
+            {"id": user_id},
+        )
+        return self._to_blog_email_preference(row) if row else None
+
+    async def set_blog_email_preference(
+        self, *, user_id: str, enabled: bool, at: datetime
+    ) -> BlogEmailPreference | None:
+        row = await self._fetch_one(
+            """
+            UPDATE users
+            SET blog_announcements_enabled = %(enabled)s,
+                blog_announcements_updated_at = %(at)s
+            WHERE id = %(id)s
+            RETURNING id, blog_announcements_enabled, blog_announcements_updated_at
+            """,
+            {"id": user_id, "enabled": enabled, "at": as_utc(at)},
+        )
+        return self._to_blog_email_preference(row) if row else None
+
+    @staticmethod
+    def _to_blog_email_preference(row: DictRow) -> BlogEmailPreference:
+        return BlogEmailPreference(
+            user_id=str(row["id"]),
+            blog_announcements_enabled=row["blog_announcements_enabled"],
+            updated_at=row["blog_announcements_updated_at"],
+        )
 
 
 class SqlAdminLoginAttemptRepository(SqlRepository):

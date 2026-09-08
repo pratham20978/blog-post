@@ -82,15 +82,59 @@ class TestMarkdownParsing:
         assert "body of one" in document.body[first.char_start : first.char_end]
         assert "body of two" not in document.body[first.char_start : first.char_end]
 
-    def test_frontmatter_tags_are_discarded(self, parser: MarkdownItParser) -> None:
-        """Tags are F4's. A field stored under a definition nobody agreed would
-        look authoritative to whoever found it next."""
+    def test_typed_frontmatter_is_normalized(self, parser: MarkdownItParser) -> None:
         document = parser.parse(
-            b"---\ntitle: T\ntags: [rag, llm]\ncategories: [AI]\n---\n\nbody\n"
+            b"""---
+title: Typed metadata
+description: Alias for summary
+tags: [RAG, llm, rag]
+categories: [AI]
+tier: l2
+difficulty: Intermediate
+prerequisites: [Python, Basic SQL]
+cover_image: https://cdn.example.com/cover.png
+canonical_url: https://canery.in/blogs/typed-metadata
+date: 2026-09-01
+updated: 2026-09-08
+---
+
+body
+"""
         )
-        assert not hasattr(document, "tags")
-        assert "tags" not in document.model_dump()
+        assert document.summary == "Alias for summary"
+        assert document.tag_keys == ("rag", "llm")
         assert document.category_keys == ("ai",)
+        assert document.tier.value == "L2"
+        assert document.difficulty.value == "intermediate"
+        assert document.prerequisites == ("Python", "Basic SQL")
+        assert document.cover_image_url == "https://cdn.example.com/cover.png"
+        assert document.cover_image_alt == "Typed metadata"
+        assert document.published_on.isoformat() == "2026-09-01"
+
+    def test_first_body_image_is_a_legacy_cover(self, parser: MarkdownItParser) -> None:
+        document = parser.parse(
+            b"# Legacy\n\n![A precise legacy diagram](https://cdn.example.com/first.png)\n"
+        )
+        assert document.cover_image_url == "https://cdn.example.com/first.png"
+        assert document.cover_image_alt == "A precise legacy diagram"
+
+    def test_legacy_cover_skips_relative_and_invalid_images(
+        self, parser: MarkdownItParser
+    ) -> None:
+        document = parser.parse(
+            b"# Legacy\n\n![local](./local.png)\n\n"
+            b"![valid](https://cdn.example.com/valid.png)\n"
+        )
+        assert document.cover_image_url == "https://cdn.example.com/valid.png"
+        assert document.cover_image_alt == "valid"
+
+    def test_invalid_metadata_url_is_refused(self, parser: MarkdownItParser) -> None:
+        for cover in ("COVER", "https://<site>/cover.png"):
+            with pytest.raises(BlogPlatformError) as exc:
+                parser.parse(
+                    f"---\ntitle: Bad\ncover_image: {cover}\n---\n\nbody\n".encode()
+                )
+            assert exc.value.category is ErrorCategory.MARKDOWN_INVALID
 
     def test_title_falls_back_to_the_first_heading(
         self, parser: MarkdownItParser

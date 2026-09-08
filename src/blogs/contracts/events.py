@@ -8,17 +8,16 @@ Two rules the shapes encode:
 * **Secrets never ride the bus.** ``OtpRequested`` and friends carry a
   ``token_ref``, an opaque handle. The code and the link exist only in the
   process that made them and in the message F2 eventually sends.
-* **No tags.** ``BlogPublished`` has no ``tag_keys`` field. Foundation §7 lists
-  one, but the vocabulary and its weighting are unresolved, and a field that is
-  present but meaningless is worse than an absent one — F4 adds it, and adding
-  a field is backward-compatible for every consumer.
+* Blog tag keys are normalized author metadata. Downstream vocabulary work may
+  review them, but consumers receive the same keys stored with the article.
 """
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import date, datetime
 from typing import ClassVar, Literal
 
+from blogs.contracts.blog import BlogDifficulty, BlogTier
 from blogs.contracts.common import (
     ActorId,
     BlogId,
@@ -110,6 +109,16 @@ class BlogPublished(DomainEvent):
     blog_id: BlogId
     slug: KeyStr
     title: NonEmptyStr
+    summary: str | None = None
+    cover_image_url: str | None = None
+    cover_image_alt: str | None = None
+    tag_keys: tuple[KeyStr, ...] = ()
+    tier: BlogTier | None = None
+    difficulty: BlogDifficulty | None = None
+    prerequisites: tuple[NonEmptyStr, ...] = ()
+    canonical_url: str | None = None
+    published_on: date | None = None
+    content_updated_on: date | None = None
     category_keys: tuple[KeyStr, ...] = ()
     series_id: SeriesId | None = None
     author_id: UserId

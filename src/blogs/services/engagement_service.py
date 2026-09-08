@@ -18,6 +18,7 @@ from __future__ import annotations
 import logging
 from datetime import datetime
 
+from blogs.contracts.blog import BlogStatus
 from blogs.contracts.common import ErrorCategory
 from blogs.contracts.engagement import (
     EngagementEvent,
@@ -25,7 +26,8 @@ from blogs.contracts.engagement import (
     RecordEngagementCommand,
 )
 from blogs.contracts.events import ArticleCompleted, ArticleSaved
-from blogs.contracts.identity import Principal, UserPrincipal
+from blogs.contracts.identity import Principal, UserPrincipal, UserStatus
+from blogs.contracts.interaction import BlogEngagementSummary
 from blogs.contracts.interaction import RecentView
 from blogs.core.clock import Clock
 from blogs.core.errors import raise_error
@@ -39,9 +41,7 @@ logger = logging.getLogger(__name__)
 #: Kinds that mean "this person actually looked at this article", and so should
 #: move the recent-views projection. An impression is a listing appearing on
 #: screen, which is not the same as having read anything.
-_VIEW_KINDS = frozenset(
-    {EngagementKind.CLICK, EngagementKind.DWELL, EngagementKind.COMPLETE}
-)
+_VIEW_KINDS = frozenset({EngagementKind.READ})
 
 
 class EngagementService:
@@ -101,10 +101,24 @@ class EngagementService:
                 if command.dedupe_key
                 else event_id
             ),
+            authenticated_at_event=user_id is not None,
             metadata={},
         )
 
         async with self._uow.begin() as uow:
+            if command.kind is EngagementKind.READ:
+                if command.blog_id is None:
+                    raise_error(
+                        ErrorCategory.REQUEST_INVALID,
+                        correlation_id=correlation_id,
+                        safe_message="A read event requires a blog.",
+                    )
+                blog = await uow.blogs.get(command.blog_id)
+                if blog is None or blog.status is not BlogStatus.PUBLISHED:
+                    raise_error(
+                        ErrorCategory.BLOG_NOT_FOUND, correlation_id=correlation_id
+                    )
+
             appended = await uow.engagement.append(event)
             if not appended:
                 # A retried beacon. Expected, not exceptional — and it must not
@@ -112,6 +126,9 @@ class EngagementService:
                 return False
 
             if command.blog_id and command.kind in _VIEW_KINDS:
+                await uow.engagement_stats.increment_view(
+                    blog_id=command.blog_id, authenticated=user_id is not None
+                )
                 await uow.recent_views.record(
                     actor_id=principal.actor_id,
                     user_id=user_id,
@@ -145,6 +162,55 @@ class EngagementService:
                         aggregate_id=command.blog_id,
                     )
         return True
+
+    async def summary(
+        self, *, principal: Principal, blog_id: str, correlation_id: str | None = None
+    ) -> BlogEngagementSummary:
+        async with self._uow.read() as uow:
+            blog = await uow.blogs.get(blog_id)
+            if blog is None or blog.status is not BlogStatus.PUBLISHED:
+                raise_error(ErrorCategory.BLOG_NOT_FOUND, correlation_id=correlation_id)
+            user_id = principal.user_id if isinstance(principal, UserPrincipal) else None
+            return await uow.engagement_stats.get(
+                blog_id=blog_id, liked_by_user_id=user_id
+            )
+
+    async def like(
+        self,
+        *,
+        principal: Principal,
+        blog_id: str,
+        liked: bool,
+        correlation_id: str | None = None,
+    ) -> BlogEngagementSummary:
+        require(
+            self._policy.can_like(principal),
+            principal=principal,
+            correlation_id=correlation_id,
+        )
+        assert isinstance(principal, UserPrincipal)
+        async with self._uow.begin() as uow:
+            user = await uow.users.get(principal.user_id)
+            if user is None or user.status is not UserStatus.ACTIVE:
+                raise_error(ErrorCategory.USER_INACTIVE, correlation_id=correlation_id)
+            blog = await uow.blogs.get(blog_id)
+            if blog is None or blog.status is not BlogStatus.PUBLISHED:
+                raise_error(ErrorCategory.BLOG_NOT_FOUND, correlation_id=correlation_id)
+
+            changed = (
+                await uow.likes.add(
+                    blog_id=blog_id, user_id=principal.user_id, now=self._clock.now()
+                )
+                if liked
+                else await uow.likes.remove(blog_id=blog_id, user_id=principal.user_id)
+            )
+            if changed:
+                await uow.engagement_stats.increment_likes(
+                    blog_id=blog_id, delta=1 if liked else -1
+                )
+            return await uow.engagement_stats.get(
+                blog_id=blog_id, liked_by_user_id=principal.user_id
+            )
 
     async def recent_views(
         self, *, principal: Principal, limit: int | None = None

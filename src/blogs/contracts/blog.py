@@ -9,19 +9,19 @@ Markdown is still *parsed* — for frontmatter metadata, for the heading anchors
 that make pin targets and section markers validatable, and for the word count
 F1 will need to normalise dwell time — but never re-emitted in another format.
 
-No tags anywhere. F4 owns the canonical vocabulary and the weighting model
-behind it; until that is settled the column, the index and the ``tag_keys``
-field on ``BlogPublished`` do not exist here. Frontmatter ``tags:`` is parsed
-and discarded, so nothing half-defined leaks into a contract other features
-would then have to honour.
+Tags here are author-supplied, normalized keys. A future vocabulary service can
+review and reassign them, but storing the source metadata now keeps the article
+contract complete and gives downstream search a stable, indexed shape.
 """
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import date, datetime
 from enum import StrEnum
+from typing import Self
+from urllib.parse import urlsplit
 
-from pydantic import Field
+from pydantic import Field, field_validator, model_validator
 
 from blogs.contracts.common import (
     AnchorStr,
@@ -41,6 +41,65 @@ class BlogStatus(StrEnum):
     #: Deletion is an archive. Comments, markers and engagement rows keep
     #: pointing at something real, and F1/F2 references never dangle.
     ARCHIVED = "archived"
+
+
+class BlogTier(StrEnum):
+    L1 = "L1"
+    L2 = "L2"
+    L3 = "L3"
+    L4 = "L4"
+
+
+class BlogDifficulty(StrEnum):
+    BEGINNER = "beginner"
+    INTERMEDIATE = "intermediate"
+    ADVANCED = "advanced"
+
+
+def _is_http_url(value: str) -> bool:
+    try:
+        parsed = urlsplit(value)
+    except ValueError:
+        return False
+    return (
+        parsed.scheme in {"http", "https"}
+        and bool(parsed.netloc)
+        and not any(character.isspace() or character in "<>{}" for character in value)
+    )
+
+
+class BlogMetadata(ContractModel):
+    """Typed metadata shared by list, detail, parser, and authoring inputs."""
+
+    cover_image_url: str | None = None
+    cover_image_alt: str | None = None
+    tag_keys: tuple[KeyStr, ...] = ()
+    tier: BlogTier | None = None
+    difficulty: BlogDifficulty | None = None
+    prerequisites: tuple[NonEmptyStr, ...] = ()
+    canonical_url: str | None = None
+    published_on: date | None = None
+    content_updated_on: date | None = None
+
+    @field_validator("cover_image_url", "canonical_url")
+    @classmethod
+    def _http_urls_only(cls, value: str | None) -> str | None:
+        if value is not None and not _is_http_url(value):
+            raise ValueError("must be an absolute http(s) URL")
+        return value
+
+    @field_validator("tag_keys")
+    @classmethod
+    def _deduplicated_tags(cls, value: tuple[str, ...]) -> tuple[str, ...]:
+        if len(value) != len(set(value)):
+            raise ValueError("tag_keys must not contain duplicates")
+        return value
+
+    @model_validator(mode="after")
+    def _cover_pair(self) -> Self:
+        if (self.cover_image_url is None) != (self.cover_image_alt is None):
+            raise ValueError("cover_image_url and cover_image_alt must be supplied together")
+        return self
 
 
 class Category(ContractModel):
@@ -72,7 +131,7 @@ class BlogSection(ContractModel):
     char_end: int = Field(ge=0)
 
 
-class BlogSummary(ContractModel):
+class BlogSummary(BlogMetadata):
     """The list-view shape. Deliberately excludes body content."""
 
     id: BlogId
@@ -85,11 +144,13 @@ class BlogSummary(ContractModel):
     category_keys: tuple[KeyStr, ...] = ()
     word_count: int = Field(ge=0)
     reading_minutes: int = Field(ge=0)
+    member_view_count: int = Field(default=0, ge=0)
+    like_count: int = Field(default=0, ge=0)
     published_at: datetime | None = None
     updated_at: datetime
 
 
-class BlogDetail(ContractModel):
+class BlogDetail(BlogMetadata):
     """The read-one shape: metadata and structure, not body text.
 
     ``content_sha256`` is the ETag — content-addressed and immutable, so an
@@ -110,6 +171,8 @@ class BlogDetail(ContractModel):
     content_sha256: NonEmptyStr
     word_count: int = Field(ge=0)
     reading_minutes: int = Field(ge=0)
+    member_view_count: int = Field(default=0, ge=0)
+    like_count: int = Field(default=0, ge=0)
     published_at: datetime | None = None
     created_at: datetime
     updated_at: datetime
@@ -128,14 +191,14 @@ class BlogContent(ContractModel):
     markdown: str
 
 
-class PublishBlogCommand(ContractModel):
+class PublishBlogCommand(BlogMetadata):
     """Metadata accompanying an uploaded ``.md``. Anything also present in the
     frontmatter is overridden by what is given here."""
 
     title: NonEmptyStr | None = None
     summary: str | None = None
     slug: KeyStr | None = None
-    category_keys: tuple[KeyStr, ...] = ()
+    category_keys: tuple[KeyStr, ...] | None = None
     series_key: KeyStr | None = None
     series_position: int | None = Field(default=None, ge=0)
     status: BlogStatus = BlogStatus.PUBLISHED
@@ -145,8 +208,8 @@ class UpdateBlogPatch(ContractModel):
     """A partial update. ``None`` means "leave alone"; there is deliberately no
     way to express "set back to null" for fields where that is meaningless.
 
-    Note there is no tag field, and when F4 introduces one there still will not
-    be: foundation §6.1 gives F4 the only write path to tags-on-blog.
+    A source replacement is authoritative for editorial metadata. Values given
+    here override the source; omitted values leave a metadata-only update alone.
     """
 
     title: NonEmptyStr | None = None
@@ -155,10 +218,41 @@ class UpdateBlogPatch(ContractModel):
     series_key: KeyStr | None = None
     series_position: int | None = Field(default=None, ge=0)
     status: BlogStatus | None = None
+    cover_image_url: str | None = None
+    cover_image_alt: str | None = None
+    tag_keys: tuple[KeyStr, ...] | None = None
+    tier: BlogTier | None = None
+    difficulty: BlogDifficulty | None = None
+    prerequisites: tuple[NonEmptyStr, ...] | None = None
+    canonical_url: str | None = None
+    published_on: date | None = None
+    content_updated_on: date | None = None
+
+    @field_validator("cover_image_url", "canonical_url")
+    @classmethod
+    def _http_urls_only(cls, value: str | None) -> str | None:
+        if value is not None and not _is_http_url(value):
+            raise ValueError("must be an absolute http(s) URL")
+        return value
+
+    @field_validator("tag_keys")
+    @classmethod
+    def _deduplicated_tags(
+        cls, value: tuple[str, ...] | None
+    ) -> tuple[str, ...] | None:
+        if value is not None and len(value) != len(set(value)):
+            raise ValueError("tag_keys must not contain duplicates")
+        return value
+
+    @model_validator(mode="after")
+    def _cover_pair(self) -> Self:
+        if (self.cover_image_url is None) != (self.cover_image_alt is None):
+            raise ValueError("cover_image_url and cover_image_alt must be supplied together")
+        return self
 
 
 class BlogFilter(ContractModel):
-    """List-view filters. Without tags this is category, series and status."""
+    """List-view filters for category, series, and publication status."""
 
     category_key: KeyStr | None = None
     series_id: SeriesId | None = None
@@ -186,11 +280,11 @@ class MarkdownHeading(ContractModel):
     char_end: int = Field(ge=0)
 
 
-class MarkdownDocument(ContractModel):
+class MarkdownDocument(BlogMetadata):
     """The parser's whole output.
 
     ``body`` is the source with frontmatter stripped — the exact bytes that get
-    stored and hashed. Frontmatter ``tags`` never appears here.
+    stored and hashed.
     """
 
     title: NonEmptyStr | None = None

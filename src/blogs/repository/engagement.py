@@ -25,6 +25,7 @@ from blogs.contracts.engagement import (
     EngagementEvent,
     EngagementKind,
 )
+from blogs.contracts.interaction import BlogEngagementSummary
 from blogs.repository.base import SqlRepository, as_utc
 
 #: PostgreSQL ``date_trunc`` accepts these directly. Mapped through a dict
@@ -83,10 +84,12 @@ class SqlEngagementLog(SqlRepository):
             """
             INSERT INTO engagement_events
                 (id, occurred_at, actor_id, user_id, blog_id, kind, position,
-                 query_id, dwell_ms, scroll_depth, source, dedupe_key, metadata)
+                 query_id, dwell_ms, scroll_depth, source, dedupe_key,
+                 authenticated_at_event, metadata)
             VALUES
                 (%(id)s, %(at)s, %(actor)s, %(user)s, %(blog)s, %(kind)s, %(pos)s,
-                 %(query)s, %(dwell)s, %(scroll)s, %(source)s, %(dedupe)s, %(meta)s)
+                 %(query)s, %(dwell)s, %(scroll)s, %(source)s, %(dedupe)s,
+                 %(authenticated)s, %(meta)s)
             """,
             {
                 "id": event.id,
@@ -101,6 +104,7 @@ class SqlEngagementLog(SqlRepository):
                 "scroll": event.scroll_depth,
                 "source": event.source.value if event.source else None,
                 "dedupe": event.dedupe_key,
+                "authenticated": event.authenticated_at_event,
                 "meta": Jsonb(event.metadata),
             },
         )
@@ -188,8 +192,105 @@ class SqlEngagementLog(SqlRepository):
         return int(row["n"]) if row else 0
 
 
+class SqlBlogEngagementStatsRepository(SqlRepository):
+    async def increment_view(self, *, blog_id: str, authenticated: bool) -> None:
+        await self._execute(
+            """
+            INSERT INTO blog_engagement_stats
+                (blog_id, member_view_count, guest_view_count)
+            VALUES (%(blog)s, %(member)s, %(guest)s)
+            ON CONFLICT (blog_id) DO UPDATE SET
+                member_view_count = blog_engagement_stats.member_view_count
+                                    + EXCLUDED.member_view_count,
+                guest_view_count  = blog_engagement_stats.guest_view_count
+                                    + EXCLUDED.guest_view_count,
+                updated_at        = now()
+            """,
+            {
+                "blog": blog_id,
+                "member": 1 if authenticated else 0,
+                "guest": 0 if authenticated else 1,
+            },
+        )
+
+    async def increment_likes(self, *, blog_id: str, delta: int) -> None:
+        await self._execute(
+            """
+            INSERT INTO blog_engagement_stats (blog_id, like_count)
+            VALUES (%(blog)s, GREATEST(%(delta)s, 0))
+            ON CONFLICT (blog_id) DO UPDATE SET
+                like_count = blog_engagement_stats.like_count + %(delta)s,
+                updated_at = now()
+            """,
+            {"blog": blog_id, "delta": delta},
+        )
+
+    async def get(
+        self, *, blog_id: str, liked_by_user_id: str | None = None
+    ) -> BlogEngagementSummary:
+        row = await self._fetch_one(
+            """
+            SELECT b.id,
+                   COALESCE(s.member_view_count, 0) AS member_view_count,
+                   COALESCE(s.like_count, 0) AS like_count,
+                   CASE WHEN %(user)s::uuid IS NULL THEN NULL ELSE EXISTS (
+                       SELECT 1 FROM blog_likes l
+                       WHERE l.blog_id = b.id AND l.user_id = %(user)s
+                   ) END AS liked_by_me
+            FROM blogs b
+            LEFT JOIN blog_engagement_stats s ON s.blog_id = b.id
+            WHERE b.id = %(blog)s AND b.status = 'published'
+            """,
+            {"blog": blog_id, "user": liked_by_user_id},
+        )
+        if row is None:
+            # The service checks readability before calling this; a miss here
+            # would indicate a concurrent archive and is safely shaped there.
+            return BlogEngagementSummary(
+                blog_id=blog_id,
+                member_view_count=0,
+                like_count=0,
+                liked_by_me=None,
+            )
+        return BlogEngagementSummary(
+            blog_id=str(row["id"]),
+            member_view_count=int(row["member_view_count"]),
+            like_count=int(row["like_count"]),
+            liked_by_me=row["liked_by_me"],
+        )
+
+
+class SqlBlogLikeRepository(SqlRepository):
+    async def add(self, *, blog_id: str, user_id: str, now: datetime) -> bool:
+        affected = await self._execute(
+            """
+            INSERT INTO blog_likes (blog_id, user_id, created_at)
+            VALUES (%(blog)s, %(user)s, %(now)s)
+            ON CONFLICT (blog_id, user_id) DO NOTHING
+            """,
+            {"blog": blog_id, "user": user_id, "now": as_utc(now)},
+        )
+        return affected == 1
+
+    async def remove(self, *, blog_id: str, user_id: str) -> bool:
+        affected = await self._execute(
+            "DELETE FROM blog_likes WHERE blog_id = %(blog)s AND user_id = %(user)s",
+            {"blog": blog_id, "user": user_id},
+        )
+        return affected == 1
+
+
 def _kind_counts(row: DictRow) -> dict[str, int]:
-    return {k: int(row.get(k) or 0) for k in ("impressions", "clicks", "completions")}
+    return {
+        key: int(row.get(key) or 0)
+        for key in (
+            "impressions",
+            "clicks",
+            "completions",
+            "member_views",
+            "guest_views",
+        )
+    }
 
 
 class SqlAnalyticsRepository(SqlRepository):
@@ -202,6 +303,12 @@ class SqlAnalyticsRepository(SqlRepository):
                    count(*) FILTER (WHERE e.kind = 'impression') AS impressions,
                    count(*) FILTER (WHERE e.kind = 'click')      AS clicks,
                    count(*) FILTER (WHERE e.kind = 'complete')   AS completions,
+                   count(*) FILTER (
+                       WHERE e.kind = 'read' AND e.authenticated_at_event
+                   ) AS member_views,
+                   count(*) FILTER (
+                       WHERE e.kind = 'read' AND NOT e.authenticated_at_event
+                   ) AS guest_views,
                    count(DISTINCT e.actor_id)                    AS unique_actors
             FROM engagement_events e
             JOIN blogs b ON b.id = e.blog_id
@@ -221,6 +328,8 @@ class SqlAnalyticsRepository(SqlRepository):
                 clicks=r["clicks"],
                 completions=r["completions"],
                 unique_actors=r["unique_actors"],
+                member_views=r["member_views"],
+                guest_views=r["guest_views"],
             )
             for r in rows
         )
@@ -316,12 +425,37 @@ class SqlAnalyticsRepository(SqlRepository):
                    count(e.id) FILTER (WHERE e.kind = 'complete')   AS completions,
                    count(e.id) FILTER (WHERE e.kind = 'save')       AS saves,
                    count(e.id) FILTER (WHERE e.kind = 'share')      AS shares,
+                   count(e.id) FILTER (
+                       WHERE e.kind = 'read' AND e.authenticated_at_event
+                   ) AS member_views,
+                   count(e.id) FILTER (
+                       WHERE e.kind = 'read' AND NOT e.authenticated_at_event
+                   ) AS guest_views,
+                   count(DISTINCT e.user_id) FILTER (
+                       WHERE e.kind = 'read' AND e.authenticated_at_event
+                   ) AS member_unique_readers,
+                   count(DISTINCT e.actor_id) FILTER (
+                       WHERE e.kind = 'read' AND NOT e.authenticated_at_event
+                   ) AS guest_unique_readers,
                    count(DISTINCT e.actor_id)                       AS unique_actors,
                    count(DISTINCT e.user_id)                        AS unique_users,
                    percentile_cont(0.5) WITHIN GROUP (ORDER BY e.dwell_ms)
                        FILTER (WHERE e.dwell_ms IS NOT NULL)        AS median_dwell,
                    (SELECT count(*) FROM comments cm
-                     WHERE cm.blog_id = b.id AND cm.deleted_at IS NULL) AS comment_count
+                     WHERE cm.blog_id = b.id AND cm.deleted_at IS NULL) AS comment_count,
+                   (SELECT count(*) FROM blog_likes bl
+                     WHERE bl.blog_id = b.id) AS like_count,
+                   (SELECT count(*) FROM (
+                       SELECT er.user_id
+                       FROM engagement_events er
+                       WHERE er.blog_id = b.id
+                         AND er.kind = 'read'
+                         AND er.authenticated_at_event
+                         AND er.occurred_at >= %(start)s
+                         AND er.occurred_at < %(end)s
+                       GROUP BY er.user_id
+                       HAVING count(*) >= 2
+                   ) returning) AS returning_member_readers
             FROM blogs b
             LEFT JOIN engagement_events e
                    ON e.blog_id = b.id
@@ -336,6 +470,8 @@ class SqlAnalyticsRepository(SqlRepository):
 
         impressions = int(row["impressions"])
         clicks = int(row["clicks"])
+        member_unique_readers = int(row["member_unique_readers"])
+        returning_member_readers = int(row["returning_member_readers"])
         return BlogKpis(
             blog_id=str(row["id"]),
             slug=row["slug"],
@@ -349,6 +485,17 @@ class SqlAnalyticsRepository(SqlRepository):
             unique_actors=row["unique_actors"],
             unique_users=row["unique_users"],
             median_dwell_ms=int(row["median_dwell"]) if row["median_dwell"] else None,
+            member_views=row["member_views"],
+            guest_views=row["guest_views"],
+            member_unique_readers=member_unique_readers,
+            guest_unique_readers=row["guest_unique_readers"],
+            returning_member_readers=returning_member_readers,
+            like_count=row["like_count"],
+            recoil_rate=(
+                returning_member_readers / member_unique_readers
+                if member_unique_readers
+                else None
+            ),
             # None rather than 0.0 with no impressions: "nobody saw it" and
             # "everybody ignored it" are different facts.
             click_through_rate=(clicks / impressions) if impressions else None,
@@ -375,6 +522,12 @@ class SqlAnalyticsRepository(SqlRepository):
                    count(*) FILTER (WHERE e.kind = 'complete')   AS completions,
                    count(*) FILTER (WHERE e.kind = 'save')       AS saves,
                    count(*) FILTER (WHERE e.kind = 'comment')    AS comments,
+                   count(*) FILTER (
+                       WHERE e.kind = 'read' AND e.authenticated_at_event
+                   ) AS member_views,
+                   count(*) FILTER (
+                       WHERE e.kind = 'read' AND NOT e.authenticated_at_event
+                   ) AS guest_views,
                    count(DISTINCT e.actor_id)                    AS unique_actors
             FROM engagement_events e
             WHERE e.occurred_at >= %(start)s AND e.occurred_at < %(end)s
@@ -393,6 +546,8 @@ class SqlAnalyticsRepository(SqlRepository):
                 saves=r["saves"],
                 comments=r["comments"],
                 unique_actors=r["unique_actors"],
+                member_views=r["member_views"],
+                guest_views=r["guest_views"],
             )
             for r in rows
         )

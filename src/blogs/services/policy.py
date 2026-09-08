@@ -67,6 +67,9 @@ class DefaultAuthorizationPolicy:
     def can_save(self, principal: Principal) -> bool:
         return _is_user(principal)
 
+    def can_like(self, principal: Principal) -> bool:
+        return _is_user(principal)
+
     # ── Everyone, including anonymous ───────────────────────────────────────
     def can_record_engagement(self, principal: Principal) -> bool:
         """True for anonymous visitors — that is the point of the actor id.

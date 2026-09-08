@@ -26,6 +26,11 @@ from blogs.ports.repositories.content import (
     TaxonomyRepository,
 )
 from blogs.ports.repositories.engagement import AnalyticsRepository, EngagementLog
+from blogs.ports.repositories.engagement import (
+    BlogEngagementStatsRepository,
+    BlogLikeRepository,
+)
+from blogs.ports.repositories.announcement import AnnouncementRepository
 from blogs.ports.repositories.identity import (
     AdminLoginAttemptRepository,
     AnonymousActorRepository,
@@ -64,7 +69,10 @@ class UnitOfWork(Protocol):
     recent_views: RecentViewRepository
 
     engagement: EngagementLog
+    engagement_stats: BlogEngagementStatsRepository
+    likes: BlogLikeRepository
     analytics: AnalyticsRepository
+    announcements: AnnouncementRepository
     outbox: OutboxRepository
 
 
