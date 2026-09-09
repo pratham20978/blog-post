@@ -150,6 +150,11 @@ ERROR_CATALOG: dict[ErrorCategory, ErrorDescriptor] = {
     _C.CATEGORY_UNKNOWN: ErrorDescriptor(
         _S.VALIDATE, _R.NOT_RETRYABLE, "That category does not exist."
     ),
+    _C.CATEGORY_IN_USE: ErrorDescriptor(
+        _S.PERSIST,
+        _R.NOT_RETRYABLE,
+        "That category is assigned to an article. Remove it from every article first.",
+    ),
     _C.SERIES_UNKNOWN: ErrorDescriptor(
         _S.VALIDATE, _R.NOT_RETRYABLE, "That series does not exist."
     ),

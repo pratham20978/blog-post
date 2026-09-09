@@ -549,6 +549,21 @@ class SqlTaxonomyRepository(SqlRepository):
         assert row is not None
         return Category(key=row["key"], label=row["label"], description=row["description"])
 
+    async def delete_category(self, key: str) -> bool:
+        try:
+            return bool(
+                await self._execute("DELETE FROM categories WHERE key = %(k)s", {"k": key})
+            )
+        except errors.IntegrityError as exc:
+            # The same FK means "unknown category" while assigning one and
+            # "category still in use" when deleting from the referenced side.
+            raise translate_integrity_error(
+                exc,
+                overrides={
+                    "blog_categories_category_key_fkey": ErrorCategory.CATEGORY_IN_USE
+                },
+            ) from exc
+
     async def list_series(self) -> tuple[Series, ...]:
         rows = await self._fetch_all(
             "SELECT id, key, title, description FROM series ORDER BY key"
@@ -593,6 +608,20 @@ class SqlTaxonomyRepository(SqlRepository):
             title=row["title"],
             description=row["description"],
         )
+
+    async def delete_series(self, key: str) -> bool:
+        # The FK clears series_id, and the paired position must be cleared first
+        # to preserve blogs_series_position_needs_series. Both statements run
+        # inside the caller's unit-of-work transaction, so this is all-or-none.
+        await self._execute(
+            """
+            UPDATE blogs
+               SET series_position = NULL
+             WHERE series_id = (SELECT id FROM series WHERE key = %(k)s)
+            """,
+            {"k": key},
+        )
+        return bool(await self._execute("DELETE FROM series WHERE key = %(k)s", {"k": key}))
 
 
 _PIN_COLUMNS = (

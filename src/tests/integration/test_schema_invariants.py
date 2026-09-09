@@ -409,3 +409,52 @@ class TestBlogRules:
             stored = await work.blogs.get(blog)
             assert stored is not None and stored.status is BlogStatus.ARCHIVED
             assert await work.comments.count_for_blog(blog) == 1
+
+
+class TestTaxonomyDeletion:
+    async def test_assigned_category_is_refused_until_unassigned(self, uow, ids) -> None:  # type: ignore[no-untyped-def]
+        _, _, blog = await _seed(uow, ids)
+        async with uow.begin() as work:
+            await work.blogs.set_categories(blog_id=blog, category_keys=("ai",))
+
+        with pytest.raises(BlogPlatformError) as exc:
+            async with uow.begin() as work:
+                await work.taxonomy.delete_category("ai")
+        assert exc.value.category is ErrorCategory.CATEGORY_IN_USE
+
+        async with uow.begin() as work:
+            await work.blogs.set_categories(blog_id=blog, category_keys=())
+            assert await work.taxonomy.delete_category("ai") is True
+            assert await work.taxonomy.delete_category("ai") is False
+
+    async def test_deleting_series_keeps_and_ungroups_its_blogs(self, uow, ids) -> None:  # type: ignore[no-untyped-def]
+        admin, _, _ = await _seed(uow, ids)
+        async with uow.begin() as work:
+            series = await work.taxonomy.upsert_series(
+                series_id=ids.new_id(),
+                key="search-systems",
+                title="Search Systems",
+                description=None,
+            )
+            blog = await work.blogs.insert(
+                blog_id=ids.new_id(),
+                slug="series-post",
+                title="Series Post",
+                summary=None,
+                author_id=admin,
+                series_id=series.id,
+                series_position=1,
+                markdown_uri="s3://blogs/series.md",
+                content_sha256=bytes(range(32)),
+                word_count=10,
+                status=BlogStatus.PUBLISHED,
+                published_at=NOW,
+            )
+            assert await work.taxonomy.delete_series("search-systems") is True
+            assert await work.taxonomy.delete_series("search-systems") is False
+
+        async with uow.read() as work:
+            stored = await work.blogs.get(blog.id)
+        assert stored is not None
+        assert stored.series_id is None
+        assert stored.series_position is None

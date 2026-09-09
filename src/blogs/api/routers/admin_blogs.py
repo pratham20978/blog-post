@@ -24,7 +24,15 @@ from blogs.contracts.blog import (
     Series,
     UpdateBlogPatch,
 )
-from blogs.contracts.common import APIResponse, ContractModel, KeyStr, NonEmptyStr, Page
+from blogs.contracts.common import (
+    APIResponse,
+    ContractModel,
+    ErrorCategory,
+    KeyStr,
+    NonEmptyStr,
+    Page,
+)
+from blogs.core.errors import raise_error
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
@@ -352,6 +360,20 @@ async def upsert_category(
     return success(category)
 
 
+@router.delete("/categories/{key}")
+async def delete_category(
+    key: KeyStr,
+    admin: AdminUser,
+    assembled: Assembled,
+    correlation: CorrelationId,
+) -> APIResponse[dict[str, str]]:
+    async with assembled.uow.begin() as uow:
+        deleted = await uow.taxonomy.delete_category(key)
+    if not deleted:
+        raise_error(ErrorCategory.CATEGORY_UNKNOWN, correlation_id=correlation)
+    return success({"key": key}, message="Category deleted.")
+
+
 @router.put("/series")
 async def upsert_series(
     body: SeriesBody, admin: AdminUser, assembled: Assembled
@@ -364,3 +386,17 @@ async def upsert_series(
             description=body.description,
         )
     return success(series)
+
+
+@router.delete("/series/{key}")
+async def delete_series(
+    key: KeyStr,
+    admin: AdminUser,
+    assembled: Assembled,
+    correlation: CorrelationId,
+) -> APIResponse[dict[str, str]]:
+    async with assembled.uow.begin() as uow:
+        deleted = await uow.taxonomy.delete_series(key)
+    if not deleted:
+        raise_error(ErrorCategory.SERIES_UNKNOWN, correlation_id=correlation)
+    return success({"key": key}, message="Series deleted.")

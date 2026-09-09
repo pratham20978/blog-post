@@ -175,6 +175,10 @@ class ErrorCategory(StrEnum):
     #: exact failure reference pins exist to prevent.
     SECTION_REFERENCED_BY_PIN = "SECTION_REFERENCED_BY_PIN"
     CATEGORY_UNKNOWN = "CATEGORY_UNKNOWN"
+    #: A category cannot be removed while an article is still filed under it.
+    #: This is distinct from CATEGORY_UNKNOWN: the requested category exists,
+    #: but deleting it would silently change published content.
+    CATEGORY_IN_USE = "CATEGORY_IN_USE"
     SERIES_UNKNOWN = "SERIES_UNKNOWN"
 
     # ── Interaction ─────────────────────────────────────────────────────────

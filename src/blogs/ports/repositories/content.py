@@ -141,6 +141,10 @@ class TaxonomyRepository(Protocol):
         self, *, key: str, label: str, description: str | None
     ) -> Category: ...
 
+    async def delete_category(self, key: str) -> bool:
+        """Delete an unused category; refuse one assigned to any article."""
+        ...
+
     async def list_series(self) -> tuple[Series, ...]: ...
 
     async def get_series_by_key(self, key: str) -> Series | None: ...
@@ -148,6 +152,10 @@ class TaxonomyRepository(Protocol):
     async def upsert_series(
         self, *, series_id: str, key: str, title: str, description: str | None
     ) -> Series: ...
+
+    async def delete_series(self, key: str) -> bool:
+        """Delete a series; assigned articles become ungrouped by schema policy."""
+        ...
 
 
 class ReferencePinRepository(Protocol):

@@ -4,6 +4,23 @@ FastAPI owns typed Markdown ingestion and reader APIs; the Next.js application
 lives in the `web` submodule. PostgreSQL stores queryable metadata and MinIO
 keeps the canonical Markdown files.
 
+## Interactive blog administration
+
+Use the terminal admin tool instead of rebuilding multipart `curl` commands or
+copying access tokens by hand:
+
+```bash
+./scripts/blog-admin.sh
+```
+
+Press Enter at the target prompt to use `https://api.canery.in`. The tool reads
+the secret admin route and admin email from `.env`, prompts for the password
+without echoing it, signs in, and manages the access token for the current run.
+It can publish Markdown (frontmatter plus optional field overrides), upsert and
+list categories/series, list blogs, archive blogs, and delete taxonomy entries.
+Deleting an assigned category is refused; deleting a series leaves its blogs
+intact and removes only their series assignment.
+
 ## Isolated development stack
 
 The development overlay reuses the existing `canerly_edge` Postgres and MinIO

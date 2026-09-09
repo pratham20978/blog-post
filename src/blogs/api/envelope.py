@@ -59,6 +59,7 @@ HTTP_STATUS_BY_ERROR_CATEGORY: dict[ErrorCategory, int] = {
     _C.COMMENT_ALREADY_EXISTS: 409,
     _C.CATALOG_NAME_TAKEN: 409,
     _C.SECTION_REFERENCED_BY_PIN: 409,
+    _C.CATEGORY_IN_USE: 409,
     # 422: well formed, but semantically impossible to carry out.
     _C.MARKDOWN_INVALID: 422,
     _C.SECTION_ANCHOR_UNKNOWN: 422,

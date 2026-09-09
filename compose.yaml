@@ -85,10 +85,18 @@ services:
         mc mb --ignore-existing "local/$$MEDIA_BUCKET"
         mc anonymous set download "local/$$MEDIA_BUCKET"
         echo "media bucket ready: $$MEDIA_BUCKET (anonymous download)"
+        # The canonical Markdown bucket, private and never anonymously readable.
+        # It is created here rather than left to the API's ensure_bucket(),
+        # because metadata-backfill reads from it and the API is gated behind
+        # that backfill — the API creating it would be a cycle that never breaks.
+        mc mb --ignore-existing "local/$$BLOG_BUCKET"
+        mc anonymous set none "local/$$BLOG_BUCKET"
+        echo "blog bucket ready: $$BLOG_BUCKET (private)"
     environment:
       MC_USER: ${BLOGS_OBJECT_STORE_ACCESS_KEY}
       MC_PASS: ${BLOGS_OBJECT_STORE_SECRET_KEY}
       MEDIA_BUCKET: ${MEDIA_BUCKET:-media}
+      BLOG_BUCKET: ${BLOGS_OBJECT_STORE_BUCKET:-blogs}
     depends_on:
       minio: {condition: service_healthy}
     networks: [edge]
@@ -136,7 +144,10 @@ services:
     environment: *backend_env
     depends_on:
       migrate: {condition: service_completed_successfully}
-      minio: {condition: service_healthy}
+      # minio-init, not minio: a healthy MinIO only means the server answers,
+      # not that the bucket this reads from exists. Waiting on the server alone
+      # let every object fetch fail with NoSuchBucket on a fresh volume.
+      minio-init: {condition: service_completed_successfully}
     networks: [edge]
 
   api:

@@ -4,11 +4,11 @@ summary: "Binary search, KMP, A* and HNSW run one loop. What differs is the stru
 slug: every-search-algorithm-is-the-same-algorithm
 categories: [algorithms]
 tags: [algorithms, binary-search, string-matching, graph-search, nearest-neighbor, performance]
+cover_image_url: "https://minio.canery.in/media/cover-image.png"
+cover_image_alt: "Flow diagram showing the universal search loop: frontier, probe, eliminate, and repeat."
 ---
-
 # Every Search Algorithm Is the Same Algorithm
 
-![A dense grid of small marks narrowing in stages to a single highlighted mark, with the discarded ones left as faint ghosts](https://minio.canery.in/media/cover-image.png)
 
 > [!NOTE]
 > **Insights** — Every search algorithm runs the same loop: hold a set of candidates, probe one, throw away everything the probe ruled out. Binary search, KMP, A\* and HNSW differ in exactly one place — the structure that lets a single probe eliminate more than one candidate. That structure is always prepaid, and comparing search algorithms means comparing what you paid for it, not how fast the loop spins.
@@ -41,8 +41,8 @@ So the real problem is not "how do I search fast". It is: **what relation betwee
 
 Take 16 sorted integers:
 
-| index | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| index | 0 | 1 | 2  | 3  | 4  | 5  | 6  | 7  | 8  | 9  | 10 | 11 | 12 | 13 | 14 | 15 |
+| ----- | - | - | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- |
 | value | 3 | 9 | 14 | 21 | 28 | 35 | 42 | 47 | 53 | 61 | 68 | 74 | 79 | 85 | 91 | 97 |
 
 Look for **61**, which sits at index 9. Do it twice.
@@ -89,11 +89,11 @@ The prepaid structure is sorted order. The probe is a comparison. The eliminatio
 
 Sorted order buys roughly $\log_2 n$ probes instead of $n$, and no comparison-based method can do better — that bound comes back in the math section. The part that gets less attention is that binary search, the most-taught algorithm in computer science, is hard to write correctly and hard to make fast, for two completely unrelated reasons.
 
-**It is hard to write correctly.** In 2006 Joshua Bloch reported that the standard midpoint calculation `(low + high) / 2` overflows once the sum exceeds $2^{31} - 1$, wrapping to a negative number and producing a negative array index. <!-- L22 --> The same defect sat undetected in the JDK's `java.util.Arrays.binarySearch` for about nine years, and before that in the implementation published in Jon Bentley's *Programming Pearls*. <!-- L23 --> The fix is to never form the large sum: compute `low + ((high - low) / 2)`, or use the unsigned shift `(low + high) >>> 1`. <!-- L24 --> The bug is a good reminder that a proof of correctness is a proof about the algorithm, not about the arithmetic the machine actually performs.
+**It is hard to write correctly.** In 2006 Joshua Bloch reported that the standard midpoint calculation `(low + high) / 2` overflows once the sum exceeds $2^{31} - 1$, wrapping to a negative number and producing a negative array index.  The same defect sat undetected in the JDK's `java.util.Arrays.binarySearch` for about nine years, and before that in the implementation published in Jon Bentley's *Programming Pearls*.  The fix is to never form the large sum: compute `low + ((high - low) / 2)`, or use the unsigned shift `(low + high) >>> 1`.  The bug is a good reminder that a proof of correctness is a proof about the algorithm, not about the arithmetic the machine actually performs.
 
-**It is hard to make fast.** The asymptotics say binary search on a sorted array is optimal. The hardware disagrees. Each probe in a binary search jumps to an unpredictable location, so the early probes miss cache and the branch on the comparison result is close to unpredictable. Khuong and Morin tested the alternatives and found that for large $n$, storing the same elements in **Eytzinger order** — the breadth-first layout normally used for binary heaps, where the root sits at index 1 and the children of node $i$ live at $2i$ and $2i+1$ — is usually the fastest layout, beating sorted order with binary search. <!-- L26 --> For small $n$, plain sorted order with a good implementation still wins. <!-- L27 --> Their fast versions use conditional moves to dodge branch mispredictions and explicit prefetching to hide memory latency. <!-- L29 -->
+**It is hard to make fast.** The asymptotics say binary search on a sorted array is optimal. The hardware disagrees. Each probe in a binary search jumps to an unpredictable location, so the early probes miss cache and the branch on the comparison result is close to unpredictable. Khuong and Morin tested the alternatives and found that for large $n$, storing the same elements in **Eytzinger order** — the breadth-first layout normally used for binary heaps, where the root sits at index 1 and the children of node $i$ live at $2i$ and $2i+1$ — is usually the fastest layout, beating sorted order with binary search.  For small $n$, plain sorted order with a good implementation still wins.  Their fast versions use conditional moves to dodge branch mispredictions and explicit prefetching to hide memory latency. 
 
-This is not a settled result, and pretending otherwise would be dishonest. Khuong and Morin note that their conclusion runs counter to earlier experimental work by Brodal, Fagerberg and Jacob, which had found B-tree and van Emde Boas layouts faster at large $n$. <!-- L28 --> Two careful experimental papers, different answers, different hardware eras. Treat layout choice as something to measure on your machine, not something to look up.
+This is not a settled result, and pretending otherwise would be dishonest. Khuong and Morin note that their conclusion runs counter to earlier experimental work by Brodal, Fagerberg and Jacob, which had found B-tree and van Emde Boas layouts faster at large $n$.  Two careful experimental papers, different answers, different hardware eras. Treat layout choice as something to measure on your machine, not something to look up.
 
 The transferable lesson: the elimination rule and the memory layout are independent choices. Binary search fixes the first and says nothing about the second, and the second is often what decides the wall-clock time.
 
@@ -101,9 +101,9 @@ The transferable lesson: the elimination rule and the memory layout are independ
 
 Now the candidates are not values in an array but *alignments* of a pattern against a text. If the text has length $n$ and the pattern length $m$, there are about $n - m + 1$ places the pattern could start, and each one is a candidate.
 
-Test an alignment by comparing characters. The naive method tests one alignment, and on a mismatch shifts the pattern one position and starts over — one probe, one elimination, exactly the linear scan from the worked example. Knuth, Morris and Pratt open their 1977 paper with how bad this gets: matching the pattern $a^n b$ against the text $a^{2n} b$ costs about $(n+1)^2$ character comparisons. <!-- L15 --> Almost every comparison re-examines a character that was already read.
+Test an alignment by comparing characters. The naive method tests one alignment, and on a mismatch shifts the pattern one position and starts over — one probe, one elimination, exactly the linear scan from the worked example. Knuth, Morris and Pratt open their 1977 paper with how bad this gets: matching the pattern $a^n b$ against the text $a^{2n} b$ costs about $(n+1)^2$ character comparisons.  Almost every comparison re-examines a character that was already read.
 
-Their fix — published in *SIAM Journal on Computing* in June 1977, and received by the editors nearly three years before that <!-- L13 --> — is a table computed from the pattern alone, before the text is ever touched. For each prefix of the pattern, it records the longest proper prefix of the pattern that is also a suffix of that prefix. The consequence is the interesting part, and the paper states the reason plainly: your current position in the pattern already carries enough information to recreate the text characters just scanned. <!-- L16 --> You do not need to look at them again, so the text pointer never moves backwards.
+Their fix — published in *SIAM Journal on Computing* in June 1977, and received by the editors nearly three years before that  — is a table computed from the pattern alone, before the text is ever touched. For each prefix of the pattern, it records the longest proper prefix of the pattern that is also a suffix of that prefix. The consequence is the interesting part, and the paper states the reason plainly: your current position in the pattern already carries enough information to recreate the text characters just scanned.  You do not need to look at them again, so the text pointer never moves backwards.
 
 Trace it. Pattern `AABAAC`, text `AABAABAABAAC`.
 
@@ -111,15 +111,15 @@ Trace it. Pattern `AABAAC`, text `AABAABAABAAC`.
 - The naive move: shift the pattern by one, send the text pointer back to position 1. The KMP move: the table says the 5-character match `AABAA` ends with `AA`, which is also how the pattern starts. Those two characters are already verified. Resume comparing at pattern index 2, **leaving the text pointer at position 5**.
 - Pattern index 2 is `B`, text position 5 is `B`. Match. Continue through positions 6 and 7, mismatch again at position 8, apply the table again, and the pattern completes at position 11.
 
-The text pointer visited 0,1,2,3,4,5,6,7,8,9,10,11 and never went back. That is the whole guarantee: $O(m + n)$ time in the worst case, with constants that do not depend on the alphabet size. <!-- L14 --> <!-- L17 --> Figure 4 puts the naive backtrack and the table-driven shift side by side on this example.
+The text pointer visited 0,1,2,3,4,5,6,7,8,9,10,11 and never went back. That is the whole guarantee: $O(m + n)$ time in the worst case, with constants that do not depend on the alphabet size.   Figure 4 puts the naive backtrack and the table-driven shift side by side on this example.
 
 ![Two aligned traces of pattern AABAAC against text AABAABAABAAC: the upper shows naive matching sending the text pointer backwards after a mismatch, the lower shows the KMP shift keeping the text pointer stationary while the pattern slides forward two positions](https://minio.canery.in/media/fig-04-kmp-shift.png)
 
 *Figure 4 — Same mismatch, two responses. The naive scan rewinds the text pointer; KMP slides the pattern and leaves the pointer where it is.*
 
-Boyer and Moore, publishing in the same year, bought a different skip. <!-- L18 --> They scan the pattern **right to left**, so a mismatch at the far end can prove that many alignments are impossible at once, and they precompute how far to jump. The result is unusual: the algorithm usually reads only a fraction of the characters it moves past, and gets *faster* as the pattern gets longer. <!-- L19 -->
+Boyer and Moore, publishing in the same year, bought a different skip.  They scan the pattern **right to left**, so a mismatch at the far end can prove that many alignments are impossible at once, and they precompute how far to jump. The result is unusual: the algorithm usually reads only a fraction of the characters it moves past, and gets *faster* as the pattern gets longer. 
 
-"Usually" is doing real work in that sentence and should not be dropped. That is average behaviour, not a worst-case bound. Cole later established that the search performs roughly $3n$ character comparisons in the worst case and that the bound is tight. <!-- L20 --> The unmodified algorithm is also not linear when the pattern occurs many times in the text; Galil's variant restores a linear worst case. <!-- L21 -->
+"Usually" is doing real work in that sentence and should not be dropped. That is average behaviour, not a worst-case bound. Cole later established that the search performs roughly $3n$ character comparisons in the worst case and that the bound is tight.  The unmodified algorithm is also not linear when the pattern occurs many times in the text; Galil's variant restores a linear worst case. 
 
 So: two algorithms, one year, same problem. KMP prepays a table about the pattern's self-overlap and gets a hard linear guarantee. Boyer–Moore prepays a table about character positions and gets better typical behaviour with a messier worst case. Neither is strictly better, which is exactly what you would expect once you see them as two prices for the same commodity.
 
@@ -127,15 +127,15 @@ So: two algorithms, one year, same problem. KMP prepays a table about the patter
 
 Graph search is where the loop from Figure 1 is most literally visible, because the frontier is an explicit set of nodes.
 
-Go and read Dijkstra's 1959 paper. It is three pages long, and it is not quite the algorithm people describe. <!-- L07 --> He states two problems; the second is finding the minimum-length path between **two given nodes** $P$ and $Q$, and the procedure stops once $Q$ joins the set of nodes with known minimum paths. <!-- L01 --> <!-- L02 --> It is a single-pair algorithm in the original, not a single-source-to-everywhere one.
+Go and read Dijkstra's 1959 paper. It is three pages long, and it is not quite the algorithm people describe.  He states two problems; the second is finding the minimum-length path between **two given nodes** $P$ and $Q$, and the procedure stops once $Q$ joins the set of nodes with known minimum paths.   It is a single-pair algorithm in the original, not a single-source-to-everywhere one.
 
-The mechanism rests on optimal substructure: if $R$ lies on the minimal path from $P$ to $Q$, then the minimal path from $P$ to $R$ is known as part of it. <!-- L03 --> Nodes are kept in three sets — those with a known minimum path, those adjacent to that set, and the rest — and each step moves the frontier node of minimum distance into the known set. <!-- L04 -->
+The mechanism rests on optimal substructure: if $R$ lies on the minimal path from $P$ to $Q$, then the minimal path from $P$ to $R$ is known as part of it.  Nodes are kept in three sets — those with a known minimum path, those adjacent to that set, and the rest — and each step moves the frontier node of minimum distance into the known set. 
 
-Two things are *not* in the paper. There is no priority queue and no heap, and there is no asymptotic analysis anywhere in it. <!-- L05 --> The justification Dijkstra actually gives is about storage: his method holds fewer than $n$ branches at a time, where the alternatives he compares against needed all of them. <!-- L06 --> The familiar $O(m + n \log n)$ bound is not his; it is the amortised bound from Fredman and Tarjan's Fibonacci heaps, published in the 1980s. <!-- L08 --> The algorithm and its complexity are separated by nearly three decades, and conflating them is the most common thing said wrongly about Dijkstra's algorithm.
+Two things are *not* in the paper. There is no priority queue and no heap, and there is no asymptotic analysis anywhere in it.  The justification Dijkstra actually gives is about storage: his method holds fewer than $n$ branches at a time, where the alternatives he compares against needed all of them.  The familiar $O(m + n \log n)$ bound is not his; it is the amortised bound from Fredman and Tarjan's Fibonacci heaps, published in the 1980s.  The algorithm and its complexity are separated by nearly three decades, and conflating them is the most common thing said wrongly about Dijkstra's algorithm.
 
 In the vocabulary of this post, Dijkstra's elimination rule is: *once a node enters the known set, no shorter path to it exists, so every other route to it is eliminated.* That is a strong rule, and it is bought entirely by non-negative edge weights. The frontier grows outward from $P$ in all directions at once, because nothing tells the algorithm which direction $Q$ is in.
 
-A\* buys that missing information. Published in 1968 by Hart, Nilsson and Raphael, it orders the frontier not by distance travelled but by distance travelled plus an estimate of distance remaining. <!-- L09 --> If the estimate never overstates the true remaining cost — the property called **admissibility** — A\* still returns a least-cost path. <!-- L10 --> The estimate is the prepaid structure. On a map it might be straight-line distance, computable in advance because you know the coordinates.
+A\* buys that missing information. Published in 1968 by Hart, Nilsson and Raphael, it orders the frontier not by distance travelled but by distance travelled plus an estimate of distance remaining.  If the estimate never overstates the true remaining cost — the property called **admissibility** — A\* still returns a least-cost path.  The estimate is the prepaid structure. On a map it might be straight-line distance, computable in advance because you know the coordinates.
 
 The effect is visible in Figure 5: the same graph, the same obstacle, two very different frontier shapes.
 
@@ -143,7 +143,7 @@ The effect is visible in Figure 5: the same graph, the same obstacle, two very d
 
 *Figure 5 — Same grid, same wall, same cost-11 path. Running both on this grid, Dijkstra expands 58 cells and A\* expands 33. The shape of the shaded region, not the count, is the thing to notice.*
 
-The A\* story has a correction in it that most write-ups omit. The 1968 paper also claimed a stronger property: that A\* expands no more nodes than any other algorithm with the same information. That claim needed the **consistency** assumption, and the authors published a correction in 1972. <!-- L11 --> Dechter and Pearl later pinned down the precise situation: with merely admissible estimates A\* is not optimal in that sense, and with consistent ones it is. <!-- L12 --> If you have ever read "A\* is optimally efficient" with no conditions attached, that is the uncorrected 1968 claim still in circulation.
+The A\* story has a correction in it that most write-ups omit. The 1968 paper also claimed a stronger property: that A\* expands no more nodes than any other algorithm with the same information. That claim needed the **consistency** assumption, and the authors published a correction in 1972.  Dechter and Pearl later pinned down the precise situation: with merely admissible estimates A\* is not optimal in that sense, and with consistent ones it is.  If you have ever read "A\* is optimally efficient" with no conditions attached, that is the uncorrected 1968 claim still in circulation.
 
 The relationship is cleaner than it looks: A\* with a heuristic of zero *is* Dijkstra's algorithm. They are one algorithm with a knob, and the knob is how much you prepaid for knowing where the goal is.
 
@@ -153,7 +153,7 @@ The last case is the one where the previous three tricks all fail.
 
 Given a query vector and a few million stored vectors, find the nearest. There is no total order to bisect — sorting by one coordinate tells you almost nothing in 700 dimensions. There is no self-overlap table, because there is no pattern. A heuristic exists, but the geometry is too weak for exact elimination to prune much.
 
-So the deal changes. Instead of buying *certain* elimination, you buy *probable* elimination and accept that the answer is sometimes wrong. HNSW — posted as a preprint in 2016 and published in *IEEE TPAMI* in 2020, so the version most people cite predates peer review by four years <!-- L32 --> — builds a multi-layer proximity graph: each element appears in layers up to a maximum drawn from an exponentially decaying distribution, so the top layer is sparse with long-range links and the bottom layer is dense with short-range ones. <!-- L30 --> A search enters at the top, greedily walks toward the query using the long hops, drops a layer, and repeats with finer steps. Figure 6 shows the descent.
+So the deal changes. Instead of buying *certain* elimination, you buy *probable* elimination and accept that the answer is sometimes wrong. HNSW — posted as a preprint in 2016 and published in *IEEE TPAMI* in 2020, so the version most people cite predates peer review by four years  — builds a multi-layer proximity graph: each element appears in layers up to a maximum drawn from an exponentially decaying distribution, so the top layer is sparse with long-range links and the bottom layer is dense with short-range ones.  A search enters at the top, greedily walks toward the query using the long hops, drops a layer, and repeats with finer steps. Figure 6 shows the descent.
 
 ![Three stacked layers of a proximity graph with a query point: the sparse top layer has few nodes and long edges, the middle layer more nodes and medium edges, the dense bottom layer many nodes and short edges, with a path descending through the layers toward the query](https://minio.canery.in/media/fig-06-hnsw-layers.png)
 
@@ -161,7 +161,7 @@ So the deal changes. Instead of buying *certain* elimination, you buy *probable*
 
 The elimination rule here is a soft one: *nodes far from the greedy path are assumed to be far from the query, and are never examined.* That assumption is usually right and occasionally wrong, and when it is wrong you silently miss the true nearest neighbour.
 
-Be careful with how this method's cost is described. The paper's abstract says the scale separation "allows a logarithmic complexity scaling" — that is a design and empirical claim about how the structure behaves, not a proven worst-case bound of the kind binary search has. <!-- L31 --> The honest way to compare these systems is the one the ANN-Benchmarks work established: not a single speed number, but a recall-versus-throughput curve, because every implementation can be tuned to trade one for the other. <!-- L33 --> A vector index that answers in 2 ms tells you nothing until you know what recall it hit while doing it.
+Be careful with how this method's cost is described. The paper's abstract says the scale separation "allows a logarithmic complexity scaling" — that is a design and empirical claim about how the structure behaves, not a proven worst-case bound of the kind binary search has.  The honest way to compare these systems is the one the ANN-Benchmarks work established: not a single speed number, but a recall-versus-throughput curve, because every implementation can be tuned to trade one for the other.  A vector index that answers in 2 ms tells you nothing until you know what recall it hit while doing it.
 
 That trade is the real news. The first three sections bought elimination with certainty intact. This one shows what happens when the geometry will not support that: you can still buy the skip, but the currency changes from build time to correctness.
 
@@ -171,27 +171,35 @@ Three symbols, defined on use. Let $n$ be the number of candidates, $p$ the numb
 
 Finishing a search means eliminating every candidate except the answer, so for any search algorithm at all:
 
-$$\sum_{i=1}^{p} E_i \;=\; n$$
+$$
+\sum_{i=1}^{p} E_i \;=\; n
+$$
 
 Every search spends exactly $n$ eliminations; the algorithms differ only in how many probes they need to buy them. In the worked example, the linear scan bought 16 eliminations at one per probe, and the ordered search bought the same 16 in three probes as $8 + 5 + 2 + 1$.
 
 Now the lower bound. If a probe has two useful outcomes, then after $p$ probes an algorithm can distinguish at most $2^p$ different cases. To identify which one of $n$ candidates is the answer, you need $2^p \ge n$, which gives:
 
-$$p \;\ge\; \log_2 n$$
+$$
+p \;\ge\; \log_2 n
+$$
 
-No comparison-based search of a sorted array can beat about $\log_2 n$ probes in the worst case, because each comparison yields at most one bit and you need $\log_2 n$ bits to name the answer. <!-- L25 --> Binary search achieves $\lfloor \log_2 n \rfloor + 1$ probes in the worst case, which is why nothing has replaced it in the comparison model — and why Eytzinger layouts win on speed without contradicting the bound. They perform the *same number* of comparisons; they just perform them against memory that is already in cache.
+No comparison-based search of a sorted array can beat about $\log_2 n$ probes in the worst case, because each comparison yields at most one bit and you need $\log_2 n$ bits to name the answer.  Binary search achieves $\lfloor \log_2 n \rfloor + 1$ probes in the worst case, which is why nothing has replaced it in the comparison model — and why Eytzinger layouts win on speed without contradicting the bound. They perform the *same number* of comparisons; they just perform them against memory that is already in cache.
 
 For graph search, define $g(v)$ as the cost of the best path found so far from the start to $v$, and $h(v)$ as an estimate of the remaining cost from $v$ to the goal. A\* orders the frontier by:
 
-$$f(v) \;=\; g(v) + h(v)$$
+$$
+f(v) \;=\; g(v) + h(v)
+$$
 
 The algorithm always expands the frontier node with the smallest $f$. Setting $h(v) = 0$ everywhere makes $f(v) = g(v)$, which orders the frontier purely by distance from the start — that is Dijkstra's algorithm exactly, which is the sense in which it is a special case of A\*.
 
 The two conditions that keep coming up differ like this. Writing $h^*(v)$ for the true remaining cost, and $c(u,v)$ for the cost of the edge from $u$ to $v$:
 
-$$\text{admissible:}\quad h(v) \le h^*(v) \qquad\qquad \text{consistent:}\quad h(u) \le c(u,v) + h(v)$$
+$$
+\text{admissible:}\quad h(v) \le h^*(v) \qquad\qquad \text{consistent:}\quad h(u) \le c(u,v) + h(v)
+$$
 
-Admissibility says the estimate never overstates what is left, and it is what guarantees the path A\* returns is a least-cost path. Consistency is the stronger, more local condition — the estimate may not drop by more than the cost of the edge you crossed — and it is what the 1972 correction and Dechter and Pearl's later analysis identified as the requirement for the node-expansion optimality claim. <!-- L11 --> <!-- L12 --> Every consistent heuristic is admissible; the reverse does not hold.
+Admissibility says the estimate never overstates what is left, and it is what guarantees the path A\* returns is a least-cost path. Consistency is the stronger, more local condition — the estimate may not drop by more than the cost of the edge you crossed — and it is what the 1972 correction and Dechter and Pearl's later analysis identified as the requirement for the node-expansion optimality claim.   Every consistent heuristic is admissible; the reverse does not hold.
 
 Figure 7 collects all four structures against these terms.
 
@@ -262,11 +270,11 @@ Pass `h=lambda v: 0` and this function is Dijkstra's algorithm. The `continue` l
 
 Three more that bite in practice.
 
-**Reading an asymptotic bound as a speed prediction.** Binary search and an Eytzinger-layout search perform the same number of comparisons and can differ substantially in wall-clock time on large arrays, because one of them is fighting the cache and the other is not. <!-- L26 --> Asymptotics rank algorithms by comparison count. They do not rank implementations, and above a few thousand elements the layout can matter more than the bound.
+**Reading an asymptotic bound as a speed prediction.** Binary search and an Eytzinger-layout search perform the same number of comparisons and can differ substantially in wall-clock time on large arrays, because one of them is fighting the cache and the other is not.  Asymptotics rank algorithms by comparison count. They do not rank implementations, and above a few thousand elements the layout can matter more than the bound.
 
-**Quoting A\*'s optimality without its condition.** "A\* expands the fewest nodes of any algorithm with the same heuristic" is the 1968 claim that the authors corrected in 1972; it needs consistency, not just admissibility. <!-- L11 --> <!-- L12 --> If you are debugging a search that re-expands nodes it has already closed, an admissible-but-inconsistent heuristic is a strong first suspect, and it is not a bug in your implementation.
+**Quoting A\*'s optimality without its condition.** "A\* expands the fewest nodes of any algorithm with the same heuristic" is the 1968 claim that the authors corrected in 1972; it needs consistency, not just admissibility.   If you are debugging a search that re-expands nodes it has already closed, an admissible-but-inconsistent heuristic is a strong first suspect, and it is not a bug in your implementation.
 
-**Treating approximate results as exact ones.** An ANN index returns a neighbour, not necessarily *the* neighbour. Reporting its latency without its recall describes half the system, since the same index tuned differently gives a different point on the same curve. <!-- L33 --> If a retrieval system quietly degrades in quality, an index that was tuned for throughput and measured only for latency is the usual cause.
+**Treating approximate results as exact ones.** An ANN index returns a neighbour, not necessarily *the* neighbour. Reporting its latency without its recall describes half the system, since the same index tuned differently gives a different point on the same curve.  If a retrieval system quietly degrades in quality, an index that was tuned for throughput and measured only for latency is the usual cause.
 
 The unifying frame has a limit of its own. It explains algorithms that *eliminate* candidates, and it says nothing useful about hashing, which does not narrow a frontier at all — it computes the answer's location directly. A hash lookup is not a fast search; it is the absence of a search. When it fits your access pattern, it beats everything in this post, which is why the first question to ask is not which search to use but whether you need to search at all.
 

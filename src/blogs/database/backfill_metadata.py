@@ -109,18 +109,26 @@ async def apply(*, database: Database, patches: tuple[MetadataPatch, ...]) -> in
                     content_updated_on = COALESCE(content_updated_on,
                                                   %(content_updated_on)s)
                 WHERE id = %(id)s
+                  -- Every parameter here is cast explicitly. Postgres analyses
+                  -- an UPDATE's WHERE clause *before* its SET clause, so at
+                  -- this point a bare parameter has no type yet and `IS NOT
+                  -- NULL` gives it none — the COALESCE above that would resolve
+                  -- it is read too late. Without the casts the statement fails
+                  -- to parse: "could not determine data type of parameter $1".
                   AND (
-                    (summary IS NULL AND %(summary)s IS NOT NULL)
-                    OR (cover_image_url IS NULL AND %(cover_url)s IS NOT NULL)
+                    (summary IS NULL AND %(summary)s::text IS NOT NULL)
+                    OR (cover_image_url IS NULL
+                        AND %(cover_url)s::text IS NOT NULL)
                     OR (cardinality(tag_keys) = 0 AND cardinality(%(tags)s::text[]) > 0)
-                    OR (tier IS NULL AND %(tier)s IS NOT NULL)
-                    OR (difficulty IS NULL AND %(difficulty)s IS NOT NULL)
+                    OR (tier IS NULL AND %(tier)s::text IS NOT NULL)
+                    OR (difficulty IS NULL AND %(difficulty)s::text IS NOT NULL)
                     OR (cardinality(prerequisites) = 0
                         AND cardinality(%(prerequisites)s::text[]) > 0)
-                    OR (canonical_url IS NULL AND %(canonical_url)s IS NOT NULL)
-                    OR (published_on IS NULL AND %(published_on)s IS NOT NULL)
+                    OR (canonical_url IS NULL
+                        AND %(canonical_url)s::text IS NOT NULL)
+                    OR (published_on IS NULL AND %(published_on)s::date IS NOT NULL)
                     OR (content_updated_on IS NULL
-                        AND %(content_updated_on)s IS NOT NULL)
+                        AND %(content_updated_on)s::date IS NOT NULL)
                   )
                 """,
                 {
