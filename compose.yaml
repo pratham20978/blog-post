@@ -86,9 +86,9 @@ services:
         mc anonymous set download "local/$$MEDIA_BUCKET"
         echo "media bucket ready: $$MEDIA_BUCKET (anonymous download)"
         # The canonical Markdown bucket, private and never anonymously readable.
-        # It is created here rather than left to the API's ensure_bucket(),
-        # because metadata-backfill reads from it and the API is gated behind
-        # that backfill — the API creating it would be a cycle that never breaks.
+        # It is created here rather than left to the API's ensure_bucket() so
+        # both normal startup and explicit maintenance commands have the same
+        # deterministic bucket policy.
         mc mb --ignore-existing "local/$$BLOG_BUCKET"
         mc anonymous set none "local/$$BLOG_BUCKET"
         echo "blog bucket ready: $$BLOG_BUCKET (private)"
@@ -101,11 +101,10 @@ services:
       minio: {condition: service_healthy}
     networks: [edge]
 
-  # Runs to completion, then the API waits on its exit code. Migrations are kept
-  # out of application startup on purpose — N replicas starting at once would
-  # race over the same table, and a schema change is a decision rather than a
-  # side effect of a deploy. One container, once, is the compromise.
+  # Explicit maintenance service, invoked by scripts/migrate.sh. It is behind a
+  # profile so a routine `docker compose up` cannot mutate the schema.
   migrate:
+    profiles: [maintenance]
     image: ${BACKEND_IMAGE:-prathamverma0803/blog-backend:latest}
     command: ["python", "-m", "blogs.database.migrator", "up"]
     restart: "no"
@@ -133,12 +132,14 @@ services:
       db: {condition: service_healthy}
     networks: [edge]
 
-  # Reads the canonical Markdown objects only after the schema exists. It is
-  # idempotent, but remains a separate release step so application startup has
-  # no hidden schema or data mutations.
+  # Explicit legacy maintenance service. It reads canonical Markdown only when
+  # scripts/migrate.sh --metadata-backfill is deliberately requested.
   metadata-backfill:
+    profiles: [maintenance]
     image: ${BACKEND_IMAGE:-prathamverma0803/blog-backend:latest}
-    command: ["python", "-m", "blogs.database.backfill_metadata", "--apply"]
+    # Dry-run by default. scripts/migrate.sh runs this validation first and
+    # invokes --apply only when explicitly requested.
+    command: ["python", "-m", "blogs.database.backfill_metadata"]
     restart: "no"
     env_file: [.env]
     environment: *backend_env
@@ -158,7 +159,7 @@ services:
     depends_on:
       db: {condition: service_healthy}
       minio: {condition: service_healthy}
-      metadata-backfill: {condition: service_completed_successfully}
+      minio-init: {condition: service_completed_successfully}
     networks: [edge]
 
   # Relays transactional outbox events and drains durable new-blog email
@@ -172,7 +173,6 @@ services:
     environment: *backend_env
     depends_on:
       db: {condition: service_healthy}
-      migrate: {condition: service_completed_successfully}
     networks: [edge]
 
   web:

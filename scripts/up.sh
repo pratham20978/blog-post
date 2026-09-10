@@ -40,9 +40,10 @@ if [[ "${PULL:-1}" == "1" ]]; then
 fi
 
 bold "Starting"
-# Migrations and the idempotent metadata backfill run as separate one-shot
-# containers. The API waits on both exit codes, so a failure stops the deploy
-# instead of exposing code against a partial schema or partial metadata set.
+# Schema upgrades and the legacy Markdown metadata backfill are deliberate
+# maintenance operations. Run scripts/migrate.sh before this command when a
+# release contains migrations; routine restarts must never rewrite metadata or
+# fail because an old database row points at an object that no longer exists.
 "${compose[@]}" up -d --remove-orphans
 
 bold "Status"

@@ -66,25 +66,35 @@ the browser or written to logs.
 
 ## Metadata rollout
 
-Migration `009` must be applied before the idempotent source backfill. The
-backfill is dry-run by default and refuses all writes if any blog cannot be
-loaded or parsed:
+Migrations are explicit maintenance operations and do not run during
+`scripts/up.sh`. Apply pending migrations before starting a release:
 
 ```bash
-python -m blogs.database.migrator up
-python -m blogs.database.backfill_metadata
-python -m blogs.database.backfill_metadata --apply
+./scripts/migrate.sh
+./scripts/up.sh
 ```
+
+Migration `009` has a one-time source backfill. It is not needed on routine
+deploys or restarts. When deliberately running that rollout, the command first
+performs a dry run and refuses all writes if any blog cannot be loaded or
+parsed:
+
+```bash
+./scripts/migrate.sh --metadata-backfill
+```
+
+Use `./scripts/migrate.sh --dev` for the development database and add
+`--metadata-backfill` only when its legacy rows require the same rollout.
 
 ## Reader engagement and announcements
 
 Migration `010` starts qualified view counters at zero, adds member likes and
-creates durable announcement campaigns. Apply it before deploying the API and
-web, then run the outbox worker as its own process:
+creates durable announcement campaigns. Apply it before starting the release;
+the deployed Compose stack starts the outbox worker as its own process:
 
 ```bash
-python -m blogs.database.migrator up
-python -m blogs.workers.outbox
+./scripts/migrate.sh
+./scripts/up.sh
 ```
 
 The worker uses the same Resend configuration as OTP delivery. Publication is

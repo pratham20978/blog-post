@@ -48,6 +48,7 @@ services:
     networks: [edge]
 
   migrate-dev:
+    profiles: [maintenance]
     build:
       context: .
       target: development
@@ -57,10 +58,11 @@ services:
     networks: [edge]
 
   metadata-backfill-dev:
+    profiles: [maintenance]
     build:
       context: .
       target: development
-    command: ["python", "-m", "blogs.database.backfill_metadata", "--apply"]
+    command: ["python", "-m", "blogs.database.backfill_metadata"]
     restart: "no"
     environment: *backend-dev-env
     depends_on:
@@ -79,7 +81,7 @@ services:
     ports:
       - "127.0.0.1:8001:8000"
     depends_on:
-      metadata-backfill-dev: {condition: service_completed_successfully}
+      minio-init-dev: {condition: service_completed_successfully}
     networks: [edge]
 
   outbox-worker-dev:
@@ -91,8 +93,6 @@ services:
     environment: *backend-dev-env
     volumes:
       - ./src:/app/src:ro
-    depends_on:
-      migrate-dev: {condition: service_completed_successfully}
     networks: [edge]
 
   web-dev:
