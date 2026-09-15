@@ -38,7 +38,11 @@ services:
     # It is therefore frozen — no upstream fixes land here. Track a current tag
     # instead (MINIO_IMAGE in .env) if you would rather have patches and drive
     # administration with `mc`; you keep a plain object browser either way.
-    image: ${MINIO_IMAGE:-minio/minio:RELEASE.2025-04-22T22-12-26Z}
+    #
+    # quay.io, not Docker Hub: MinIO removed the `minio/minio` repository from
+    # the Hub (a pull there now fails with "repository does not exist"), and
+    # quay.io is where every tag, this one included, still lives.
+    image: ${MINIO_IMAGE:-quay.io/minio/minio:RELEASE.2025-04-22T22-12-26Z}
     restart: unless-stopped
     command: server /data --console-address ":9001"
     environment:
@@ -74,7 +78,7 @@ services:
   #
   # Idempotent, so it runs on every `up` and re-asserts the policy.
   minio-init:
-    image: ${MINIO_IMAGE:-minio/minio:RELEASE.2025-04-22T22-12-26Z}
+    image: ${MINIO_IMAGE:-quay.io/minio/minio:RELEASE.2025-04-22T22-12-26Z}
     restart: "no"
     entrypoint: /bin/sh
     command:

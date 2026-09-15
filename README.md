@@ -16,8 +16,10 @@ copying access tokens by hand:
 Press Enter at the target prompt to use `https://api.canery.in`. The tool reads
 the secret admin route and admin email from `.env`, prompts for the password
 without echoing it, signs in, and manages the access token for the current run.
-It can publish Markdown (frontmatter plus optional field overrides), upsert and
-list categories/series, list blogs, archive blogs, and delete taxonomy entries.
+It can publish Markdown, select an existing blog to replace or update, and
+assign categories and a series from numbered taxonomy lists. It also upserts
+and lists categories/series, lists and archives blogs, and deletes taxonomy
+entries.
 Deleting an assigned category is refused; deleting a series leaves its blogs
 intact and removes only their series assignment.
 

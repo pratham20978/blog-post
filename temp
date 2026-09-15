@@ -1,0 +1,129 @@
+image processing:['theorem', 'four stage pipeline(sample -> filter -> transform -> decide)', " kernels as the calculars"]
+
+
+# Plan — the blog-forge brief for the Image Processing pillar
+
+## Context
+
+You want one **L4 pillar post on image processing** that acts as the parent of a
+series. The pain it addresses: image processing is the topic where the math loses
+people — too many algorithms, no shared frame, and explainers that either hand-wave
+the math or dump it without showing how anyone actually evaluates it.
+
+So this post's job is the **foundations and the map**: what image processing *is*,
+everything it considers, taught through the math and the signal view, with advanced
+OpenCV as the tooling lens. It deliberately does **not** cover every corner — each
+area names the child post that will go deep on it later.
+
+Constraints you set: strictly math + signals + OpenCV; explain it in a very simple
+way alongside the math, because readers otherwise cannot follow how the math is
+evaluated, how a signal is detected, or how the notebook experiment works; and **do
+not install or persist anything** — math only, with the libraries and functions shown
+as examples at the end.
+
+The deliverable of this plan is **only the brief handed to blog-forge**. Pipeline
+mechanics, figure rendering and file locations are already handled and are not
+restated here.
+
+---
+
+## The brief to hand blog-forge
+
+```
+Write a new blog post using the blog-authoring skill (vendored at
+.claude/blog-forge — read its SKILL.md and references directly).
+
+TOPIC
+The foundations of image processing, taught as signal processing.
+
+WHAT THIS POST IS
+A pillar/parent post. Its job is to tell the reader what image processing
+actually is and everything it considers, from first principles, through the
+math and the signal view. It is the root of a series: every area it names gets
+its own dedicated child post later. So it establishes the frame and the shared
+math, and it stops there.
+
+WHAT THIS POST IS NOT
+Not a survey of every image-processing algorithm. Not a tutorial for any single
+algorithm. Where an area deserves depth, state the one idea that belongs in the
+frame and explicitly mark it as a future child post rather than expanding it here.
+
+TIER AND AUDIENCE
+Tier L4 (pillar): 7,500–10,000 words, 12–18 figures, 25–40 sources.
+difficulty: advanced. category: algorithms.
+Reader: a CS student or working engineer who can code but freezes at the math.
+
+THE THREE THINGS TO STAY STRICTLY ON
+1. The math — the actual operators, not their names.
+2. The signal view — an image as a 2-D signal, and what each operation does to it.
+3. OpenCV, advanced level — used as the lens for what the math looks like in
+   practice, including the places where the API and the math disagree.
+
+THE HARD REQUIREMENT ON HOW IT TEACHES
+Every piece of math must be paired with a very simple, concrete explanation of
+how it is actually evaluated. Readers do not fail on the symbols, they fail on
+not knowing what is being computed, what "detecting the signal" means as an
+operation, and what an experiment on this would even look like. So for each
+operator: show it on small real numbers by hand first, then the general form,
+then one plain sentence saying what it means. Never present a symbol before a
+number.
+
+EXPERIMENTS AND CODE — READ THIS CAREFULLY
+Do not install any packages. Do not create or run a notebook. Nothing gets
+persisted to the environment. All math is worked by hand in the post.
+Consequently: no measured charts, no timings, no benchmark numbers. If a curve
+is shown it is labelled in the caption as a model, never as measurement.
+Code in the post is illustrative and explicitly marked as not executed here.
+Close with a section that shows the tooling concretely: which libraries
+(OpenCV, NumPy, and what else) and which specific functions map to which piece
+of the math the post just taught — so the reader knows exactly what to reach
+for when they do run it themselves.
+
+WORKED EXAMPLE
+One small grayscale patch, traced fully by hand with real integer values, small
+enough to follow on paper. Reuse those same numbers later when the general form
+appears, so the abstraction collapses back onto something the reader already
+computed.
+
+FIGURES
+All figures are diagrams and math illustrations — no data plots, since there is
+no measured data. Every figure must be our own redraw, referenced by the prose,
+numbered, captioned, and given alt text.
+
+RESEARCH
+Run the full L4 research pass before drafting. Primary sources: the standard
+image-processing textbook literature, the original papers for any named
+operator, the OpenCV official documentation, and OpenCV source where the
+documented behaviour and the actual behaviour differ. Do not skip the
+disagreement rung — contested attributions, operators whose optimality claims
+depend on assumptions readers do not check, and API behaviour that does not
+match its name are exactly the material this post needs.
+
+FRONTMATTER
+Carry both schemas in one block: the blog-forge fields the validator requires
+(title, slug, date, summary, tags, category, tier, difficulty,
+reading_minutes) plus the keys the canery parser reads (categories,
+cover_image_url, cover_image_alt). Extra keys are ignored by the platform, so
+one block satisfies both.
+
+PIPELINE
+Run phase 0 through the checkpoints. Stop at Checkpoint A with the source list,
+and at Checkpoint B with the outline and figure plan — do not draft prose before
+the outline is approved. Title and slug are settled at Checkpoint B.
+```
+
+---
+
+## What I expect back at each checkpoint
+
+| Checkpoint | What lands | What to check |
+|---|---|---|
+| A | `research/ledger.md` | 25–40 sources, every claim has a condition column, disagreement rung is not empty |
+| B | `outline.md` | per-section word budget, 12–18 figure plan, and the padding test — every section names one thing the reader can do afterward that no other section gives them |
+| C | `blog.md` + assets + manifest | gate report, and each named area points at its future child post |
+
+## Verification
+
+- `python3 .claude/blog-forge/scripts/validate_post.py posts/<slug>/` — expect a clean pass, since the brief keeps both frontmatter schemas in one block.
+- `assets/checklist.md` by hand — the judgment checks the script cannot make.
+- Read the post cold for the one thing that matters here: does every equation have a number worked before it, and a plain sentence after it.

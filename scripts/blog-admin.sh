@@ -35,6 +35,7 @@ Usage: ./scripts/blog-admin.sh
 
 Interactive admin tool for:
   - publishing a Markdown blog
+  - updating a blog's Markdown, categories, series, and typed properties
   - creating or updating a category
   - creating or updating a series
   - listing blogs, categories, and series
@@ -348,12 +349,13 @@ authenticated_json_request() {
 }
 
 authenticated_form_request() {
-  local url="$1"
-  shift
+  local method="$1"
+  local url="$2"
+  shift 2
 
   if ! last_http_status="$(curl --silent --show-error \
     --proto '=http,https' --connect-timeout 10 --max-time 120 \
-    --config "$auth_config" --request POST "$@" \
+    --config "$auth_config" --request "$method" "$@" \
     --output "$response_file" --write-out '%{http_code}' "$url")"; then
     warn "could not reach $api_base"
     return 1
@@ -365,7 +367,7 @@ authenticated_form_request() {
     admin_login || return 1
     if ! last_http_status="$(curl --silent --show-error \
       --proto '=http,https' --connect-timeout 10 --max-time 120 \
-      --config "$auth_config" --request POST "$@" \
+      --config "$auth_config" --request "$method" "$@" \
       --output "$response_file" --write-out '%{http_code}' "$url")"; then
       warn "could not reach $api_base"
       return 1
@@ -401,6 +403,142 @@ append_form_value() {
   form_array+=(--form-string "$field=$value")
 }
 
+select_blog() {
+  local id_variable="$1"
+  local json_variable="$2"
+  local status choice selected_id selected_json
+  local -a rows
+
+  prompt status "Blog status to search (published/draft/archived)" "published"
+  case "$status" in
+    published|draft|archived) ;;
+    *) warn "status must be published, draft, or archived"; return 1 ;;
+  esac
+
+  authenticated_json_request GET \
+    "$admin_root/blogs?status=$status&limit=100" || return 1
+  mapfile -t rows < <(jq -r '.data.items[] | [.id, .slug, .title] | @tsv' "$response_file")
+  if ((${#rows[@]} == 0)); then
+    warn "no $status blogs were found"
+    return 1
+  fi
+
+  printf '\n%-5s %-30s %s\n' "NO." "SLUG" "TITLE"
+  local index id slug title
+  for index in "${!rows[@]}"; do
+    IFS=$'\t' read -r id slug title <<< "${rows[$index]}"
+    printf '%-5s %-30s %s\n' "$((index + 1))" "$slug" "$title"
+  done
+
+  prompt choice "Blog number"
+  [[ "$choice" =~ ^[0-9]+$ ]] && ((choice >= 1 && choice <= ${#rows[@]})) || {
+    warn "choose a blog number from 1 to ${#rows[@]}"
+    return 1
+  }
+  IFS=$'\t' read -r selected_id _ <<< "${rows[$((choice - 1))]}"
+  selected_json="$(jq -c --arg id "$selected_id" \
+    '.data.items[] | select(.id == $id)' "$response_file")"
+  [[ -n "$selected_json" ]] || { warn "the selected blog was not returned"; return 1; }
+
+  printf -v "$id_variable" '%s' "$selected_id"
+  printf -v "$json_variable" '%s' "$selected_json"
+}
+
+select_categories() {
+  local output_variable="$1"
+  local current_csv="${2:-}"
+  local selection token key marker selected_csv=""
+  local -a rows requested selected=()
+  local -A seen=()
+
+  public_json_request GET "$api_base/api/v1/categories" || {
+    show_api_error
+    return 1
+  }
+  mapfile -t rows < <(jq -r '.data[] | [.key, .label] | @tsv' "$response_file")
+  if ((${#rows[@]} == 0)); then
+    warn "no categories exist; create one first"
+    return 1
+  fi
+
+  printf '\nCategories (* currently assigned):\n'
+  local index label
+  for index in "${!rows[@]}"; do
+    IFS=$'\t' read -r key label <<< "${rows[$index]}"
+    marker=" "
+    [[ ",$current_csv," == *",$key,"* ]] && marker="*"
+    printf '  %2s) [%s] %-28s %s\n' "$((index + 1))" "$marker" "$key" "$label"
+  done
+  info "Enter comma-separated numbers. Press Enter to keep current values or use Markdown frontmatter."
+  prompt selection "Categories"
+  if [[ -z "$selection" ]]; then
+    printf -v "$output_variable" ''
+    return 0
+  fi
+
+  IFS=',' read -r -a requested <<< "$selection"
+  for token in "${requested[@]}"; do
+    token="${token#"${token%%[![:space:]]*}"}"
+    token="${token%"${token##*[![:space:]]}"}"
+    if [[ "$token" =~ ^[0-9]+$ ]] && ((token >= 1 && token <= ${#rows[@]})); then
+      IFS=$'\t' read -r key _ <<< "${rows[$((token - 1))]}"
+    else
+      key="$(jq -r --arg key "$token" '.data[] | select(.key == $key) | .key' \
+        "$response_file" | head -n 1)"
+      [[ -n "$key" ]] || { warn "unknown category selection: $token"; return 1; }
+    fi
+    if [[ -z "${seen[$key]+present}" ]]; then
+      seen[$key]=1
+      selected+=("$key")
+    fi
+  done
+
+  ((${#selected[@]} > 0)) || { warn "select at least one category"; return 1; }
+  selected_csv="$(IFS=,; printf '%s' "${selected[*]}")"
+  printf -v "$output_variable" '%s' "$selected_csv"
+}
+
+select_series() {
+  local output_variable="$1"
+  local current_id="${2:-}"
+  local choice key id title description marker
+  local -a rows
+
+  public_json_request GET "$api_base/api/v1/series" || {
+    show_api_error
+    return 1
+  }
+  mapfile -t rows < <(jq -r \
+    '.data[] | [.id, .key, .title, (.description // "")] | @tsv' "$response_file")
+  if ((${#rows[@]} == 0)); then
+    warn "no series exist; create one first"
+    return 1
+  fi
+
+  printf '\nSeries (* currently assigned):\n'
+  printf '   0)     Keep current value or use Markdown frontmatter\n'
+  local index
+  for index in "${!rows[@]}"; do
+    IFS=$'\t' read -r id key title description <<< "${rows[$index]}"
+    marker=" "
+    [[ "$id" == "$current_id" ]] && marker="*"
+    printf '  %2s) [%s] %-28s %s\n' "$((index + 1))" "$marker" "$key" "$title"
+    [[ -n "$description" ]] && printf '          %s\n' "$description"
+  done
+
+  prompt choice "Series number" "0"
+  if [[ "$choice" == "0" || -z "$choice" ]]; then
+    printf -v "$output_variable" ''
+    return 0
+  fi
+  [[ "$choice" =~ ^[0-9]+$ ]] && ((choice >= 1 && choice <= ${#rows[@]})) || {
+    warn "choose a series number from 0 to ${#rows[@]}"
+    return 1
+  }
+  IFS=$'\t' read -r _ key _ <<< "${rows[$((choice - 1))]}"
+  printf -v "$output_variable" '%s' "$key"
+}
+
 publish_blog() {
   local file_path status use_overrides
   local title summary slug categories series series_position
@@ -431,9 +569,15 @@ publish_blog() {
     prompt title "Title"
     prompt summary "Summary/description"
     prompt slug "Slug"
-    prompt categories "Category keys (comma-separated)"
-    prompt series "Series key"
-    prompt series_position "Series position (0 or greater)"
+    select_categories categories || return 1
+    select_series series || return 1
+    if [[ -n "$series" ]]; then
+      prompt series_position "Series position (0 or greater)" "0"
+      [[ "$series_position" =~ ^[0-9]+$ ]] || {
+        warn "series position must be 0 or greater"
+        return 1
+      }
+    fi
     prompt cover_image_url "Cover image URL"
     if [[ -n "$cover_image_url" ]]; then
       prompt cover_image_alt "Cover image alt text"
@@ -474,7 +618,116 @@ publish_blog() {
   append_form_value form_args published_on "$published_on"
   append_form_value form_args content_updated_on "$content_updated_on"
 
-  authenticated_form_request "$admin_root/blogs" "${form_args[@]}" || return 1
+  authenticated_form_request POST "$admin_root/blogs" "${form_args[@]}" || return 1
+  show_api_success
+}
+
+update_blog() {
+  local blog_id selected_blog file_path edit_properties
+  local title summary categories series series_position
+  local cover_image_url cover_image_alt tags tier difficulty prerequisites
+  local canonical_url published_on content_updated_on status
+  local current_categories current_series_id current_series_position
+  local -a form_args=()
+
+  bold "Update a blog"
+  select_blog blog_id selected_blog || return 1
+  current_categories="$(jq -r '.category_keys | join(",")' <<< "$selected_blog")"
+  current_series_id="$(jq -r '.series_id // ""' <<< "$selected_blog")"
+  current_series_position="$(jq -r '.series_position // ""' <<< "$selected_blog")"
+
+  printf '\nSelected: %s\n' "$(jq -r '"\(.title) (\(.slug))"' <<< "$selected_blog")"
+  printf 'Current categories: %s\n' "${current_categories:-none}"
+  printf 'Current series position: %s\n' "${current_series_position:-none}"
+
+  prompt file_path "Replacement Markdown file (optional)"
+  if [[ "$file_path" == '~/'* ]]; then
+    file_path="${HOME}/${file_path:2}"
+  fi
+  if [[ -n "$file_path" ]]; then
+    [[ -f "$file_path" ]] || { warn "file does not exist: $file_path"; return 1; }
+    form_args+=(--form "file=@${file_path};type=text/markdown")
+  fi
+
+  prompt edit_properties "Update blog properties? (Y/n)" "Y"
+  title=""; summary=""; categories=""; series=""; series_position=""
+  cover_image_url=""; cover_image_alt=""; tags=""; tier=""; difficulty=""
+  prerequisites=""; canonical_url=""; published_on=""; content_updated_on=""
+  status=""
+
+  if [[ "${edit_properties,,}" == "y" || "${edit_properties,,}" == "yes" ]]; then
+    if [[ -n "$file_path" ]]; then
+      info "Empty values use replacement Markdown frontmatter. Explicit values override it."
+    else
+      info "Empty values keep the existing blog property."
+    fi
+    prompt title "Title"
+    prompt summary "Summary/description"
+    select_categories categories "$current_categories" || return 1
+    select_series series "$current_series_id" || return 1
+    if [[ -n "$series" ]]; then
+      prompt series_position "Series position (0 or greater)" "${current_series_position:-0}"
+      [[ "$series_position" =~ ^[0-9]+$ ]] || {
+        warn "series position must be 0 or greater"
+        return 1
+      }
+    fi
+    prompt cover_image_url "Cover image URL"
+    if [[ -n "$cover_image_url" ]]; then
+      prompt cover_image_alt "Cover image alt text"
+      [[ -n "$cover_image_alt" ]] || {
+        warn "cover alt text is required with a cover URL"
+        return 1
+      }
+    fi
+    prompt tags "Tag keys (comma-separated)"
+    prompt tier "Tier (L1/L2/L3/L4)"
+    if [[ -n "$tier" && ! "$tier" =~ ^L[1-4]$ ]]; then
+      warn "tier must be L1, L2, L3, or L4"
+      return 1
+    fi
+    prompt difficulty "Difficulty (beginner/intermediate/advanced)"
+    if [[ -n "$difficulty" && ! "$difficulty" =~ ^(beginner|intermediate|advanced)$ ]]; then
+      warn "difficulty must be beginner, intermediate, or advanced"
+      return 1
+    fi
+    prompt prerequisites "Prerequisites (comma-separated)"
+    prompt canonical_url "Canonical URL"
+    prompt published_on "Editorial publish date (YYYY-MM-DD)"
+    prompt content_updated_on "Editorial update date (YYYY-MM-DD)"
+    prompt status "New status (published/draft/archived; Enter keeps current)"
+    if [[ -n "$status" && ! "$status" =~ ^(published|draft|archived)$ ]]; then
+      warn "status must be published, draft, or archived"
+      return 1
+    fi
+  fi
+
+  [[ -n "$file_path" || "${edit_properties,,}" == "y" || "${edit_properties,,}" == "yes" ]] || {
+    info "Nothing selected for update."
+    return 0
+  }
+
+  append_form_value form_args title "$title"
+  append_form_value form_args summary "$summary"
+  append_form_value form_args categories "$categories"
+  append_form_value form_args series "$series"
+  append_form_value form_args series_position "$series_position"
+  append_form_value form_args cover_image_url "$cover_image_url"
+  append_form_value form_args cover_image_alt "$cover_image_alt"
+  append_form_value form_args tags "$tags"
+  append_form_value form_args tier "$tier"
+  append_form_value form_args difficulty "$difficulty"
+  append_form_value form_args prerequisites "$prerequisites"
+  append_form_value form_args canonical_url "$canonical_url"
+  append_form_value form_args published_on "$published_on"
+  append_form_value form_args content_updated_on "$content_updated_on"
+  append_form_value form_args status "$status"
+
+  if ((${#form_args[@]} == 0)); then
+    info "No property values were entered. Nothing changed."
+    return 0
+  fi
+  authenticated_form_request PATCH "$admin_root/blogs/$blog_id" "${form_args[@]}" || return 1
   show_api_success
 }
 
@@ -596,19 +849,21 @@ main_menu() {
   while true; do
     bold "What would you like to do?"
     printf '  1) Publish blog\n'
-    printf '  2) Add/update category\n'
-    printf '  3) Add/update series\n'
-    printf '  4) List resources\n'
-    printf '  5) Archive/delete resource\n'
+    printf '  2) Update blog\n'
+    printf '  3) Add/update category\n'
+    printf '  4) Add/update series\n'
+    printf '  5) List resources\n'
+    printf '  6) Archive/delete resource\n'
     printf '  0) Exit\n'
     prompt choice "Action" "1"
 
     case "$choice" in
       1) publish_blog || true ;;
-      2) upsert_category || true ;;
-      3) upsert_series || true ;;
-      4) list_resources || true ;;
-      5) delete_resource || true ;;
+      2) update_blog || true ;;
+      3) upsert_category || true ;;
+      4) upsert_series || true ;;
+      5) list_resources || true ;;
+      6) delete_resource || true ;;
       0|q|quit|exit) info "Bye."; return 0 ;;
       *) warn "unknown action: $choice" ;;
     esac
