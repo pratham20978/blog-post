@@ -550,12 +550,6 @@ class SqlAnonymousActorRepository(SqlRepository):
         )
         return _to_actor(row) if row else None
 
-    async def touch(self, actor_id: str, at: datetime) -> None:
-        await self._execute(
-            "UPDATE anonymous_actors SET last_seen_at = %(at)s WHERE id = %(id)s",
-            {"at": as_utc(at), "id": actor_id},
-        )
-
     async def mark_merged(self, *, actor_id: str, user_id: str, at: datetime) -> None:
         # First merge wins: an actor token replayed after sign-in must not
         # re-point an established history at a different account.

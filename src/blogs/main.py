@@ -76,10 +76,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     # Registered before any router, so a failure inside a route is always shaped.
     register_exception_handlers(app)
 
-    # Identity is resolved here, once per request, before any route runs.
-    # Added after the exception handlers and before CORS so that it sits inside
-    # the handler stack: a credential failure it defers is raised by the
-    # `principal` dependency and still becomes a proper envelope.
+    # Correlation metadata and lazily issued actor tokens cross the request
+    # boundary here. Identity itself is resolved by the `principal` dependency,
+    # so public routes, probes and 404s never create anonymous actors.
     app.add_middleware(IdentityMiddleware)
 
     if resolved.debug:

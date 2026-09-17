@@ -193,24 +193,104 @@ class SqlEngagementLog(SqlRepository):
 
 
 class SqlBlogEngagementStatsRepository(SqlRepository):
-    async def increment_view(self, *, blog_id: str, authenticated: bool) -> None:
-        await self._execute(
+    async def record_unique_reader(
+        self,
+        *,
+        blog_id: str,
+        actor_id: str,
+        user_id: str | None,
+        authenticated: bool,
+        at: datetime,
+    ) -> bool:
+        """Claim a logical reader and advance counters exactly once."""
+        reader_kind = "user" if user_id is not None else "actor"
+        reader_id = user_id or actor_id
+        row = await self._fetch_one(
             """
-            INSERT INTO blog_engagement_stats
-                (blog_id, member_view_count, guest_view_count)
-            VALUES (%(blog)s, %(member)s, %(guest)s)
-            ON CONFLICT (blog_id) DO UPDATE SET
-                member_view_count = blog_engagement_stats.member_view_count
-                                    + EXCLUDED.member_view_count,
-                guest_view_count  = blog_engagement_stats.guest_view_count
-                                    + EXCLUDED.guest_view_count,
-                updated_at        = now()
+            WITH claimed AS (
+                INSERT INTO blog_unique_readers
+                    (blog_id, reader_kind, reader_id, first_viewed_at,
+                     authenticated_at_first_read)
+                VALUES (%(blog)s, %(kind)s, %(reader)s, %(at)s, %(authenticated)s)
+                ON CONFLICT DO NOTHING
+                RETURNING blog_id, authenticated_at_first_read
+            ), updated AS (
+                INSERT INTO blog_engagement_stats
+                    (blog_id, member_view_count, guest_view_count,
+                     unique_reader_count)
+                SELECT blog_id,
+                       CASE WHEN authenticated_at_first_read THEN 1 ELSE 0 END,
+                       CASE WHEN authenticated_at_first_read THEN 0 ELSE 1 END,
+                       1
+                FROM claimed
+                ON CONFLICT (blog_id) DO UPDATE SET
+                    member_view_count = blog_engagement_stats.member_view_count
+                                        + EXCLUDED.member_view_count,
+                    guest_view_count  = blog_engagement_stats.guest_view_count
+                                        + EXCLUDED.guest_view_count,
+                    unique_reader_count = blog_engagement_stats.unique_reader_count
+                                          + EXCLUDED.unique_reader_count,
+                    updated_at = now()
+                RETURNING blog_id
+            )
+            SELECT EXISTS (SELECT 1 FROM claimed) AS claimed,
+                   (SELECT count(*) FROM updated) AS updated
             """,
             {
                 "blog": blog_id,
-                "member": 1 if authenticated else 0,
-                "guest": 0 if authenticated else 1,
+                "kind": reader_kind,
+                "reader": reader_id,
+                "at": as_utc(at),
+                "authenticated": authenticated,
             },
+        )
+        assert row is not None
+        return bool(row["claimed"])
+
+    async def merge_actor_reader(self, *, actor_id: str, user_id: str) -> None:
+        """Merge a guest claim into its account without double-counting."""
+        await self._execute(
+            """
+            WITH removed AS (
+                DELETE FROM blog_unique_readers
+                WHERE reader_kind = 'actor' AND reader_id = %(actor)s
+                RETURNING blog_id, first_viewed_at, authenticated_at_first_read
+            ), inserted AS (
+                INSERT INTO blog_unique_readers
+                    (blog_id, reader_kind, reader_id, first_viewed_at,
+                     authenticated_at_first_read)
+                SELECT blog_id, 'user', %(user)s, first_viewed_at,
+                       authenticated_at_first_read
+                FROM removed
+                ON CONFLICT DO NOTHING
+                RETURNING blog_id
+            ), duplicate_counts AS (
+                SELECT r.blog_id,
+                       count(*) FILTER (
+                           WHERE r.authenticated_at_first_read
+                       ) AS member_duplicates,
+                       count(*) FILTER (
+                           WHERE NOT r.authenticated_at_first_read
+                       ) AS guest_duplicates,
+                       count(*) AS total_duplicates
+                FROM removed r
+                WHERE NOT EXISTS (
+                    SELECT 1 FROM inserted i WHERE i.blog_id = r.blog_id
+                )
+                GROUP BY r.blog_id
+            )
+            UPDATE blog_engagement_stats stats
+            SET member_view_count = stats.member_view_count
+                                    - counts.member_duplicates,
+                guest_view_count = stats.guest_view_count
+                                   - counts.guest_duplicates,
+                unique_reader_count = stats.unique_reader_count
+                                      - counts.total_duplicates,
+                updated_at = now()
+            FROM duplicate_counts counts
+            WHERE stats.blog_id = counts.blog_id
+            """,
+            {"actor": actor_id, "user": user_id},
         )
 
     async def increment_likes(self, *, blog_id: str, delta: int) -> None:
@@ -231,6 +311,7 @@ class SqlBlogEngagementStatsRepository(SqlRepository):
         row = await self._fetch_one(
             """
             SELECT b.id,
+                   COALESCE(s.unique_reader_count, 0) AS unique_reader_count,
                    COALESCE(s.member_view_count, 0) AS member_view_count,
                    COALESCE(s.like_count, 0) AS like_count,
                    CASE WHEN %(user)s::uuid IS NULL THEN NULL ELSE EXISTS (
@@ -248,12 +329,14 @@ class SqlBlogEngagementStatsRepository(SqlRepository):
             # would indicate a concurrent archive and is safely shaped there.
             return BlogEngagementSummary(
                 blog_id=blog_id,
+                unique_reader_count=0,
                 member_view_count=0,
                 like_count=0,
                 liked_by_me=None,
             )
         return BlogEngagementSummary(
             blog_id=str(row["id"]),
+            unique_reader_count=int(row["unique_reader_count"]),
             member_view_count=int(row["member_view_count"]),
             like_count=int(row["like_count"]),
             liked_by_me=row["liked_by_me"],

@@ -1,10 +1,9 @@
 """Resolving who is calling — including when nobody is signed in.
 
-This is the front door for every request. It returns a ``Principal``, and the
-important property is that it always returns one: an unauthenticated visitor
-gets a real, server-issued actor rather than ``None``. Downstream code therefore
-never branches on "is there a caller"; engagement, recent views and reads take
-one path whether or not an account exists.
+This is the front door for every identity-dependent request. It returns a
+``Principal``, and the important property is that it always returns one: an
+unauthenticated visitor gets a real, server-issued actor rather than ``None``.
+Public stateless reads never call it.
 
 The actor token is signed by us. A client-chosen device id would be trivially
 forgeable, and forging one means writing engagement as someone else — corrupting
@@ -87,7 +86,6 @@ class ActorService:
                 # failed request.
                 logger.info("actor token rejected; minting a replacement")
                 return await self._mint()
-            await self._touch(actor_id)
             return ResolvedCaller(principal=AnonymousPrincipal(actor_id=actor_id))
 
         return await self._mint()
@@ -107,12 +105,3 @@ class ActorService:
             principal=AnonymousPrincipal(actor_id=actor_id),
             issued_actor_token=self._actor.issue(actor_id, now=self._clock.now()),
         )
-
-    async def _touch(self, actor_id: str) -> None:
-        """Move ``last_seen_at``. Best-effort — a lost touch costs nothing, and
-        it must never be the reason a page fails to render."""
-        try:
-            async with self._uow.begin() as uow:
-                await uow.actors.touch(actor_id, self._clock.now())
-        except BlogPlatformError:
-            logger.debug("actor touch failed", exc_info=True)

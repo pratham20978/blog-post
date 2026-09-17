@@ -144,6 +144,7 @@ class BlogSummary(BlogMetadata):
     category_keys: tuple[KeyStr, ...] = ()
     word_count: int = Field(ge=0)
     reading_minutes: int = Field(ge=0)
+    unique_reader_count: int = Field(default=0, ge=0)
     member_view_count: int = Field(default=0, ge=0)
     like_count: int = Field(default=0, ge=0)
     published_at: datetime | None = None
@@ -171,6 +172,7 @@ class BlogDetail(BlogMetadata):
     content_sha256: NonEmptyStr
     word_count: int = Field(ge=0)
     reading_minutes: int = Field(ge=0)
+    unique_reader_count: int = Field(default=0, ge=0)
     member_view_count: int = Field(default=0, ge=0)
     like_count: int = Field(default=0, ge=0)
     published_at: datetime | None = None

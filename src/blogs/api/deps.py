@@ -5,11 +5,10 @@ the caller's ``Principal``. Nothing else — there is no tenant, project or
 workspace scope in this system, and the ladder of scoped addresses that used to
 live in this module belonged to a different application.
 
-``principal`` is the interesting one, because it always succeeds for a reader.
-An unauthenticated visitor is issued an actor and comes back as an
-``AnonymousPrincipal``; ``current_user`` is the dependency that demands an
-account, and ``require_admin`` the one that demands the admin. Routes therefore
-declare what they need instead of re-deriving it.
+``principal`` is the interesting one: it resolves identity lazily and always
+succeeds for a reader. An unauthenticated visitor is issued an actor only when
+a route actually needs one; ``current_user`` demands an account, and
+``require_admin`` demands the admin.
 """
 
 from __future__ import annotations
@@ -21,7 +20,7 @@ from fastapi import Depends, Header, Request
 
 from blogs.contracts.common import ErrorCategory
 from blogs.contracts.identity import Principal, UserPrincipal
-from blogs.core.errors import BlogPlatformError, raise_error
+from blogs.core.errors import raise_error
 
 if TYPE_CHECKING:
     from blogs.bootstrap import Container
@@ -66,29 +65,22 @@ CorrelationId = Annotated[str, Depends(correlation_id)]
 
 
 async def principal(request: Request, correlation: CorrelationId) -> Principal:
-    """The caller, as resolved by ``IdentityMiddleware``.
+    """Resolve identity only for routes that explicitly need a caller.
 
-    This does not re-derive anything. Identity is decided once per request, in
-    ``api/middleware.py``, and read here — so a route cannot end up with a
-    different answer from a log line about the same request.
-
-    What it *does* do is raise. A bad credential is deferred by the middleware
-    (an exception thrown there escapes Starlette's handlers and becomes an
-    unshaped 500), so the failure surfaces here, inside handler scope, where it
-    turns into a proper envelope.
+    Public content, probes and unmatched paths never invoke this dependency,
+    so they remain read-only instead of manufacturing anonymous actors.
     """
-    error = getattr(request.state, "auth_error", None)
-    if isinstance(error, BlogPlatformError):
-        raise error
-
     resolved = getattr(request.state, "principal", None)
     if resolved is None:
-        # The middleware runs on every non-exempt path, so this means the
-        # container was not assembled — a startup fault, not a caller mistake.
-        raise RuntimeError(
-            "no principal on the request: IdentityMiddleware did not run or "
-            "the application container is not assembled"
+        assembled = container(request)
+        caller = await assembled.actor_service.resolve(
+            authorization=request.headers.get("authorization"),
+            actor_token=request.headers.get(ACTOR_HEADER),
         )
+        request.state.principal = caller.principal
+        if caller.issued_actor_token:
+            request.state.issued_actor_token = caller.issued_actor_token
+        resolved = caller.principal
     return resolved
 
 

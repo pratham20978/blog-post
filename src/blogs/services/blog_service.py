@@ -450,7 +450,11 @@ class BlogService:
             return await uow.blogs.list(filter=filter, cursor=cursor, limit=resolved)
 
     async def get_by_slug(
-        self, *, slug: str, principal: Principal, correlation_id: str | None = None
+        self,
+        *,
+        slug: str,
+        principal: Principal | None = None,
+        correlation_id: str | None = None,
     ) -> BlogDetail:
         async with self._uow.read() as uow:
             blog = await uow.blogs.get_by_slug(slug)
@@ -460,7 +464,11 @@ class BlogService:
         return blog
 
     async def get_content(
-        self, *, slug: str, principal: Principal, correlation_id: str | None = None
+        self,
+        *,
+        slug: str,
+        principal: Principal | None = None,
+        correlation_id: str | None = None,
     ) -> BlogContent:
         """Fetch the article body, exactly as authored.
 
@@ -482,7 +490,11 @@ class BlogService:
     # ── Internals ───────────────────────────────────────────────────────────
 
     def _assert_visible(
-        self, blog: BlogDetail, principal: Principal, *, correlation_id: str | None
+        self,
+        blog: BlogDetail,
+        principal: Principal | None,
+        *,
+        correlation_id: str | None,
     ) -> None:
         """Drafts and archives are the admin's alone.
 
@@ -491,7 +503,7 @@ class BlogService:
         """
         if blog.status is BlogStatus.PUBLISHED:
             return
-        if self._policy.can_edit_blog(principal):
+        if principal is not None and self._policy.can_edit_blog(principal):
             return
         raise_error(ErrorCategory.BLOG_NOT_FOUND, correlation_id=correlation_id)
 

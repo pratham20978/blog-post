@@ -64,7 +64,21 @@ class EngagementLog(Protocol):
 
 
 class BlogEngagementStatsRepository(Protocol):
-    async def increment_view(self, *, blog_id: str, authenticated: bool) -> None: ...
+    async def record_unique_reader(
+        self,
+        *,
+        blog_id: str,
+        actor_id: str,
+        user_id: str | None,
+        authenticated: bool,
+        at: datetime,
+    ) -> bool:
+        """Claim a reader once per blog and update counters only on success."""
+        ...
+
+    async def merge_actor_reader(self, *, actor_id: str, user_id: str) -> None:
+        """Canonicalise an anonymous reader as a user without double-counting."""
+        ...
 
     async def increment_likes(self, *, blog_id: str, delta: int) -> None: ...
 

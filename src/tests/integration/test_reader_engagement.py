@@ -88,16 +88,22 @@ async def test_member_and_guest_views_are_counted_separately(
     assert await engagement.record(principal=member, command=_read(blog.id, "member-2"))
 
     summary = await engagement.summary(principal=guest, blog_id=blog.id)
-    assert summary.member_view_count == 2
+    assert summary.unique_reader_count == 2
+    assert summary.member_view_count == 1
     assert summary.like_count == 0
     assert summary.liked_by_me is None
     async with uow.read() as work:
         row = await work.engagement_stats._fetch_one(
-            "SELECT member_view_count, guest_view_count FROM blog_engagement_stats "
+            "SELECT unique_reader_count, member_view_count, guest_view_count "
+            "FROM blog_engagement_stats "
             "WHERE blog_id = %(blog)s",
             {"blog": blog.id},
         )
-    assert row == {"member_view_count": 2, "guest_view_count": 1}
+    assert row == {
+        "unique_reader_count": 2,
+        "member_view_count": 1,
+        "guest_view_count": 1,
+    }
 
 
 async def test_beacon_replay_does_not_increment_view_projection(
@@ -109,7 +115,37 @@ async def test_beacon_replay_does_not_increment_view_projection(
     assert await engagement.record(principal=member, command=command) is True
     assert await engagement.record(principal=member, command=command) is False
     summary = await engagement.summary(principal=member, blog_id=blog.id)
+    assert summary.unique_reader_count == 1
     assert summary.member_view_count == 1
+
+
+async def test_repeat_reads_and_multiple_devices_count_one_reader(
+    engagement, uow, ids, clock
+) -> None:  # type: ignore[no-untyped-def]
+    blog = await _seed_blog(uow, ids, clock)
+    member = await _reader(uow, ids, clock, 1)
+    other_device = UserPrincipal(
+        actor_id=ids.new_id(),
+        user_id=member.user_id,
+        is_admin=False,
+    )
+
+    assert await engagement.record(principal=member, command=_read(blog.id, "visit-1"))
+    assert await engagement.record(principal=member, command=_read(blog.id, "visit-2"))
+    assert await engagement.record(
+        principal=other_device, command=_read(blog.id, "visit-3")
+    )
+
+    summary = await engagement.summary(principal=member, blog_id=blog.id)
+    assert summary.unique_reader_count == 1
+    assert summary.member_view_count == 1
+    async with uow.read() as work:
+        assert await work.engagement.count_for_actor(member.actor_id) == 2
+        claims = await work.engagement_stats._fetch_one(
+            "SELECT count(*) AS n FROM blog_unique_readers WHERE blog_id = %(blog)s",
+            {"blog": blog.id},
+        )
+    assert claims == {"n": 1}
 
 
 async def test_guest_read_stays_guest_after_account_attribution(
@@ -140,13 +176,59 @@ async def test_guest_read_stays_guest_after_account_attribution(
             "WHERE kind = 'read'"
         )
         stats = await work.engagement_stats._fetch_one(
-            "SELECT member_view_count, guest_view_count FROM blog_engagement_stats "
+            "SELECT unique_reader_count, member_view_count, guest_view_count "
+            "FROM blog_engagement_stats "
             "WHERE blog_id = %(blog)s",
             {"blog": blog.id},
         )
     assert str(event["user_id"]) == user.id
     assert event["authenticated_at_event"] is False
-    assert stats == {"member_view_count": 0, "guest_view_count": 1}
+    assert stats == {
+        "unique_reader_count": 1,
+        "member_view_count": 0,
+        "guest_view_count": 1,
+    }
+
+
+async def test_actor_merge_collapses_a_reader_already_known_on_another_device(
+    engagement, uow, ids, clock
+) -> None:  # type: ignore[no-untyped-def]
+    blog = await _seed_blog(uow, ids, clock)
+    first_actor = ids.new_id()
+    second_actor = ids.new_id()
+    user_id = ids.new_id()
+    async with uow.begin() as work:
+        await work.actors.create(actor_id=first_actor, user_agent=None, client_ip=None)
+        await work.actors.create(actor_id=second_actor, user_agent=None, client_ip=None)
+
+    await engagement.record(
+        principal=AnonymousPrincipal(actor_id=first_actor),
+        command=_read(blog.id, "first-device"),
+    )
+    await engagement.record(
+        principal=AnonymousPrincipal(actor_id=second_actor),
+        command=_read(blog.id, "second-device"),
+    )
+
+    async with uow.begin() as work:
+        await work.engagement_stats.merge_actor_reader(
+            actor_id=first_actor, user_id=user_id
+        )
+        await work.engagement_stats.merge_actor_reader(
+            actor_id=second_actor, user_id=user_id
+        )
+    async with uow.read() as work:
+        row = await work.engagement_stats._fetch_one(
+            "SELECT unique_reader_count, member_view_count, guest_view_count "
+            "FROM blog_engagement_stats WHERE blog_id = %(blog)s",
+            {"blog": blog.id},
+        )
+
+    assert row == {
+        "unique_reader_count": 1,
+        "member_view_count": 0,
+        "guest_view_count": 1,
+    }
 
 
 async def test_like_put_and_delete_are_idempotent_under_concurrency(

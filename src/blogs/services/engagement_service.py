@@ -125,8 +125,12 @@ class EngagementService:
                 return False
 
             if command.blog_id and command.kind in _VIEW_KINDS:
-                await uow.engagement_stats.increment_view(
-                    blog_id=command.blog_id, authenticated=user_id is not None
+                await uow.engagement_stats.record_unique_reader(
+                    blog_id=command.blog_id,
+                    actor_id=principal.actor_id,
+                    user_id=user_id,
+                    authenticated=user_id is not None,
+                    at=now,
                 )
                 await uow.recent_views.record(
                     actor_id=principal.actor_id,

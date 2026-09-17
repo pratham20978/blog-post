@@ -102,3 +102,9 @@ the deployed Compose stack starts the outbox worker as its own process:
 The worker uses the same Resend configuration as OTP delivery. Publication is
 not coupled to email availability; failed deliveries are leased and retried,
 and readers can manage new-blog email preferences from their profile.
+
+Migration `011` separates unique readers from repeat-read events. It rebuilds
+the public counters from distinct user/actor identities and installs the claim
+table that keeps concurrent reloads from double-counting. It also ships with a
+stateless web health endpoint; deploy the backend migration before the updated
+web image.

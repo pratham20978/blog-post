@@ -714,6 +714,9 @@ class AuthService:
             merged = await uow.engagement.attribute_to_user(
                 actor_id=actor_id, user_id=user.id
             )
+            await uow.engagement_stats.merge_actor_reader(
+                actor_id=actor_id, user_id=user.id
+            )
             await uow.recent_views.attribute_to_user(actor_id=actor_id, user_id=user.id)
             await uow.actors.mark_merged(actor_id=actor_id, user_id=user.id, at=now)
 

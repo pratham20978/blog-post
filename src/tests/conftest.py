@@ -90,6 +90,7 @@ async def uow(database: Database) -> AsyncIterator[SqlUnitOfWorkFactory]:
                 series, categories, blogs, blog_categories, blog_sections,
                 reference_pins, comments, markers, catalogs, catalog_items,
                 engagement_events, engagement_dedupe, recent_views,
+                blog_unique_readers,
                 outbox_events, consumed_events
             RESTART IDENTITY CASCADE
             """

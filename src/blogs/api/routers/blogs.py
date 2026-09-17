@@ -6,7 +6,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Query, Request, Response
 
-from blogs.api.deps import Assembled, CorrelationId, CurrentPrincipal
+from blogs.api.deps import Assembled, CorrelationId
 from blogs.api.envelope import success
 from blogs.contracts.blog import (
     BlogContent,
@@ -26,7 +26,6 @@ router = APIRouter(tags=["blogs"])
 @router.get("/blogs")
 async def list_blogs(
     assembled: Assembled,
-    caller: CurrentPrincipal,
     category: Annotated[str | None, Query()] = None,
     series_id: Annotated[str | None, Query()] = None,
     cursor: Annotated[str | None, Query()] = None,
@@ -52,11 +51,10 @@ async def list_blogs(
 async def get_blog(
     slug: str,
     assembled: Assembled,
-    caller: CurrentPrincipal,
     correlation: CorrelationId,
 ) -> APIResponse[BlogDetail]:
     blog = await assembled.blog_service.get_by_slug(
-        slug=slug, principal=caller, correlation_id=correlation
+        slug=slug, correlation_id=correlation
     )
     return success(blog)
 
@@ -70,7 +68,6 @@ async def get_blog_content(
     request: Request,
     response: Response,
     assembled: Assembled,
-    caller: CurrentPrincipal,
     correlation: CorrelationId,
 ) -> APIResponse[BlogContent]:
     """The article body, as Markdown.
@@ -85,7 +82,7 @@ async def get_blog_content(
     union that neither the type checker nor OpenAPI can describe.
     """
     blog = await assembled.blog_service.get_by_slug(
-        slug=slug, principal=caller, correlation_id=correlation
+        slug=slug, correlation_id=correlation
     )
     etag = f'"{blog.content_sha256}"'
 
@@ -93,7 +90,7 @@ async def get_blog_content(
         raise NotModified(etag)
 
     content = await assembled.blog_service.get_content(
-        slug=slug, principal=caller, correlation_id=correlation
+        slug=slug, correlation_id=correlation
     )
     response.headers["ETag"] = etag
     response.headers["Cache-Control"] = "public, max-age=60"
@@ -105,12 +102,11 @@ async def get_blog_content(
 async def get_blog_sections(
     slug: str,
     assembled: Assembled,
-    caller: CurrentPrincipal,
     correlation: CorrelationId,
 ) -> APIResponse[tuple[BlogSection, ...]]:
     """The article's headings — the anchors a marker or a pin may address."""
     blog = await assembled.blog_service.get_by_slug(
-        slug=slug, principal=caller, correlation_id=correlation
+        slug=slug, correlation_id=correlation
     )
     return success(blog.sections)
 
@@ -119,13 +115,12 @@ async def get_blog_sections(
 async def get_blog_references(
     slug: str,
     assembled: Assembled,
-    caller: CurrentPrincipal,
     correlation: CorrelationId,
     inbound: Annotated[bool, Query()] = False,
 ) -> APIResponse[tuple[ReferencePin, ...]]:
     """Reference pins. Outbound by default; ``inbound=true`` for what cites this."""
     blog = await assembled.blog_service.get_by_slug(
-        slug=slug, principal=caller, correlation_id=correlation
+        slug=slug, correlation_id=correlation
     )
     pins = await assembled.interaction_service.list_pins(
         blog_id=blog.id, inbound=inbound

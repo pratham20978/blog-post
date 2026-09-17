@@ -157,11 +157,13 @@ class RecentView(ContractModel):
 class BlogEngagementSummary(ContractModel):
     """Reader-safe article counters plus the caller's optional like state.
 
-    Guest counts and repeat-reader analytics deliberately do not appear here;
-    they are admin-only read models.
+    ``unique_reader_count`` includes members and anonymous actors. Repeat reads
+    remain in the engagement log and recent-view projection but do not change
+    this public number. The member/guest breakdown is retained for analytics.
     """
 
     blog_id: BlogId
+    unique_reader_count: int = Field(ge=0)
     member_view_count: int = Field(ge=0)
     like_count: int = Field(ge=0)
     liked_by_me: bool | None = None

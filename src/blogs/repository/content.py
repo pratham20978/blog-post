@@ -52,6 +52,9 @@ _CATEGORY_AGG = """
 
 _PUBLIC_ENGAGEMENT = """
     COALESCE((
+        SELECT s.unique_reader_count FROM blog_engagement_stats s WHERE s.blog_id = b.id
+    ), 0) AS unique_reader_count,
+    COALESCE((
         SELECT s.member_view_count FROM blog_engagement_stats s WHERE s.blog_id = b.id
     ), 0) AS member_view_count,
     COALESCE((
@@ -89,6 +92,7 @@ def _to_detail(row: DictRow, sections: tuple[BlogSection, ...] = ()) -> BlogDeta
         content_sha256=bytes(row["content_sha256"]).hex(),
         word_count=row["word_count"],
         reading_minutes=row["reading_minutes"],
+        unique_reader_count=int(row.get("unique_reader_count") or 0),
         member_view_count=int(row.get("member_view_count") or 0),
         like_count=int(row.get("like_count") or 0),
         published_at=row["published_at"],
@@ -118,6 +122,7 @@ def _to_summary(row: DictRow) -> BlogSummary:
         content_updated_on=row["content_updated_on"],
         word_count=row["word_count"],
         reading_minutes=row["reading_minutes"],
+        unique_reader_count=int(row.get("unique_reader_count") or 0),
         member_view_count=int(row.get("member_view_count") or 0),
         like_count=int(row.get("like_count") or 0),
         published_at=row["published_at"],
