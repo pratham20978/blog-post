@@ -4,8 +4,9 @@
 Usage:
     python3 validate_post.py posts/<slug>/ [--publish]
 
-Checks structure, metadata, figures, and claim keys. --publish additionally
-requires that every placeholder has been replaced with a real URL.
+Checks structure, metadata, figures, claim keys, and the public-file boundary.
+--publish additionally requires that every placeholder has been replaced with
+a public image URL.
 
 Exit codes: 0 pass, 1 failures found, 2 could not read the post.
 """
@@ -44,6 +45,24 @@ CATEGORIES = {
 PLACEHOLDER_RE = re.compile(r"\b(COVER|FIG_\d{2})\b")
 CLAIM_KEY_RE = re.compile(r"<!--\s*(L\d{2,3})\s*-->")
 IMAGE_RE = re.compile(r"!\[(?P<alt>[^\]]*)\]\((?P<target>[^)]*)\)")
+MARKDOWN_LINK_RE = re.compile(r"(?<!!)\[[^\]]+\]\((?P<target>[^)\n]+)\)")
+REFERENCE_LINK_RE = re.compile(
+    r"^\s*\[(?!\^)[^\]]+\]:\s*(?P<target>\S+)", re.MULTILINE
+)
+HTML_LINK_RE = re.compile(r"\bhref\s*=\s*['\"](?P<target>[^'\"]+)['\"]", re.I)
+PRIVATE_DIRECTORY_RE = re.compile(
+    r"(?<![\w/-])(?:\.\.?/)*(?P<path>assets?/|research/)",
+    re.I,
+)
+PUBLIC_LAB_DIRECTORY_RE = re.compile(
+    r"(?<![\w/-])(?:\.\.?/)*(?P<path>examples?/|lab/)", re.I
+)
+LAB_REPO_RE = re.compile(r"\bLAB_REPO\b")
+PRIVATE_FILE_RE = re.compile(
+    r"(?<![\w/.-])(?P<path>outline\.md|manifest\.md|linkedin\.md|"
+    r"(?:research/)?ledger\.md|cover-prompt\.md|linkedin-prompts\.md)\b",
+    re.I,
+)
 FENCE_RE = re.compile(r"^```")
 LINKEDIN_FRAME_RE = re.compile(r"^##\s+(\d{2})\s+[—-]\s+.+$", re.M)
 
@@ -109,6 +128,98 @@ def strip_code(body):
     return "\n".join(out)
 
 
+def markdown_destination(raw):
+    """Extract a Markdown destination while discarding an optional title."""
+    raw = raw.strip()
+    if raw.startswith("<") and ">" in raw:
+        return raw[1:raw.index(">")].strip()
+    return raw.split(maxsplit=1)[0] if raw else ""
+
+
+def is_public_link(target):
+    """Return whether a link resolves without an unpublished local file."""
+    if not target:
+        return False
+    if target.startswith(("#", "/", "?")):
+        return True
+    try:
+        parsed = urlsplit(target)
+    except ValueError:
+        return False
+    if parsed.scheme in {"http", "https"}:
+        return bool(parsed.netloc)
+    if parsed.scheme == "mailto":
+        return bool(parsed.path)
+    return False
+
+
+def is_public_image(target):
+    """Return whether an image target is an absolute public HTTP(S) URL."""
+    try:
+        parsed = urlsplit(target)
+    except ValueError:
+        return False
+    return parsed.scheme in {"http", "https"} and bool(parsed.netloc)
+
+
+def is_public_github_link(target):
+    """Return whether a link points to a public GitHub host."""
+    if target == "LAB_REPO" or target.startswith(("LAB_REPO/", "LAB_REPO#")):
+        return True
+    try:
+        parsed = urlsplit(target)
+    except ValueError:
+        return False
+    return (
+        parsed.scheme in {"http", "https"}
+        and parsed.netloc.casefold() in {
+            "github.com", "www.github.com", "raw.githubusercontent.com"
+        }
+    )
+
+
+def check_public_boundary(body, rep):
+    """Reject links and prose references to build-only post artifacts."""
+    stripped = strip_code(body)
+
+    targets = []
+    for pattern in (MARKDOWN_LINK_RE, REFERENCE_LINK_RE, HTML_LINK_RE):
+        targets.extend(
+            markdown_destination(match.group("target"))
+            for match in pattern.finditer(stripped)
+        )
+    has_public_lab = any(is_public_github_link(target) for target in targets)
+    for target in dict.fromkeys(targets):
+        if not is_public_link(target) and not is_public_github_link(target):
+            rep.error(
+                f"public boundary: local link '{target}' will not exist after publish"
+            )
+
+    # Include fenced code here: a command such as `python examples/demo.py`
+    # still depends on an unpublished file even though it is not a Markdown link.
+    prose = re.sub(r"<!--.*?-->", " ", body, flags=re.S)
+    prose = re.sub(r"https?://[^\s)>]+", " ", prose)
+    prose = MARKDOWN_LINK_RE.sub(" ", prose)
+    prose = REFERENCE_LINK_RE.sub(" ", prose)
+    prose = HTML_LINK_RE.sub(" ", prose)
+    private_paths = []
+    for pattern in (PRIVATE_DIRECTORY_RE, PRIVATE_FILE_RE):
+        private_paths.extend(match.group("path") for match in pattern.finditer(prose))
+    for path in dict.fromkeys(private_paths):
+        rep.error(
+            f"public boundary: blog.md refers to unpublished artifact '{path}'"
+        )
+
+    public_lab_paths = [
+        match.group("path") for match in PUBLIC_LAB_DIRECTORY_RE.finditer(prose)
+    ]
+    if public_lab_paths and not has_public_lab:
+        rep.error(
+            "public boundary: lab/example paths require a public GitHub lab link "
+            "at their first relevant mention"
+        )
+
+
 def word_count(text):
     text = re.sub(r"!\[[^\]]*\]\([^)]*\)", " ", text)
     text = re.sub(r"<!--.*?-->", " ", text, flags=re.S)
@@ -162,8 +273,10 @@ def check_frontmatter(fm, rep):
 def check_structure(body, rep):
     lines = body.splitlines()
     h1 = [line for line in lines if line.startswith("# ")]
-    if len(h1) != 1:
-        rep.error(f"structure: found {len(h1)} H1 headings, need exactly 1")
+    if h1:
+        rep.error(
+            f"structure: found {len(h1)} body H1 headings; the page shell owns the H1"
+        )
 
     headings = [(len(m.group(1)), m.group(2).strip())
                 for line in lines
@@ -229,8 +342,12 @@ def check_figures(body, manifest_text, tier, rep):
         for p in placeholders:
             if p not in manifest_text:
                 rep.error(f"figures: placeholder {p} is not listed in manifest.md")
+        if LAB_REPO_RE.search(body) and "LAB_REPO" not in manifest_text:
+            rep.error("public lab: LAB_REPO is not listed in manifest.md")
     elif placeholders:
         rep.error("figures: placeholders are used but manifest.md is missing")
+    elif LAB_REPO_RE.search(body):
+        rep.error("public lab: LAB_REPO is used but manifest.md is missing")
 
     return placeholders
 
@@ -287,6 +404,14 @@ def check_publish(body, rep):
     leftover = sorted(set(PLACEHOLDER_RE.findall(stripped)))
     if leftover:
         rep.error(f"publish: unresolved placeholders: {', '.join(leftover)}")
+    if LAB_REPO_RE.search(stripped):
+        rep.error("publish: unresolved public lab placeholder: LAB_REPO")
+    for image in IMAGE_RE.finditer(stripped):
+        target = markdown_destination(image.group("target"))
+        if not PLACEHOLDER_RE.fullmatch(target) and not is_public_image(target):
+            rep.error(
+                f"publish: image '{target}' must be an absolute public http(s) URL"
+            )
 
 
 def check_linkedin(fm, prompts_text, linkedin_text, rep):
@@ -436,6 +561,7 @@ def main():
     check_figures(body, manifest_text, tier, rep)
     check_claims(body, ledger_text, rep)
     check_math(body, rep)
+    check_public_boundary(body, rep)
     check_length(body, tier, rep)
     if args.publish:
         check_publish(body, rep)

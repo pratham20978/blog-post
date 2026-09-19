@@ -47,6 +47,7 @@ from blogs.ports.repositories.interaction import (
     RecentViewRepository,
 )
 from blogs.ports.repositories.outbox import OutboxRepository
+from blogs.ports.repositories.seo import SeoRepository
 
 
 class UnitOfWork(Protocol):
@@ -75,6 +76,7 @@ class UnitOfWork(Protocol):
     analytics: AnalyticsRepository
     announcements: AnnouncementRepository
     outbox: OutboxRepository
+    seo: SeoRepository
 
 
 class UnitOfWorkFactory(Protocol):

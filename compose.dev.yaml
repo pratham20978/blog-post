@@ -105,7 +105,7 @@ services:
       BLOGS_DATA_SOURCE: api
       BLOGS_OTP_DEV_BYPASS_CODE: ${BLOGS_OTP_DEV_BYPASS_CODE:-}
       NEXT_PUBLIC_SITE_URL: http://localhost:3001
-      NEXT_PUBLIC_SITE_NAME: Canerly Dev
+      NEXT_PUBLIC_SITE_NAME: Canery Dev
       NEXT_PUBLIC_SEARCH_ADAPTER: none
     volumes:
       - ./web/src:/app/src:ro

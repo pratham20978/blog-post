@@ -56,7 +56,7 @@ ui_tag="${TAG:-$(sed -n 's/.*"version": *"\([^"]*\)".*/\1/p' web/package.json | 
 # NEXT_PUBLIC_ values are compiled into the browser bundle, so they are fixed
 # when the image is built and cannot be changed by `docker run`. Left at the
 # default, the pushed image tells every visitor the site lives on localhost.
-site_url="${NEXT_PUBLIC_SITE_URL:-http://localhost:3000}"
+site_url="${NEXT_PUBLIC_SITE_URL:-https://canery.in}"
 if [[ "$site_url" == *localhost* && "$PUSH" == "1" ]]; then
   printf '\033[33mwarning: building blog-ui with NEXT_PUBLIC_SITE_URL=%s\033[0m\n' "$site_url"
   printf '         Baked in at build time. Re-run with the real origin to fix.\n'
@@ -71,7 +71,7 @@ bold "Building $BACKEND_REPO:$backend_tag"
 bold "Building $UI_REPO:$ui_tag"
 "${docker_cmd[@]}" build \
   --build-arg NEXT_PUBLIC_SITE_URL="$site_url" \
-  --build-arg NEXT_PUBLIC_SITE_NAME="${NEXT_PUBLIC_SITE_NAME:-Canerly}" \
+  --build-arg NEXT_PUBLIC_SITE_NAME="${NEXT_PUBLIC_SITE_NAME:-Canery}" \
   --build-arg NEXT_PUBLIC_SEARCH_ADAPTER="${NEXT_PUBLIC_SEARCH_ADAPTER:-none}" \
   --build-arg NEXT_PUBLIC_OAUTH_PROVIDERS="${NEXT_PUBLIC_OAUTH_PROVIDERS:-}" \
   -t "$UI_REPO:latest" \

@@ -16,6 +16,8 @@ wheels/
 node_modules/
 brand/
 seed/
+# Local scheduled-audit output. Durable shared history belongs in PostgreSQL.
+reports/seo/
 # Tunnel private keys, written by scripts/tunnel-setup.sh.
 deploy/cloudflared/creds/
 

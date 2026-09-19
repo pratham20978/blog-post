@@ -44,6 +44,7 @@ from blogs.repository.interaction import (
     SqlRecentViewRepository,
 )
 from blogs.repository.outbox import SqlOutboxRepository
+from blogs.repository.seo import SqlSeoRepository
 
 
 class SqlUnitOfWork:
@@ -75,6 +76,7 @@ class SqlUnitOfWork:
         "recent_views",
         "refresh_tokens",
         "sections",
+        "seo",
         "taxonomy",
         "users",
     )
@@ -105,6 +107,7 @@ class SqlUnitOfWork:
         self.analytics = SqlAnalyticsRepository(conn)
         self.announcements = SqlAnnouncementRepository(conn)
         self.outbox = SqlOutboxRepository(conn)
+        self.seo = SqlSeoRepository(conn)
 
 
 class SqlUnitOfWorkFactory:

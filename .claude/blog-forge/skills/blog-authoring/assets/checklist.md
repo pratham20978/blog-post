@@ -24,6 +24,26 @@ Run after `validate_post.py` passes. The script checks structure; this checks ju
 - [ ] Are all quotes under fifteen words, and is there at most one per source?
 - [ ] Is every reference reachable, with an access date where the page can change?
 
+## Public boundary
+
+- [ ] Can a reader understand the concept with only `blog.md` and its rendered images?
+- [ ] Does the article avoid linking to outlines, manifests, ledgers, asset sources, or any unpublished local artifact?
+- [ ] Are every definition, reasoning step, expected result, and core example in the article itself?
+- [ ] If a runnable lab exists, is only the lab published to a public GitHub repository?
+- [ ] Is the public GitHub lab introduced at the first relevant mention with what it contains and when to use it?
+- [ ] Do all lab and file links use resolved public GitHub URLs rather than relative local paths?
+- [ ] Does every non-anchor link resolve to a public site route or verified public HTTP(S) page?
+- [ ] At publish time, does every image use an absolute public HTTP(S) URL?
+
+## Terminology
+
+- [ ] Is every technical term introduced before later sentences rely on it?
+- [ ] Does its first meaningful use give the correct canonical name and expand any acronym?
+- [ ] Does that introduction say what the term is, why it is used here, and when it matters?
+- [ ] Are commonly confused terms distinguished where the confusion could occur?
+- [ ] Does an abstract definition get an immediate concrete example?
+- [ ] Is every required explanation in the article itself rather than only in a link, public lab, or private file?
+
 ## Math
 
 - [ ] Is every symbol defined on first use?
@@ -60,8 +80,10 @@ Run after `validate_post.py` passes. The script checks structure; this checks ju
 ## Handoff
 
 - [ ] Every placeholder listed in `manifest.md`
+- [ ] When a lab exists, `LAB_REPO` is listed in `manifest.md` and replaced with its public GitHub URL
 - [ ] Figure source files kept in `assets/` so they can be edited later
 - [ ] `cover-prompt.md` written
 - [ ] `linkedin-prompts.md` contains 4–10 coherent, self-contained prompts
 - [ ] `linkedin.md` contains carousel order, alt-text checklist, and first-comment link
 - [ ] No unresolved placeholders once URLs are filled
+- [ ] `validate_post.py --publish` reports no local links, unresolved lab URL, or non-public image targets

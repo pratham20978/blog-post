@@ -1,0 +1,9 @@
+{
+  "site_url": "https://canery.in",
+  "brand_name": "Canery",
+  "posts_dir": "posts",
+  "web_dir": "web",
+  "article_path": "/blogs/{slug}",
+  "report_dir": "reports/seo",
+  "timezone": "Asia/Kolkata"
+}

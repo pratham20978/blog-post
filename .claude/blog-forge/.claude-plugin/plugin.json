@@ -1,6 +1,6 @@
 {
   "name": "blog-forge",
-  "version": "0.1.0",
-  "description": "Authoring pipeline for long-form computer-science education blog posts written as a single Markdown file. Research, structure, drafting, figures, and a pre-publish quality gate.",
+  "version": "0.2.0",
+  "description": "Canery authoring pipeline plus deterministic technical SEO, daily monitoring, search-led content, and AI-search visibility workflows.",
   "license": "MIT"
 }

@@ -53,6 +53,23 @@ Then fade the concreteness deliberately: numeric instance, then symbolic form, t
 
 ---
 
+## Introducing technical terms
+
+Define a term at its first meaningful use, before any later sentence depends on it. A useful introduction answers four questions in place:
+
+1. **What is its exact name?** Use the canonical name and expand an acronym the first time.
+2. **What is it?** Name the category: mechanism, metric, data structure, protocol, configuration value, model, or something else.
+3. **Why is it used here?** State the job it performs or the problem it solves in this context.
+4. **When does it matter?** Tell the reader when to use it, inspect it, tune it, or choose something else.
+
+For example: “Write-ahead logging (WAL) is PostgreSQL's append-only record of changes. PostgreSQL writes WAL before modified data pages so it can recover after a crash. You inspect or tune WAL when working on durability, replication, or sustained write throughput.” The reader now has the name, category, purpose, and conditions where it matters.
+
+If two terms are often confused, state the boundary in the same place. For a command, tool, or setting, name what kind of control it is and what changing it affects. If the explanation is still abstract, follow it immediately with one concrete example.
+
+Do not begin with a glossary dump. Introduce terms where the mechanism first needs them, do not repeat the full definition later, and never make an unpublished artifact or public code repository carry the definition. A public GitHub lab may hold runnable code, but the article explains what that code does, why it is used, and when to run it.
+
+---
+
 ## Analogies
 
 Useful and dangerous. The rule: every analogy names its own breaking point in the same paragraph.

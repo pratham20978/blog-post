@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-"""Replace figure placeholders in blog.md with uploaded URLs.
+"""Replace image and public-lab placeholders in blog.md with public URLs.
 
 Usage:
     python3 fill_urls.py posts/<slug>/ urls.txt [--dry-run]
 
-Reads the placeholder order from manifest.md, pairs it with the URLs in
-urls.txt line by line, and rewrites blog.md in place. Refuses to write on any
-mismatch, because a half-filled post looks fine and ships broken images.
+Reads unresolved placeholders in manifest.md order, pairs them with the URLs
+in urls.txt line by line, and rewrites blog.md in place. Refuses to write on
+any mismatch, because a half-filled post looks fine and ships broken links.
 
 Exit codes: 0 written, 1 refused, 2 could not read inputs.
 """
@@ -17,7 +17,7 @@ import re
 import shutil
 import sys
 
-PLACEHOLDER_RE = re.compile(r"\b(COVER|FIG_\d{2})\b")
+PLACEHOLDER_RE = re.compile(r"\b(COVER|FIG_\d{2}|LAB_REPO)\b")
 
 
 def read_manifest_order(text):
@@ -46,6 +46,13 @@ def read_urls(text):
     return urls
 
 
+def unresolved_manifest_order(manifest_text, body):
+    """Return manifest placeholders that still occur in blog.md."""
+    manifest_order = read_manifest_order(manifest_text)
+    present = set(PLACEHOLDER_RE.findall(body))
+    return [placeholder for placeholder in manifest_order if placeholder in present]
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("post_dir")
@@ -64,11 +71,21 @@ def main():
             return 2
 
     body = post.read_text(encoding="utf-8")
-    order = read_manifest_order(manifest.read_text(encoding="utf-8"))
+    manifest_text = manifest.read_text(encoding="utf-8")
+    manifest_order = read_manifest_order(manifest_text)
+    present = set(PLACEHOLDER_RE.findall(body))
+    unlisted = sorted(present - set(manifest_order))
+    if unlisted:
+        print("Refusing to write, blog.md has placeholders missing from manifest.md:",
+              file=sys.stderr)
+        for placeholder in unlisted:
+            print(f"  {placeholder}", file=sys.stderr)
+        return 1
+    order = unresolved_manifest_order(manifest_text, body)
     urls = read_urls(urls_path.read_text(encoding="utf-8"))
 
     if not order:
-        print("No placeholders found in manifest.md", file=sys.stderr)
+        print("No unresolved placeholders found in blog.md", file=sys.stderr)
         return 1
 
     if len(order) != len(urls):
@@ -120,7 +137,8 @@ def main():
     shutil.copy2(post, post.with_suffix(".md.bak"))
     post.write_text(body, encoding="utf-8")
     print(f"\nWrote {post}  (backup at {post.with_suffix('.md.bak')})")
-    print("Next: python3 scripts/validate_post.py", root, "--publish")
+    validator = pathlib.Path(__file__).resolve().with_name("validate_post.py")
+    print("Next:", sys.executable, validator, root, "--publish")
     return 0
 
 

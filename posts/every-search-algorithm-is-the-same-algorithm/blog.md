@@ -6,9 +6,8 @@ categories: [algorithms]
 tags: [algorithms, binary-search, string-matching, graph-search, nearest-neighbor, performance]
 cover_image_url: "https://minio.canery.in/media/cover-image.png"
 cover_image_alt: "Flow diagram showing the universal search loop: frontier, probe, eliminate, and repeat."
+canonical_url: "https://canery.in/blogs/every-search-algorithm-is-the-same-algorithm"
 ---
-# Every Search Algorithm Is the Same Algorithm
-
 
 > [!NOTE]
 > **Insights** — Every search algorithm runs the same loop: hold a set of candidates, probe one, throw away everything the probe ruled out. Binary search, KMP, A\* and HNSW differ in exactly one place — the structure that lets a single probe eliminate more than one candidate. That structure is always prepaid, and comparing search algorithms means comparing what you paid for it, not how fast the loop spins.

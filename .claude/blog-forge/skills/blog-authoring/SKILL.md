@@ -3,7 +3,7 @@ name: blog-authoring
 description: Write a long-form computer-science education blog post as a single Markdown file, with researched sources, figures, and a pre-publish quality gate. Use this whenever the user asks to write, draft, plan, outline, expand, or review a blog post, article, tutorial, explainer, or deep dive on any CS or engineering topic — networking, operating systems, databases, algorithms, machine learning, compilers, security, distributed systems, computer architecture, or theory. Also use it when the user names a topic and says "post", "article", "write this up", or refers to a slug or an existing post folder. Trigger even if the user does not say the word "blog".
 license: MIT
 metadata:
-  version: "0.1"
+  version: "0.2"
 ---
 
 # Blog Authoring
@@ -24,6 +24,8 @@ A post earns its length or it loses it. Four things separate a real article from
 - **It shows before it formalises.** A concrete instance with real numbers comes before the general form. Novices need the worked case; experts skip it in two seconds.
 - **Every claim traces to a source.** No remembered benchmarks, no invented complexity bounds, no approximate dates.
 - **Every figure carries information** the prose could not carry alone, and the prose points at it.
+- **Its explanation is self-contained.** The article and images teach the concept; an optional public GitHub lab carries runnable code, not missing definitions or reasoning.
+- **It introduces terms before relying on them.** The first meaningful use gives the exact name, what the term means here, why it is used, and when it matters.
 
 If a section cannot meet these, the section is cut. Never pad to hit a word count.
 
@@ -38,17 +40,17 @@ Run these in order. Stop at the checkpoints and wait for the user.
 | 0 Brief | Fix topic, subject area, depth tier, audience | in conversation |
 | 1 Research | Find and tier sources, build the claim ledger | `research/ledger.md` |
 | **CHECKPOINT A** | Show source list and what the post can honestly claim | |
-| 2 Outline | Section skeleton, word budget, figure plan | `outline.md` |
+| 2 Outline | Section skeleton, word budget, figure plan, term map | `outline.md` |
 | **CHECKPOINT B** | User approves before any long prose is written | |
 | 3 Draft | Write section by section against the budget | `blog.md` |
-| 4 Figures | Build every planned figure and social handoff | `assets/`, `manifest.md`, `linkedin.md` |
+| 4 Assets | Build figures, an optional runnable lab, and social handoff | `assets/`, optional `lab/`, `manifest.md`, `linkedin.md` |
 | 5 Assemble | Frontmatter, figure placeholders, captions | `blog.md` |
 | 6 Gate | Run the checklist and the validator | pass/fail report |
 | **CHECKPOINT C** | Hand off for upload and publish | |
 
 Checkpoint B matters most. Approving an outline costs the user one minute. Rewriting 5,000 words costs an hour.
 
-Skip phases only when the user asks for one part (`/blog:research`, `/blog:visuals`).
+Skip phases only when the user asks for one part (`/blog-forge:research`, `/blog-forge:visuals`).
 
 ---
 
@@ -73,7 +75,7 @@ Load `references/structure.md` for the full definition of each section. The orde
 
 ```
 frontmatter
-# Title
+page shell renders the title as the only H1
 ## Insights              ← the answer, first 100 words
 Who this is for          ← difficulty, prerequisites, time
 ## Why this matters
@@ -133,6 +135,7 @@ posts/<slug>/
 ├── manifest.md          upload checklist: placeholder → file → alt text
 ├── linkedin.md          LinkedIn post, carousel order, and first comment
 ├── research/ledger.md   claim → source → URL → access date
+├── lab/                 optional runnable code published separately to GitHub
 └── assets/
     ├── cover-prompt.md
     ├── linkedin-prompts.md
@@ -142,7 +145,9 @@ posts/<slug>/
     └── fig-01-<name>.png
 ```
 
-Images are **not** uploaded by this skill. `blog.md` carries placeholders like `FIG_03`. The user uploads to object storage and runs `scripts/fill_urls.py` to swap them in.
+Images and labs are **not** uploaded by this skill. `blog.md` carries image placeholders like `FIG_03` and, when a lab exists, the base placeholder `LAB_REPO`. The user uploads images to object storage, publishes only the lab to a public GitHub repository, adds both public URLs to `manifest.md` order, and runs `scripts/fill_urls.py` to swap them in.
+
+Only `blog.md` and the uploaded images are public on the website. A runnable `lab/` may be published separately in a public GitHub repository. Every other post file is a private build artifact. Keep definitions, reasoning, and the core example in the article; use the public lab for complete runnable code, setup, captured output, or exercises. At the first relevant mention, add a clear “Public GitHub lab” link and state what the lab contains and when the reader needs it. Treat `LAB_REPO` as the repository root; later file links on a `main` branch use `LAB_REPO/blob/main/<path>`, never a relative local path. If the public branch differs, use its real full URL. Never expose the outline, manifest, social files, research ledger, editable image sources, or another private artifact.
 
 Language is English only.
 
@@ -164,14 +169,18 @@ These exist because breaking them produces an article that looks finished and is
 
 **Never leave a placeholder unresolved** in a post marked ready to publish. The validator fails on this.
 
+**Never link a private file.** If a runnable lab exists, keep it under `lab/`, publish only that lab to a public GitHub repository, and link the resolved GitHub URL. The article must still explain the mechanism and show the core example. Put the public lab link at the first relevant mention, describe what it contains, and use `LAB_REPO` only as a draft placeholder. A post cannot pass `--publish` while `LAB_REPO` or a local relative link remains.
+
+**Never use a technical term before introducing it.** At its first meaningful use, give its canonical name (and expand an acronym), say what kind of thing it is, explain the job it does or why it is used here, and state when the reader should use, inspect, or care about it. Add a concrete example or distinguish a nearby concept when confusion is likely. Build a term map in the outline with `term | first section | what | why | when`, then fold those explanations into `blog.md`; never send the reader to the term map.
+
 ---
 
 ## 9. Quality gate
 
 Phase 6 runs two things.
 
-1. `scripts/validate_post.py posts/<slug>/` — mechanical checks: frontmatter fields, tag count, single H1, Insights position, heading order, figure references, placeholder resolution, word count against tier.
-2. `assets/checklist.md` — judgment checks the script cannot make: is the worked example actually concrete, does every equation have a plain sentence after it, does any section restate another.
+1. `${CLAUDE_PLUGIN_ROOT}/scripts/validate_post.py posts/<slug>/` — mechanical checks: frontmatter fields, tag count, no body H1, Insights position, heading order, figure references, local/unpublished links, public image URLs at publish time, placeholder resolution, and word count against tier.
+2. `assets/checklist.md` — judgment checks the script cannot make: is the worked example actually concrete, is each technical term correctly introduced where it first matters, does every equation have a plain sentence after it, and does any section restate another.
 
 Report failures plainly and fix them. Do not mark a post ready with a failing gate.
 

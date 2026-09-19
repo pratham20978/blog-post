@@ -1,8 +1,21 @@
-# Canerly blog platform
+# Canery blog platform
 
 FastAPI owns typed Markdown ingestion and reader APIs; the Next.js application
 lives in the `web` submodule. PostgreSQL stores queryable metadata and MinIO
 keeps the canonical Markdown files.
+
+## SEO and AI-search plugin
+
+The repository includes a local Claude Code/IDE plugin for authoring, technical
+SEO audits, daily reports, search-led content briefs, and evidence-based
+AI-search observations. Run it directly with:
+
+```bash
+./.claude/blog-forge/bin/canery-seo audit --config seo.config.json
+```
+
+See [the plugin guide](docs/seo-plugin.md) for Claude setup, scheduling, backend
+ingestion, and the ERD introduced by migration `011`.
 
 ## Interactive blog administration
 
@@ -56,7 +69,7 @@ bypass disabled:
 ```dotenv
 BLOGS_EMAIL_PROVIDER=resend
 BLOGS_RESEND_API_KEY=<secret>
-BLOGS_EMAIL_FROM=Canerly <auth@canery.in>
+BLOGS_EMAIL_FROM=Canery <auth@canery.in>
 BLOGS_EMAIL_REPLY_TO=
 BLOGS_OTP_LOG_CODES=false
 # BLOGS_OTP_DEV_BYPASS_CODE is unset

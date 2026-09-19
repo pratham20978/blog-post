@@ -137,7 +137,7 @@ Details in `references/handoff.md`. Short version:
 The user uploads to object storage and runs:
 
 ```bash
-python3 scripts/fill_urls.py posts/<slug>/ urls.txt
+python3 "${CLAUDE_PLUGIN_ROOT}/scripts/fill_urls.py" posts/<slug>/ urls.txt
 ```
 
 Paths use a version suffix — `blog/<slug>/fig-01-v1.png` — so an edited figure gets a new URL and no cache anywhere serves the old one. When a figure changes, bump to `v2`.

@@ -1,4 +1,15 @@
 {
+  "extraKnownMarketplaces": {
+    "canery-local": {
+      "source": {
+        "source": "directory",
+        "path": "."
+      }
+    }
+  },
+  "enabledPlugins": {
+    "blog-forge@canery-local": true
+  },
   "permissions": {
     "allow": [
       "Bash(uv run *)",

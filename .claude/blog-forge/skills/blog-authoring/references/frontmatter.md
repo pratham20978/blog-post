@@ -20,7 +20,7 @@ difficulty: intermediate
 prerequisites: ["TCP basics", "packet switching"]
 reading_minutes: 12
 cover_image: "COVER"
-canonical_url: "https://<site>/p/tcp-slows-down-on-wifi"
+canonical_url: "https://canery.in/blogs/tcp-slows-down-on-wifi"
 ---
 ```
 

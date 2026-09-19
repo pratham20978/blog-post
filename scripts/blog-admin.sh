@@ -80,35 +80,35 @@ auth_config="$tool_tmp_dir/auth.curl"
 trap cleanup EXIT
 
 prompt() {
-  local variable_name="$1"
-  local label="$2"
-  local default_value="${3:-}"
-  local answer
+  local _prompt_var="$1"
+  local _prompt_label="$2"
+  local _prompt_default="${3:-}"
+  local _prompt_answer
 
-  if [[ -n "$default_value" ]]; then
-    printf '%s [%s]: ' "$label" "$default_value"
+  if [[ -n "$_prompt_default" ]]; then
+    printf '%s [%s]: ' "$_prompt_label" "$_prompt_default"
   else
-    printf '%s: ' "$label"
+    printf '%s: ' "$_prompt_label"
   fi
-  if ! IFS= read -r answer; then
+  if ! IFS= read -r _prompt_answer; then
     printf '\n'
     exit 0
   fi
-  printf -v "$variable_name" '%s' "${answer:-$default_value}"
+  printf -v "$_prompt_var" '%s' "${_prompt_answer:-$_prompt_default}"
 }
 
 prompt_secret() {
-  local variable_name="$1"
-  local label="$2"
-  local answer
+  local _prompt_var="$1"
+  local _prompt_label="$2"
+  local _prompt_answer
 
-  printf '%s: ' "$label"
-  if ! IFS= read -r -s answer; then
+  printf '%s: ' "$_prompt_label"
+  if ! IFS= read -r -s _prompt_answer; then
     printf '\n'
     exit 0
   fi
   printf '\n'
-  printf -v "$variable_name" '%s' "$answer"
+  printf -v "$_prompt_var" '%s' "$_prompt_answer"
 }
 
 confirm_exact() {

@@ -33,7 +33,7 @@ Placeholders are deliberately not valid URLs. A missed one fails visibly rather 
 Upload each file to the suggested path, then write the resulting URLs into
 urls.txt in the same order and run:
 
-    python3 scripts/fill_urls.py posts/tcp-slows-down-on-wifi/ urls.txt
+    python3 "${CLAUDE_PLUGIN_ROOT}/scripts/fill_urls.py" posts/tcp-slows-down-on-wifi/ urls.txt
 ```
 
 ---

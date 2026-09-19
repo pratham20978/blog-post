@@ -1,0 +1,14 @@
+{
+  "name": "canery-local",
+  "owner": {
+    "name": "Canery"
+  },
+  "plugins": [
+    {
+      "name": "blog-forge",
+      "source": "./.claude/blog-forge",
+      "description": "Canery authoring, SEO auditing, daily monitoring, and AI-search discoverability tools.",
+      "version": "0.2.0"
+    }
+  ]
+}

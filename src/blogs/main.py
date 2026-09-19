@@ -23,6 +23,7 @@ from blogs.api.routers import (
     blogs,
     health,
     interaction,
+    seo_admin,
     taxonomy,
 )
 from blogs.bootstrap import build_container, close_container
@@ -118,6 +119,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(admin_console.router, prefix=admin_prefix, include_in_schema=False)
     app.include_router(admin_blogs.router, prefix=admin_prefix, include_in_schema=False)
     app.include_router(analytics.router, prefix=admin_prefix, include_in_schema=False)
+    app.include_router(seo_admin.router, prefix=admin_prefix, include_in_schema=False)
 
     return app
 

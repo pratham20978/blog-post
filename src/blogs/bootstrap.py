@@ -43,6 +43,7 @@ from blogs.services.engagement_service import EngagementService
 from blogs.services.interaction_service import InteractionService
 from blogs.services.oauth_flow_service import OAuthFlowService
 from blogs.services.policy import DefaultAuthorizationPolicy
+from blogs.services.seo_service import SeoService
 
 logger = logging.getLogger(__name__)
 
@@ -78,6 +79,7 @@ class Container:
     admin_read_service: AdminReadService
     announce_service: AnnounceService
     announcement_service: AnnouncementService
+    seo_service: SeoService
 
 
 async def build_container(settings: Settings) -> Container:
@@ -220,6 +222,7 @@ async def build_container(settings: Settings) -> Container:
             # can never be interpreted as an access, refresh, or actor token.
             token_secret=settings.jwt_secret.get_secret_value(),
         ),
+        seo_service=SeoService(uow=uow, ids=ids, policy=policy),
     )
 
     await _seed_admin(container)

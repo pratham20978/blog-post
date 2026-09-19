@@ -11,7 +11,7 @@ Rationale in one line: answer first for the skimmer, concrete before abstract fo
 | # | Section | Required | Job |
 |---|---|---|---|
 | 0 | frontmatter | yes | machine-readable metadata, drives tags and search |
-| 1 | `# Title` | yes | exactly one H1 |
+| 1 | Page title | yes | rendered by the page shell; do not repeat it in Markdown |
 | 2 | `## Insights` | yes | the answer, in the first 100 words |
 | 3 | Who this is for | yes | difficulty, prerequisites, reading time |
 | 4 | `## Why this matters` | yes | the hook, one real problem |
@@ -91,7 +91,7 @@ Load `math.md` before writing this. Short version: define every symbol on first 
 ### Implementation
 Runnable and minimal. Not production code. Comments explain the why, not the what. Always tag the language on the fence.
 
-If the code is longer than about 40 lines, show the core and link the full file.
+Show enough inline code for the reader to understand the mechanism. If a useful runnable implementation is longer than about 40 lines, place it in the optional lab and publish that lab to a public GitHub repository. At the first relevant mention, link the public lab, say what it contains, and explain when the reader should use it. Later links may point to specific public GitHub files. Never link a relative local lab, notebook, script, or source file.
 
 ### Limitations and common mistakes
 The section that separates a real article from a summary. Include:
@@ -121,7 +121,24 @@ Optional. Two or three exercises, answers hidden:
 ```
 
 ### References
-Only sources that were actually used. Grouped by tier if there are many. Include the access date for anything that can change.
+Only sources that were actually used. Grouped by tier if there are many. Include the access date for anything that can change. Every target must be a public URL; a ledger entry or local file path is not a reader-facing reference.
+
+---
+
+## Website and public-lab boundary
+
+The website contains the rendered contents of `blog.md` and images uploaded to public storage. A runnable lab may live separately in a public GitHub repository. The outline, research ledger, manifest, social copy, prompts, and editable diagram sources stay private.
+
+The article must remain understandable without opening the lab: keep definitions, reasoning, expected behavior, and the core example in `blog.md`. The lab can carry full programs, setup automation, datasets, captured output, and exercises. Links may point to an article anchor, a public site route, a verified public HTTP(S) page, or the public GitHub lab. At publish time every image and lab link must be resolved.
+
+If a lab exists, introduce it once at the first section that needs runnable code:
+
+```markdown
+> [!TIP]
+> **Public GitHub lab:** [Open the runnable lab](LAB_REPO). It contains <specific files or experiments>. Use it when you want to <specific task>; the explanation and core example remain in this article.
+```
+
+Treat `LAB_REPO` as the GitHub repository root. Use `LAB_REPO/blob/main/<path>` for later draft file links when the public branch is `main`; otherwise use the actual branch in the final URL. `fill_urls.py` replaces the base placeholder after the lab is public. Do not mention private build artifacts as a place to find more detail.
 
 ---
 
@@ -140,7 +157,7 @@ The main line stays readable end to end without opening anything.
 
 ## Formatting rules
 
-- One H1. Every section is H2. Sub-points are H3. Never skip a level.
+- No H1 in `blog.md`; the page shell owns it. Every section is H2. Sub-points are H3. Never skip a level.
 - Paragraphs of two to four sentences. One idea each.
 - A section that runs past about 400 words gets a subheading or a split.
 - Prose for reasoning. Bullets for parallel items. Numbered lists for ordered steps. Tables for comparisons across two or more dimensions.
