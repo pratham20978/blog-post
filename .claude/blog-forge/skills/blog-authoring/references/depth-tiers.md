@@ -59,13 +59,15 @@ Put these numbers in `outline.md` next to each heading. During drafting, check e
 
 ## Choosing the tier
 
-Ask two questions at brief time.
+Ask three questions at brief time.
 
 **How many distinct things must the reader learn?** One concept is L1. A concept plus its mechanism is L2. A concept plus mechanism plus formal treatment plus implementation is L3. A whole subsystem is L4.
 
 **Does the topic have a real worked example that fits in one screen?** If yes, L1 or L2 works. If the smallest honest example needs a page, the post is L3 or larger.
 
-If the user does not say, pick L2 and say so.
+**Who can read it?** Difficulty — `beginner`, `intermediate`, or `advanced` — is a separate axis from tier, decided by the prerequisites the post assumes rather than by its length. State both at brief time: an L1 primer on memory ordering is advanced, and an L4 pillar on how a row reaches disk can be beginner-friendly the whole way.
+
+If the user does not say, propose a tier and a difficulty with their reasons and name the adjacent option, so overruling costs one word.
 
 ---
 
@@ -105,11 +107,13 @@ Never regenerate the whole post to expand it. The existing prose has been review
 
 ## When to split instead of expand
 
-If expanding would push a post past about 10,000 words, split it into a series.
+Signals that a topic is a series rather than one post. Any one of them is enough:
 
-Signals it should be a series rather than one post:
+- Expanding would push the post past about 10,000 words
 - The outline has two sections that could each carry their own Insights
 - The prerequisites for the second half are the conclusions of the first half
 - More than about 18 figures
 
-A series also earns internal links between posts, which helps discovery.
+The decision itself, the tier and difficulty of each part, and the format of
+`posts/<series-slug>/plan.md` plus its living `context.md` belong to
+`references/series-planning.md`. Read it before proposing a split.

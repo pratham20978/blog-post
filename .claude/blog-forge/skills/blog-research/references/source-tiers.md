@@ -13,7 +13,7 @@ Usable for any claim.
 - Established textbooks: CLRS, Sipser, Hennessy and Patterson, Tanenbaum, Kleppmann, the dragon book
 - Formal specifications and reference models
 
-Note on arXiv: a preprint is T1 in content and unreviewed in status. Check whether it was published at a venue. If not, label it a preprint in the post.
+Note on arXiv: a preprint is T1 in content and unreviewed in status. Check whether it was published at a venue. If not, label it a preprint in the post. DBLP is the fastest way to check — search the title or the author and its publication record shows whether the preprint reached a venue, under what final title, and in which year.
 
 ## T2 — Official documentation
 
@@ -56,6 +56,25 @@ Use these to see how a hard idea has been made clear. When one of them states a 
 - AI-generated explanation pages
 - Slide decks with no source
 - Wikipedia — useful for orientation and for finding primary sources, never cited itself
+
+---
+
+## Scholarly databases
+
+Where the literature sweep runs. Each one is good at something the others are not, and each one has a characteristic way of handing you something that looks like a source and is not. The trap column is the part that matters.
+
+| Database | Good for | The trap |
+|---|---|---|
+| Google Scholar | Breadth across every venue at once, citation counts, and the "Cited by" graph that makes forward chasing possible | No quality filter whatsoever. It indexes predatory journals, other people's seminar slide decks, and duplicate uploads next to SOSP papers. A high citation count is popularity, not correctness — check the venue before the count. |
+| arXiv | The newest work, often a year before it reaches a venue, and free full text | Unreviewed and version-mutable: v1 and v3 can disagree on the headline number. Cite the version id (`arXiv:2006.11239v2`), and label it a preprint unless DBLP shows a venue. |
+| Semantic Scholar | A structured citation graph, influential-citation ranking that separates real intellectual debt from citation padding, and a free API for walking references in both directions | Metadata is machine-extracted, so venues, years and author lists are sometimes wrong. Confirm the venue against DBLP or the publisher before the row goes in the ledger. |
+| DBLP | The authoritative venue and publication record for computer science. The place to settle whether a preprint was ever actually published, and where | Bibliography only — no abstracts, no full text, no citation counts. Coverage outside CS is thin. |
+| ACM Digital Library, IEEE Xplore | The venues of record, with the canonical DOI, the final page numbers, and the published version rather than the submitted one | Paywalled. The free abstract and metadata are enough to establish venue, year and DOI, and that is all they are enough for. Never cite a paper whose method section you have not read — look for the author's own copy first. |
+| USENIX, PMLR, OpenReview, IACR ePrint, ECCC | Free full text for systems, ML, crypto and theory, with reviews attached where the venue is open | OpenReview carries rejected and withdrawn submissions alongside accepted ones. Read the decision before citing, and read the reviews — they often name the weakness the paper does not. |
+| Papers with Code | Reproductions, leaderboards, and the link from a paper to a working implementation | Leaderboard numbers are self-reported and rarely re-run by anyone. Treat a leaderboard as evidence about a claim, not the claim, and cite the paper. |
+| Industrial lab publication pages: Google Research, Google DeepMind, Meta AI (FAIR), Microsoft Research, NVIDIA Research, OpenAI, Anthropic, Allen AI | The system paper, the model card, the errata and the release notes for a proprietary system, where no third-party paper exists. Frequently the primary source for a system a post is describing | The lab's blog post about the paper is T4 marketing; the paper it links to is T1. Follow the link. Announcements round numbers up, quote the best configuration, and drop the ablation that did not work. |
+
+Finding a source in one of these does not set its tier. A paper is T1 because it was reviewed at a real venue, not because Google Scholar returned it, and a slide deck stays T5 no matter which database surfaced it.
 
 ---
 

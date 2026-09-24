@@ -24,14 +24,6 @@ canonical_url: ""
 what it is, why it is used here, and when it matters. Keep every reader-needed
 explanation in this file; never point to a private post artifact. -->
 
-<!-- If this post has a runnable lab, place this callout at the first section that
-needs it, not automatically at the top:
-> [!TIP]
-> **Public GitHub lab:** [Open the runnable lab](LAB_REPO). It contains <what>.
-> Use it when you want to <task>; the explanation remains in this article.
-Use LAB_REPO/blob/main/<path> for later file links and list LAB_REPO in
-manifest.md. Use the actual public branch if it is not main. -->
-
 **Level:** intermediate · **You need:** prerequisite, prerequisite · **Time:** ~N min
 
 ## Why this matters
@@ -85,8 +77,8 @@ Long working, kept out of the main line.
 
 ## Implementation
 
-<!-- Keep the core example inline. A longer runnable implementation may live in
-the public GitHub lab; never link a local relative file. -->
+<!-- Keep the core example inline. If files are needed, point to
+[Lab downloads](#lab-downloads); never link a local relative file. -->
 
 ```python
 # runnable, minimal, commented on the why
@@ -119,5 +111,8 @@ Answer here.
 ## References
 
 <!-- Public HTTP(S) sources only; never link the research ledger or a local file. -->
+
+<!-- When lab/ exists, insert the Lab downloads subsection specified in
+references/labs.md and list every publishable file exactly once. -->
 
 1. Author. *Title*. Venue, year. <url> (accessed YYYY-MM-DD)

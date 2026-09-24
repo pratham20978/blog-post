@@ -66,7 +66,7 @@ For example: “Write-ahead logging (WAL) is PostgreSQL's append-only record of 
 
 If two terms are often confused, state the boundary in the same place. For a command, tool, or setting, name what kind of control it is and what changing it affects. If the explanation is still abstract, follow it immediately with one concrete example.
 
-Do not begin with a glossary dump. Introduce terms where the mechanism first needs them, do not repeat the full definition later, and never make an unpublished artifact or public code repository carry the definition. A public GitHub lab may hold runnable code, but the article explains what that code does, why it is used, and when to run it.
+Do not begin with a glossary dump. Introduce terms where the mechanism first needs them, do not repeat the full definition later, and never make an unpublished artifact or downloadable lab carry the definition. A MinIO lab file may hold runnable code, but the article explains what that code does, why it is used, and when to run it.
 
 ---
 

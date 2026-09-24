@@ -1,6 +1,6 @@
 {
   "name": "blog-forge",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Canery authoring pipeline plus deterministic technical SEO, daily monitoring, search-led content, and AI-search visibility workflows.",
   "license": "MIT"
 }

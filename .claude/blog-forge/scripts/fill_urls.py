@@ -16,8 +16,10 @@ import pathlib
 import re
 import shutil
 import sys
+from urllib.parse import urlsplit
 
-PLACEHOLDER_RE = re.compile(r"\b(COVER|FIG_\d{2}|LAB_REPO)\b")
+PLACEHOLDER_RE = re.compile(r"\b(COVER|FIG_\d{2}|LAB_\d{2})\b")
+MINIO_DOWNLOAD_HOST = "minio.canery.in"
 
 
 def read_manifest_order(text):
@@ -51,6 +53,18 @@ def unresolved_manifest_order(manifest_text, body):
     manifest_order = read_manifest_order(manifest_text)
     present = set(PLACEHOLDER_RE.findall(body))
     return [placeholder for placeholder in manifest_order if placeholder in present]
+
+
+def is_public_minio_download(url):
+    try:
+        parsed = urlsplit(url)
+    except ValueError:
+        return False
+    return (
+        parsed.scheme in {"http", "https"}
+        and parsed.netloc.casefold() == MINIO_DOWNLOAD_HOST
+        and parsed.path.startswith("/media/")
+    )
 
 
 def main():
@@ -102,6 +116,20 @@ def main():
         print("Refusing to write, these are not URLs:", file=sys.stderr)
         for u in bad:
             print(f"  {u}", file=sys.stderr)
+        return 1
+
+    bad_lab = [
+        url for placeholder, url in zip(order, urls)
+        if placeholder.startswith("LAB_") and not is_public_minio_download(url)
+    ]
+    if bad_lab:
+        print(
+            f"Refusing to write, lab downloads must use public "
+            f"https://{MINIO_DOWNLOAD_HOST}/media/ URLs:",
+            file=sys.stderr,
+        )
+        for url in bad_lab:
+            print(f"  {url}", file=sys.stderr)
         return 1
 
     mapping = dict(zip(order, urls))
