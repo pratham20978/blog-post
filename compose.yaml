@@ -39,10 +39,11 @@ services:
     # instead (MINIO_IMAGE in .env) if you would rather have patches and drive
     # administration with `mc`; you keep a plain object browser either way.
     #
-    # quay.io, not Docker Hub: MinIO removed the `minio/minio` repository from
-    # the Hub (a pull there now fails with "repository does not exist"), and
-    # quay.io is where every tag, this one included, still lives.
-    image: ${MINIO_IMAGE:-quay.io/minio/minio:RELEASE.2025-04-22T22-12-26Z}
+    # MinIO no longer publishes public pre-built images: Docker Hub removed the
+    # repository and Quay now rejects anonymous pulls. This public image is
+    # built from the official release source and pinned to its multi-arch digest
+    # so the third-party tag cannot silently change underneath this deployment.
+    image: ${MINIO_IMAGE:-ghcr.io/coollabsio/minio:RELEASE.2025-04-22T22-12-26Z@sha256:a4938f37f1be1841b8e7b627ad0207b265345fd0d063e42d7410c78af0e63e68}
     restart: unless-stopped
     command: server /data --console-address ":9001"
     environment:
@@ -78,7 +79,7 @@ services:
   #
   # Idempotent, so it runs on every `up` and re-asserts the policy.
   minio-init:
-    image: ${MINIO_IMAGE:-quay.io/minio/minio:RELEASE.2025-04-22T22-12-26Z}
+    image: ${MINIO_IMAGE:-ghcr.io/coollabsio/minio:RELEASE.2025-04-22T22-12-26Z@sha256:a4938f37f1be1841b8e7b627ad0207b265345fd0d063e42d7410c78af0e63e68}
     restart: "no"
     entrypoint: /bin/sh
     command:
