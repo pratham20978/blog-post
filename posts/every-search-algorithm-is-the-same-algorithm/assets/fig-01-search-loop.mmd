@@ -1,9 +1,0 @@
-%% FIG_01 — the universal search loop
-%% Authoring shorthand only. The published figure is fig-01-search-loop.html,
-%% redrawn in diagram-design. Do not embed this block in blog.md.
-flowchart LR
-    F["Frontier<br/>untested candidates"] --> P["Pick<br/>choose one"]
-    P --> T["Probe<br/>test that candidate"]
-    T -->|found| A["Answer"]
-    T -->|no match| E["Eliminate<br/>discard everything the probe ruled out"]
-    E -->|shrink| F
