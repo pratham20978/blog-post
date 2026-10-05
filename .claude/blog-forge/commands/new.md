@@ -14,4 +14,4 @@ request names an approved series part, read both shared files before research
 or outlining and update `context.md` only after the completed part passes its
 gate.
 
-If it is one post, propose the tier and the difficulty with their reasons and the adjacent option, then research and stop at Checkpoint A. Do not draft prose before the outline is approved at Checkpoint B.
+If it is one post, propose the tier and the difficulty with their reasons and the adjacent option, then run the lab probe from `references/labs.md` and propose the lab grade. If the lab needs access the agent cannot set up itself and quality depends on it, show the access request and wait for the answer; otherwise research and stop at Checkpoint A. Do not draft prose before the outline is approved at Checkpoint B.

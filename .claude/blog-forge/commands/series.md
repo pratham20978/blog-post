@@ -9,7 +9,9 @@ Topic: $ARGUMENTS
 Run the scope decision in full: list the reader objectives as capabilities, sort them into dependency order, cut at the prerequisite seams, and budget each group against the tier table.
 
 If the topic is a series, name the shape, then propose every part with its tier,
-its difficulty, the one question it answers, and what it hands off. Create
+its difficulty, its lab grade, the one question it answers, and what it hands off.
+Run the lab probe from `references/labs.md` once for the series, record it in
+`access.md`, and put every access request in the Checkpoint S message. Create
 `posts/<series-slug>/`, write its `plan.md`, initialise its compact `context.md`
 from `assets/series-context-template.md`, and stop at Checkpoint S for approval.
 The plan defines all parts; create each `posts/<series-slug>/<post-slug>/`

@@ -8,7 +8,7 @@
 - **Shape:** <ladder | decomposition | hybrid>
 - **Shared promise:** <the capability the complete series delivers>
 - **Terminology and notation:** <only decisions every part must preserve>
-- **Recurring example or lab:** <shared example, dataset, or “none”>
+- **Recurring example or lab:** <shared example, dataset, or “none”; the lab's grade, and “see access.md” when it exists>
 
 ## Part status
 

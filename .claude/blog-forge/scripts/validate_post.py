@@ -18,6 +18,7 @@ import pathlib
 import re
 import struct
 import sys
+import zipfile
 from urllib.parse import urlsplit
 
 TIERS = {
@@ -105,10 +106,11 @@ REFERENCES_HEADING_RE = re.compile(r"^##\s+References\s*$", re.M | re.I)
 MINIO_DOWNLOAD_HOST = "minio.canery.in"
 PRIVATE_FILE_RE = re.compile(
     r"(?<![\w/.-])(?P<path>outline\.md|manifest\.md|linkedin\.md|"
-    r"(?:research/)?ledger\.md|cover-prompt\.md|linkedin-prompts\.md|social\.md)\b",
+    r"(?:research/)?ledger\.md|cover-prompt\.md|linkedin-prompts\.md|social\.md|access\.md)\b",
     re.I,
 )
 FENCE_RE = re.compile(r"^```")
+LAB_GRADE_RE = re.compile(r"^\s*[-*]?\s*\*\*Grade:\*\*\s*(?P<value>.*)$", re.M)
 LINKEDIN_FRAME_RE = re.compile(r"^##\s+(\d{2})\s+[—-]\s+.+$", re.M)
 SOCIAL_ASSET_HEADING_RE = re.compile(
     r"^###\s+(?P<stem>(?P<kind>feed|story)-(?P<number>\d{2})-[a-z0-9-]+)\s*$",
@@ -378,6 +380,49 @@ def publishable_lab_files(root):
     return files
 
 
+def is_lab_archive(target):
+    """Return whether a download target is the whole-lab .zip archive."""
+    try:
+        return urlsplit(target).path.casefold().endswith(".zip")
+    except ValueError:
+        return False
+
+
+def check_lab_archive(root, archive, local_files, rep):
+    """Compare the local lab-<slug>.zip with the lab files it must bundle."""
+    expected = f"lab-{root.name}.zip"
+    name = pathlib.PurePosixPath(urlsplit(archive).path).name
+    if name != expected:
+        rep.warn(f"public lab: archive is '{name}', expected '{expected}'")
+    local = root / expected
+    if not local.is_file():
+        rep.warn(f"public lab: archive is linked but {expected} is not in the post folder to check")
+        return
+    try:
+        with zipfile.ZipFile(local) as bundle:
+            members = {
+                info.filename: bundle.read(info)
+                for info in bundle.infolist()
+                if not info.is_dir()
+            }
+    except zipfile.BadZipFile:
+        rep.error(f"public lab: {expected} is not a valid zip archive")
+        return
+    missing = sorted(set(local_files) - set(members))
+    extra = sorted(set(members) - set(local_files))
+    stale = sorted(
+        path
+        for path in set(members) & set(local_files)
+        if members[path] != (root / path).read_bytes()
+    )
+    if missing:
+        rep.error(f"public lab: {expected} is missing lab files: " + ", ".join(missing))
+    if extra:
+        rep.error(f"public lab: {expected} has files outside the lab: " + ", ".join(extra))
+    if stale:
+        rep.error(f"public lab: {expected} is out of date for: " + ", ".join(stale))
+
+
 def check_lab_downloads(body, manifest_text, root, rep):
     """Validate optional lab structure and its end-of-article MinIO links."""
     visible_body = re.sub(r"<!--.*?-->", " ", body, flags=re.S)
@@ -403,8 +448,12 @@ def check_lab_downloads(body, manifest_text, root, rep):
         markdown_destination(match.group("target"))
         for match in MARKDOWN_LINK_RE.finditer(section)
     ]
+    archives = sorted(set(target for target in targets if is_lab_archive(target)))
+    files = [target for target in targets if not is_lab_archive(target)]
     if not targets:
         rep.error("public lab: 'Lab downloads' has no downloadable files")
+    if len(archives) > 1:
+        rep.error("public lab: 'Lab downloads' links more than one archive: " + ", ".join(archives))
     for target in targets:
         if not is_public_minio_download(target):
             rep.error(
@@ -432,11 +481,14 @@ def check_lab_downloads(body, manifest_text, root, rep):
         missing = sorted(set(placeholders) - set(row_names))
         rep.error("public lab: placeholders missing from manifest.md: " + ", ".join(missing))
 
-    if rows and len(targets) != len(rows):
+    # An archive-only section links nothing but the zip; otherwise every file needs its link.
+    if rows and (files or not archives) and len(files) != len(rows):
         rep.error(
-            f"public lab: References has {len(targets)} downloads but manifest.md "
+            f"public lab: References has {len(files)} downloads but manifest.md "
             f"lists {len(rows)} lab files"
         )
+    if archives:
+        check_lab_archive(root, archives[0], local_files, rep)
 
     manifest_paths = [path for _, path in rows]
     if len(manifest_paths) != len(set(manifest_paths)):
@@ -464,6 +516,30 @@ def check_lab_downloads(body, manifest_text, root, rep):
         pathlib.Path(path).name.casefold() == "readme.md" for path in local_files
     ):
         rep.error("public lab: a multi-file lab requires README.md")
+
+
+def check_lab_grade(root, rep):
+    """Warn on a legacy lab with no grade; fail a declared grade that is not G1-G3."""
+    local_files = publishable_lab_files(root)
+    if not local_files:
+        return
+    readme = next(
+        (root / path for path in local_files if pathlib.Path(path).name.casefold() == "readme.md"),
+        None,
+    )
+    match = LAB_GRADE_RE.search(readme.read_text(encoding="utf-8")) if readme else None
+    if match is None:
+        rep.warn(
+            "lab: no **Grade:** line in lab/README.md (a legacy lab); new labs declare "
+            "G1-G3 and the exercise ladder, see references/labs.md"
+        )
+        return
+    value = match.group("value").strip()
+    grade = re.match(r"G([0-3])\b", value)
+    if grade is None or grade.group(1) == "0":
+        rep.error(f"lab: grade '{value}' must be G1, G2 or G3 (a G0 post has no lab/)")
+    elif grade.group(1) == "3" and "needs" not in value:
+        rep.error(f"lab: a G3 grade must name the resource it needs: '{value}'")
 
 
 def word_count(text):
@@ -1282,6 +1358,7 @@ def main():
     check_math(body, rep)
     check_public_boundary(body, rep)
     check_lab_downloads(body, manifest_text, root, rep)
+    check_lab_grade(root, rep)
     check_length(body, tier, rep)
     if social_text is not None:
         check_social(fm, root, social_text, linkedin_prompts_text, rep)

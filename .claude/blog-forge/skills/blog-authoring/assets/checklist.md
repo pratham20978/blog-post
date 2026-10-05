@@ -43,6 +43,15 @@ Run after `validate_post.py` passes. The script checks structure; this checks ju
 - [ ] Does every non-anchor link resolve to a public site route or verified public HTTP(S) page?
 - [ ] At publish time, does every image use an absolute public HTTP(S) URL?
 
+## Lab
+
+- [ ] Does the README declare a grade (G0–G3) that matches its most demanding file, and does a G3 grade name the resource?
+- [ ] Is every number the article calls measured produced by an executed lab file, with its provenance line?
+- [ ] Does everything not executed say so in the README, ship an empty results schema, and appear as documented in the article?
+- [ ] Does the lab ship the exercise ladder its tier requires (L1 E1–E2, L2 E1–E3, L3 E1–E4, L4 E1–E5), each exercise with a self-check and a hidden answer from the author's own run?
+- [ ] Was any access request raised only because quality needed it, answered, and recorded in `access.md`, and did a declined request build exactly the promised fallback?
+- [ ] If `lab-<slug>.zip` is linked, was it rebuilt after the last change to `lab/`?
+
 ## Terminology
 
 - [ ] Is every technical term introduced before later sentences rely on it?

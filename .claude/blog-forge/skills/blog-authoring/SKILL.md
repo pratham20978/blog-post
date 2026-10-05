@@ -3,7 +3,7 @@ name: blog-authoring
 description: Plan a multi-part technical series with persistent compact context, or write a long-form computer-science education blog post with researched sources, figures, and a pre-publish quality gate. Use whenever the user asks to build a series or write, draft, plan, outline, expand, or review a technical blog post, article, tutorial, explainer, or deep dive.
 license: MIT
 metadata:
-  version: "0.6"
+  version: "0.7"
 ---
 
 # Blog Authoring
@@ -37,8 +37,9 @@ Run these in order. Stop at the checkpoints and wait for the user.
 
 | Phase | Does | Output |
 |---|---|---|
-| 0 Brief and scope | Fix topic, subject area, audience; run the scope decision — one post or a series, and the tier and difficulty of each part | in conversation, plus `posts/<series-slug>/plan.md` and `context.md` when it is a series |
-| **CHECKPOINT S** | Only when the topic is a series: user approves the part list and each part's level before anything is researched | |
+| 0 Brief and scope | Fix topic, subject area, audience; run the scope decision — one post or a series, and the tier and difficulty of each part; run the lab probe and grade each lab (`references/labs.md`) | in conversation, plus `posts/<series-slug>/plan.md` and `context.md` when it is a series, and `access.md` when a lab needs access |
+| **CHECKPOINT S** | Only when the topic is a series: user approves the part list, each part's level and lab grade, and answers each access request, before anything is researched | |
+| **ACCESS STOP** | Only when a lab needs hardware, privileges or a service the agent cannot set up itself and the need was never raised — a standalone post's brief, or the next member of a series that has no `access.md` yet: show the access request and wait for `grant`, `decline` or `later` | `access.md` |
 | 1 Research | Find and tier sources, build the claim ledger | `research/ledger.md` |
 | **CHECKPOINT A** | Show source list and what the post can honestly claim | |
 | 2 Outline | Section skeleton, word budget, figure plan, term map | `outline.md` |
@@ -126,12 +127,13 @@ Load only what the current phase needs.
 | `references/depth-tiers.md` | setting the budget, or expanding a post |
 | `references/series-planning.md` | at brief time, for any topic that may be more than one post |
 | `references/writing-craft.md` | drafting prose |
-| `references/labs.md` | the post needs runnable or downloadable lab files |
+| `references/labs.md` | at brief time, to grade the lab and run the probe; and whenever the post needs runnable or downloadable lab files |
 | `references/math.md` | the post has equations |
 | `references/frontmatter.md` | assembling the file |
 | `references/subject-playbooks.md` | at brief time, to learn the subject's conventions |
 | `assets/post-template.md` | starting a new post |
 | `assets/series-context-template.md` | creating the compact memory file for a new series |
+| `assets/lab-readme-template.md` | starting any lab's `README.md` |
 | `assets/checklist.md` | phase 6 |
 
 ---
@@ -148,6 +150,8 @@ posts/<slug>/
 ├── social.md            LinkedIn/Instagram copy, order, alt text, and metadata
 ├── research/ledger.md   claim → source → URL → access date
 ├── lab/                 optional runnable files uploaded individually to MinIO
+├── lab-<slug>.zip       optional whole-lab archive, built from lab/
+├── access.md            private: probe snapshot and access requests, when a lab needs one
 └── assets/
     ├── cover-prompt.md
     ├── linkedin-prompts.md
@@ -165,19 +169,20 @@ one normal post folder per member:
 posts/<series-slug>/
 ├── plan.md                    approved shape, objectives, scope, and level of every part
 ├── context.md                 compact memory of completed work and instructions for the next part
+├── access.md                  probe snapshot, access requests and answers, capture backlog
 ├── <part-1-slug>/             normal post folder with blog.md, outline.md, research/, assets/, ...
 └── <part-2-slug>/             normal post folder
 ```
 
 Each member post carries `series: <series-slug>` and `series_position: <n>` in frontmatter; both
-appear together or neither does. Before starting a member, read both `plan.md` and `context.md`.
+appear together or neither does. Before starting a member, read `plan.md`, `context.md`, and `access.md` when it exists, and re-run the lab probe.
 After the member passes the gate, analyse the completed artifacts and update `context.md` before
 starting another part. The plan and context are private build artifacts like the outline — never
 link them from a published post.
 
 Images and labs are **not** uploaded by this skill. `blog.md` carries image placeholders like `FIG_03` and one placeholder per lab file: `LAB_01`, `LAB_02`, and so on. The user uploads the listed files to the public MinIO `media` bucket, places the resulting URLs in `urls.txt` in manifest order, and runs `scripts/fill_urls.py` to swap them in.
 
-Only `blog.md`, uploaded images, and the explicitly listed lab objects become public. Every other post file is a private build artifact. Keep definitions, reasoning, expected results, and the core example in the article. Use `lab/` for complete runnable code, setup, small input data, captured output, or exercises. Put every public lab link under `### Lab downloads` inside the final `## References` section, with a one-line purpose for each file. Body text may point readers to `[Lab downloads](#lab-downloads)`, but it must never link a local path. Never expose the outline, manifest, `social.md`, social assets, research ledger, editable image sources, caches, secrets, or another private artifact.
+Only `blog.md`, uploaded images, and the explicitly listed lab objects become public. Every other post file is a private build artifact. Keep definitions, reasoning, expected results, and the core example in the article. Use `lab/` for complete runnable code, setup, small input data, captured output, or exercises. Put every public lab link under `### Lab downloads` inside the final `## References` section, with a one-line purpose for each file. Body text may point readers to `[Lab downloads](#lab-downloads)`, but it must never link a local path. Never expose the outline, manifest, `access.md`, `social.md`, social assets, research ledger, editable image sources, caches, secrets, or another private artifact.
 
 Language is English only.
 
@@ -210,7 +215,7 @@ post preserves established terminology and does not repeat completed work. After
 the gate, update that context from the final artifacts. Keep it compact: no copied prose, outline,
 ledger, or source dump, and no planned claim recorded as already established.
 
-**Keep labs minimal and intentional.** Use one file when one file is genuinely runnable and understandable. Split into multiple files only for distinct responsibilities such as schema, runner, dependencies, input, and expected output. A multi-file lab requires `README.md` with prerequisites, run order, expected result, and safety notes. Never include credentials, `.env`, caches, virtual environments, compiled output, or unrelated files. Read `references/labs.md` before creating or reviewing a lab.
+**Keep labs minimal and intentional.** Use one file when one file is genuinely runnable and understandable. Split into multiple files only for distinct responsibilities such as schema, runner, dependencies, input, and expected output. Every lab ships `README.md` from `assets/lab-readme-template.md`: its grade (G0–G3), what was executed, provenance, run order, the exercise ladder its tier requires (E1–E5), and cleanup. Never invent a number: what could not run ships as an unrun harness with an empty schema, and the article calls those numbers documented. Ask the owner for hardware, privileges or services only through an access request, and only when the post's quality depends on it. Never include credentials, `.env`, caches, virtual environments, compiled output, or unrelated files. Read `references/labs.md` before creating or reviewing a lab.
 
 **Never use a technical term before introducing it.** At its first meaningful use, give its canonical name (and expand an acronym), say what kind of thing it is, explain the job it does or why it is used here, and state when the reader should use, inspect, or care about it. Add a concrete example or distinguish a nearby concept when confusion is likely. Build a term map in the outline with `term | first section | what | why | when`, then fold those explanations into `blog.md`; never send the reader to the term map.
 

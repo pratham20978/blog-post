@@ -82,12 +82,15 @@ defines the whole series. Member posts live below it as
 - **Assumes:** <prerequisites; for part n>1 name the earlier part and its anchor>
 - **Hands off:** <what it deliberately defers, and to which part>
 - **Worked example:** <the one concrete instance>
+- **Lab:** <grade G0–G3 and what runs>; <`no access needed`, or `AR-nn` and the grade if declined>
 - **Key sources:** <two or three from the sweep>
 - **Search intent:** <what a reader types that should land here>
 
 ## Publication order and cadence
 
 ## Cross-links
+
+## Lab policy
 
 ## What this series will not cover
 ```
@@ -235,7 +238,7 @@ posts/<series-slug>/
     └── ...
 ```
 
-At Checkpoint S, create the series directory, `plan.md`, and initial `context.md`. Create a member
+At Checkpoint S, create the series directory, `plan.md`, initial `context.md`, and `access.md` with the probe snapshot and any access requests (`references/labs.md`). Create a member
 post folder when work on that approved part begins; empty folders for every future part add no
 useful state.
 
@@ -263,7 +266,7 @@ Publishing a later part does not mean editing an earlier published part. An alre
 
 ## Checkpoint S
 
-**The series plan is approved by the user before research starts.** Present the plan, the shape, and the tier and difficulty of every part, then stop. Do not sweep sources, do not outline, do not draft.
+**The series plan is approved by the user before research starts.** Present the plan, the shape, the tier, difficulty and lab grade of every part, and every access request with its fallback, then stop. Do not sweep sources, do not outline, do not draft.
 
 Approving a four-post plan costs a minute. Discovering at part 3 that the cut was wrong costs three posts, because the seams decided what each earlier post taught and what it deferred, and both are now published.
 

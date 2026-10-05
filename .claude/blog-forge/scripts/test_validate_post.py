@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import unittest
 import struct
+import zipfile
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
@@ -11,6 +12,7 @@ from .validate_post import (
     Report,
     check_frontmatter,
     check_lab_downloads,
+    check_lab_grade,
     check_linkedin,
     check_public_boundary,
     check_publish,
@@ -409,6 +411,141 @@ python examples/demo.py
             report = Report()
             check_lab_downloads(body, manifest, root, report)
             self.assertTrue(any("minio.canery.in" in item for item in report.errors))
+
+    ARCHIVE_MANIFEST = """| Placeholder | File |
+|---|---|
+| LAB_01 | `lab/README.md` |
+| LAB_02 | `lab/run.py` |
+"""
+
+    def archive_post(self, directory: str, members: dict[str, bytes] | None = None) -> Path:
+        root = Path(directory) / "demo-post"
+        (root / "lab").mkdir(parents=True)
+        (root / "lab" / "README.md").write_text("Run the lab.", encoding="utf-8")
+        (root / "lab" / "run.py").write_text("print('ok')\n", encoding="utf-8")
+        if members is None:
+            members = {
+                "lab/README.md": b"Run the lab.",
+                "lab/run.py": b"print('ok')\n",
+            }
+        with zipfile.ZipFile(root / "lab-demo-post.zip", "w") as bundle:
+            bundle.writestr("lab/", b"")
+            for name, data in members.items():
+                bundle.writestr(name, data)
+        return root
+
+    ARCHIVE_URL = "https://minio.canery.in/media/lab-demo-post.zip"
+
+    def test_lab_archive_beside_file_links_is_not_counted_as_a_file(self) -> None:
+        with TemporaryDirectory() as directory:
+            root = self.archive_post(directory)
+            body = f"""## References
+
+### Lab downloads
+
+- [`README.md`](LAB_01) — setup and run order.
+- [`run.py`](LAB_02) — runnable experiment.
+- [Complete lab]({self.ARCHIVE_URL}) — every file above in one zip.
+"""
+            report = Report()
+            check_lab_downloads(body, self.ARCHIVE_MANIFEST, root, report)
+            self.assertEqual(report.errors, [])
+            self.assertEqual(report.warnings, [])
+
+    def test_archive_only_lab_downloads_pass(self) -> None:
+        with TemporaryDirectory() as directory:
+            root = self.archive_post(directory)
+            body = f"""## References
+
+### Lab downloads
+
+- [`README.md` in the complete lab archive]({self.ARCHIVE_URL}) — setup and run order.
+- [`run.py` in the complete lab archive]({self.ARCHIVE_URL}) — runnable experiment.
+"""
+            report = Report()
+            check_lab_downloads(body, self.ARCHIVE_MANIFEST, root, report)
+            self.assertEqual(report.errors, [])
+
+    def test_lab_gate_rejects_two_archives(self) -> None:
+        with TemporaryDirectory() as directory:
+            root = self.archive_post(directory)
+            body = f"""## References
+
+### Lab downloads
+
+- [Complete lab]({self.ARCHIVE_URL})
+- [Old lab](https://minio.canery.in/media/lab-demo-post-v1.zip)
+"""
+            report = Report()
+            check_lab_downloads(body, self.ARCHIVE_MANIFEST, root, report)
+            self.assertTrue(any("more than one archive" in item for item in report.errors))
+
+    def test_lab_gate_rejects_stale_or_padded_archive(self) -> None:
+        with TemporaryDirectory() as directory:
+            root = self.archive_post(
+                directory,
+                {
+                    "lab/README.md": b"Run the lab.",
+                    "lab/run.py": b"print('old')\n",
+                    "lab/__pycache__/run.cpython-312.pyc": b"\x00",
+                },
+            )
+            body = f"""## References
+
+### Lab downloads
+
+- [Complete lab]({self.ARCHIVE_URL})
+"""
+            report = Report()
+            check_lab_downloads(body, self.ARCHIVE_MANIFEST, root, report)
+            self.assertTrue(any("out of date for: lab/run.py" in item for item in report.errors))
+            self.assertTrue(any("outside the lab" in item for item in report.errors))
+
+    def test_linked_archive_missing_locally_only_warns(self) -> None:
+        with TemporaryDirectory() as directory:
+            root = self.archive_post(directory)
+            (root / "lab-demo-post.zip").unlink()
+            body = f"""## References
+
+### Lab downloads
+
+- [Complete lab]({self.ARCHIVE_URL})
+"""
+            report = Report()
+            check_lab_downloads(body, self.ARCHIVE_MANIFEST, root, report)
+            self.assertEqual(report.errors, [])
+            self.assertTrue(any("not in the post folder" in item for item in report.warnings))
+
+    def lab_readme(self, directory: str, readme: str) -> Path:
+        root = Path(directory)
+        (root / "lab").mkdir()
+        (root / "lab" / "README.md").write_text(readme, encoding="utf-8")
+        (root / "lab" / "run.py").write_text("print('ok')\n", encoding="utf-8")
+        return root
+
+    def test_legacy_lab_without_grade_only_warns(self) -> None:
+        with TemporaryDirectory() as directory:
+            root = self.lab_readme(directory, "# Lab\n\nRun it.\n")
+            report = Report()
+            check_lab_grade(root, report)
+            self.assertEqual(report.errors, [])
+            self.assertTrue(any("no **Grade:** line" in item for item in report.warnings))
+
+    def test_declared_lab_grades(self) -> None:
+        cases = {
+            "G2 · local service": 0,
+            "G3 · needs one NVIDIA GPU": 0,
+            "G3 · GPU": 1,
+            "G0 · by hand": 1,
+            "Tier B": 1,
+        }
+        for value, errors in cases.items():
+            with self.subTest(value=value), TemporaryDirectory() as directory:
+                root = self.lab_readme(directory, f"# Lab\n\n- **Grade:** {value}\n")
+                report = Report()
+                check_lab_grade(root, report)
+                self.assertEqual(len(report.errors), errors)
+                self.assertEqual(report.warnings, [])
 
     def test_does_not_treat_image_syntax_as_a_normal_link(self) -> None:
         report = Report()
