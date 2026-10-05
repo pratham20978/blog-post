@@ -286,7 +286,8 @@ def audit(config_path: pathlib.Path, *, live: bool) -> dict[str, Any]:
     posts_dir = root / str(config.get("posts_dir", "posts"))
     pages: list[Page] = []
     findings: list[Finding] = []
-    for blog_file in sorted(posts_dir.glob("*/blog.md")):
+    # Recursive: posts live under their series, posts/<series>/<slug>/blog.md.
+    for blog_file in sorted(posts_dir.rglob("blog.md")):
         page, post_findings = audit_post(
             blog_file, site_url=site_url, article_path=article_path
         )

@@ -46,7 +46,7 @@ canonical_url: https://canery.in/p/example
     def test_clean_project_has_no_findings(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = pathlib.Path(directory)
-            post = root / "posts" / "example" / "blog.md"
+            post = root / "posts" / "series" / "example" / "blog.md"
             post.parent.mkdir(parents=True)
             post.write_text(
                 """---
