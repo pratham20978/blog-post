@@ -35,7 +35,7 @@ Claude Code loop for long-term monitoring.
 
 ## Optional backend history
 
-Migration `011_seo_observability.sql` stores audit history and leaves the
+Migration `012_seo_observability.sql` stores audit history and leaves the
 existing Markdown publication flow untouched. The plugin can submit an audit
 when a current admin bearer token and the full private admin endpoint are
 provided:

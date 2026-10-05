@@ -37,6 +37,11 @@ class Comment(ContractModel):
     id: CommentId
     blog_id: BlogId
     user_id: UserId
+    #: The commenter's public name: their display name from the sign-in
+    #: provider. Null for an account that never supplied one, such as an
+    #: email-code sign-up — a reader-facing client shows a neutral label then.
+    #: Never the email address.
+    author_name: str | None = None
     parent_comment_id: CommentId | None = None
     depth: int = Field(ge=0, le=1)
     body: CommentBody

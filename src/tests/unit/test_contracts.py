@@ -159,3 +159,22 @@ class TestMarkerAnchorUnion:
                 progress_ratio=1.5,
                 updated_at="2026-08-22T12:00:00Z",  # type: ignore[arg-type]
             )
+
+
+class TestCommentAuthor:
+    def test_author_name_is_optional(self) -> None:
+        """An account without a display name still comments; the contract must
+        not make the name a precondition."""
+        from blogs.contracts.interaction import Comment
+
+        comment = Comment(
+            id=_ACTOR,
+            blog_id=_USER,
+            user_id=_USER,
+            depth=0,
+            body="hello",
+            created_at="2026-08-22T12:00:00Z",  # type: ignore[arg-type]
+            updated_at="2026-08-22T12:00:00Z",  # type: ignore[arg-type]
+        )
+        assert comment.author_name is None
+        assert Comment.model_validate(comment.model_dump(mode="json")) == comment

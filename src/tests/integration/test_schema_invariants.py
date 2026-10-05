@@ -197,6 +197,36 @@ class TestCommentThreading:
                     body="wrong article",
                 )
 
+    async def test_every_comment_names_its_author(self, uow, ids) -> None:  # type: ignore[no-untyped-def]
+        """Writes and reads alike carry the author's display name — and null for
+        an account that has none, rather than anything derived from its email."""
+        admin, reader, blog = await _seed(uow, ids)
+        async with uow.begin() as work:
+            root = await work.comments.create_root(
+                comment_id=ids.new_id(), blog_id=blog, user_id=admin, body="root"
+            )
+            reply = await work.comments.create_reply(
+                comment_id=ids.new_id(),
+                blog_id=blog,
+                user_id=reader,
+                parent_comment_id=root.id,
+                body="reply",
+            )
+            edited = await work.comments.update_body(
+                comment_id=root.id, user_id=admin, body="edited root"
+            )
+        assert root.author_name == "Admin"
+        assert reply.author_name is None
+        assert edited is not None and edited.author_name == "Admin"
+
+        async with uow.read() as work:
+            fetched = await work.comments.get(reply.id)
+            page = await work.comments.list_threads(blog_id=blog, cursor=None, limit=10)
+        assert fetched is not None and fetched.author_name is None
+        [thread] = page.items
+        assert (thread.root.body, thread.root.author_name) == ("edited root", "Admin")
+        assert [entry.author_name for entry in thread.replies] == [None]
+
 
 class TestMarkersAndCatalogs:
     async def test_a_marker_moves_rather_than_multiplies(self, uow, ids) -> None:  # type: ignore[no-untyped-def]

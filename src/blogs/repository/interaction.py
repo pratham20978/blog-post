@@ -38,12 +38,38 @@ _COMMENT_COLUMNS = """
     created_at, updated_at, deleted_at
 """
 
+#: The same columns qualified for the join that names each comment's author.
+#: Written out rather than derived from the string above, for the reason given
+#: at ``_CATALOG_COLUMNS_QUALIFIED``.
+_COMMENT_COLUMNS_QUALIFIED = """
+    c.id, c.blog_id, c.user_id, c.parent_comment_id, c.depth, c.body,
+    c.created_at, c.updated_at, c.deleted_at
+"""
+
+#: Every comment read carries its author's public name, so a reader-facing
+#: client never has to resolve user ids — and could not, since users are not
+#: readable over HTTP. Only ``display_name`` crosses: never the email.
+_COMMENT_SELECT = f"""
+    SELECT {_COMMENT_COLUMNS_QUALIFIED}, u.display_name AS author_name
+    FROM comments c
+    JOIN users u ON u.id = c.user_id
+"""
+
+#: The tail for a write wrapped as ``WITH written AS (... RETURNING ...)``: it
+#: names the author in the same round trip the write already makes.
+_WRITTEN_WITH_AUTHOR = """
+    SELECT written.*, u.display_name AS author_name
+    FROM written
+    JOIN users u ON u.id = written.user_id
+"""
+
 
 def _to_comment(row: DictRow) -> Comment:
     return Comment(
         id=str(row["id"]),
         blog_id=str(row["blog_id"]),
         user_id=str(row["user_id"]),
+        author_name=row["author_name"],
         parent_comment_id=(
             str(row["parent_comment_id"]) if row["parent_comment_id"] else None
         ),
@@ -58,7 +84,7 @@ def _to_comment(row: DictRow) -> Comment:
 class SqlCommentRepository(SqlRepository):
     async def get(self, comment_id: str) -> Comment | None:
         row = await self._fetch_one(
-            f"SELECT {_COMMENT_COLUMNS} FROM comments WHERE id = %(id)s", {"id": comment_id}
+            f"{_COMMENT_SELECT} WHERE c.id = %(id)s", {"id": comment_id}
         )
         return _to_comment(row) if row else None
 
@@ -68,9 +94,12 @@ class SqlCommentRepository(SqlRepository):
         try:
             row = await self._fetch_one(
                 f"""
-                INSERT INTO comments (id, blog_id, user_id, depth, body)
-                VALUES (%(id)s, %(blog)s, %(user)s, 0, %(body)s)
-                RETURNING {_COMMENT_COLUMNS}
+                WITH written AS (
+                    INSERT INTO comments (id, blog_id, user_id, depth, body)
+                    VALUES (%(id)s, %(blog)s, %(user)s, 0, %(body)s)
+                    RETURNING {_COMMENT_COLUMNS}
+                )
+                {_WRITTEN_WITH_AUTHOR}
                 """,
                 {"id": comment_id, "blog": blog_id, "user": user_id, "body": body},
             )
@@ -93,10 +122,13 @@ class SqlCommentRepository(SqlRepository):
         try:
             row = await self._fetch_one(
                 f"""
-                INSERT INTO comments
-                    (id, blog_id, user_id, parent_comment_id, depth, body)
-                VALUES (%(id)s, %(blog)s, %(user)s, %(parent)s, 1, %(body)s)
-                RETURNING {_COMMENT_COLUMNS}
+                WITH written AS (
+                    INSERT INTO comments
+                        (id, blog_id, user_id, parent_comment_id, depth, body)
+                    VALUES (%(id)s, %(blog)s, %(user)s, %(parent)s, 1, %(body)s)
+                    RETURNING {_COMMENT_COLUMNS}
+                )
+                {_WRITTEN_WITH_AUTHOR}
                 """,
                 {
                     "id": comment_id,
@@ -116,9 +148,12 @@ class SqlCommentRepository(SqlRepository):
     ) -> Comment | None:
         row = await self._fetch_one(
             f"""
-            UPDATE comments SET body = %(body)s
-            WHERE id = %(id)s AND user_id = %(user)s AND deleted_at IS NULL
-            RETURNING {_COMMENT_COLUMNS}
+            WITH written AS (
+                UPDATE comments SET body = %(body)s
+                WHERE id = %(id)s AND user_id = %(user)s AND deleted_at IS NULL
+                RETURNING {_COMMENT_COLUMNS}
+            )
+            {_WRITTEN_WITH_AUTHOR}
             """,
             {"id": comment_id, "user": user_id, "body": body},
         )
@@ -144,18 +179,20 @@ class SqlCommentRepository(SqlRepository):
         self, *, blog_id: str, cursor: str | None, limit: int
     ) -> Page[CommentThread]:
         params: dict[str, Any] = {"blog": blog_id, "limit": limit + 1}
-        clauses = ["blog_id = %(blog)s", "depth = 0", "deleted_at IS NULL"]
+        clauses = ["c.blog_id = %(blog)s", "c.depth = 0", "c.deleted_at IS NULL"]
         if cursor:
             keys = decode_cursor(cursor)
-            clauses.append("(created_at, id) < (%(cur_at)s::timestamptz, %(cur_id)s::uuid)")
+            clauses.append(
+                "(c.created_at, c.id) < (%(cur_at)s::timestamptz, %(cur_id)s::uuid)"
+            )
             params["cur_at"] = keys.get("created_at")
             params["cur_id"] = keys.get("id")
 
         roots = await self._fetch_all(
             f"""
-            SELECT {_COMMENT_COLUMNS} FROM comments
+            {_COMMENT_SELECT}
             WHERE {" AND ".join(clauses)}
-            ORDER BY created_at DESC, id DESC
+            ORDER BY c.created_at DESC, c.id DESC
             LIMIT %(limit)s
             """,
             params,
@@ -169,9 +206,9 @@ class SqlCommentRepository(SqlRepository):
         # Single-level threading is what makes this possible without recursion.
         replies = await self._fetch_all(
             f"""
-            SELECT {_COMMENT_COLUMNS} FROM comments
-            WHERE parent_comment_id = ANY(%(parents)s::uuid[]) AND deleted_at IS NULL
-            ORDER BY created_at
+            {_COMMENT_SELECT}
+            WHERE c.parent_comment_id = ANY(%(parents)s::uuid[]) AND c.deleted_at IS NULL
+            ORDER BY c.created_at
             """,
             {"parents": [str(r["id"]) for r in page_roots]},
         )

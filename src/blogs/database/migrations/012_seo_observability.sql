@@ -1,4 +1,4 @@
--- 011 — SEO audit history, Search Console snapshots, and AI visibility.
+-- 012 — SEO audit history, Search Console snapshots, and AI visibility.
 --
 -- Editorial source stays in Markdown and operational analytics stay in the
 -- engagement log. These tables record external discoverability observations
