@@ -1,0 +1,40 @@
+flowchart TB
+  subgraph DISC["DISCRETE CHAINS"]
+    direction LR
+    DDPM["DDPM — variance-preserving<br/>xₜ = √ᾱₜ·x₀ + √(1−ᾱₜ)·ε<br/>T = 1000 steps"]
+    NCSN["NCSN — variance-exploding<br/>x̃ = x₀ + σ·ε<br/>10 noise levels, σ from 1 to 0.01"]
+  end
+
+  subgraph CONT["CONTINUOUS TIME"]
+    direction LR
+    VP["VP SDE<br/>dx = −½β(t)x dt + √β(t) dw"]
+    VE["VE SDE<br/>dx = √(d[σ²]/dt) dw"]
+    VDM["VDM — continuous VP, learned schedule<br/>bound = ½∫ ‖x₀ − x̂₀‖² dSNR"]
+    EDM["EDM — VE plus input scaling<br/>denoiser D(x; σ)"]
+  end
+
+  NET["ONE NETWORK AT EACH SNR<br/>ε̂  ⇄  x̂₀  ⇄  score<br/>fixed conversions given ᾱₜ"]
+
+  LOSS["ONE LOSS<br/>½∫ w(λ) ‖ε − ε̂‖² dλ<br/>λ = log SNR"]
+  ELBO["ELBO<br/>w(λ) = 1"]
+  SIMPLE["L simple, DDPM's loss<br/>w(λ) = the schedule's density p(λ)"]
+  DSM["weighted DSM<br/>‖score error‖² × (1−ᾱₜ)<br/>= ‖ε error‖²"]
+  REV["reverse SDE or ODE<br/>needs the marginal score — part 6"]
+
+  DDPM -- "divide by √ᾱₜ · σ = 1/√SNR" --> NCSN
+  DDPM -- "steps → ∞" --> VP
+  NCSN -- "levels → ∞" --> VE
+  VP -- "divide x by √ᾱₜ" --> VE
+  VP -- "learn the SNR endpoints" --> VDM
+  VE -- "add scaling s(t) and preconditioning" --> EDM
+
+  DDPM -- "predicts ε" --> NET
+  NCSN -- "predicts the score" --> NET
+  VDM -- "predicts ε, read as x̂₀" --> NET
+  EDM -- "predicts x₀" --> NET
+
+  NET -- "Tweedie: score = −ε̂ / √(1−ᾱₜ)" ---> REV
+  NET -- "squared error, weighted over λ" --> LOSS
+  LOSS -- "w = σ² on the score" --> DSM
+  LOSS -- "w = p(λ)" --> SIMPLE
+  LOSS -- "w = 1" --> ELBO

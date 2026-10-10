@@ -1,0 +1,356 @@
+# Captured output — nvidia-stack part 1 lab
+#
+# Machine: x86_64 Linux, no NVIDIA GPU, no driver, no CUDA Toolkit installed.
+# Captured: 2026-09-23. Package versions move; the shape of the answer does not.
+# Diff your own run against this to see what has drifted.
+
+############################################################
+# $ python3 inspect_wheel.py torch 2.14.0
+############################################################
+
+package        torch 2.14.0
+wheel          torch-2.14.0-cp312-cp312-manylinux_2_28_x86_64.whl
+download size  554.6 MB
+entries        13,043
+unpacked size  1144.2 MB
+cost to list   3 HTTP range requests, 1.2 MB transferred
+
+--- shared libraries in the wheel (13) ---
+    502.8 MB  torch/lib/libtorch_cuda.so
+    446.3 MB  torch/lib/libtorch_cpu.so
+     44.0 MB  torch/lib/libtorch_cuda_linalg.so
+     34.5 MB  torch/lib/libtorch_python.so
+      4.1 MB  torch/lib/libtorch_nvshmem.so
+      2.1 MB  torch/lib/libgomp.so.1
+      1.6 MB  torch/lib/libc10.so
+      0.7 MB  torch/lib/libc10_cuda.so
+      0.1 MB  torch/lib/libtorch.so
+      0.1 MB  torch/lib/libshm.so
+      0.0 MB  torch/lib/libcaffe2_nvrtc.so
+      0.0 MB  torch/_C.cpython-312-x86_64-linux-gnu.so
+      0.0 MB  torch/lib/libtorch_global_deps.so
+
+--- Requires-Dist, from torch-2.14.0.dist-info/METADATA ---
+    (PyPI's JSON summary can disagree with this. The wheel is right.)
+    filelock
+    typing-extensions>=4.10.0
+    setuptools>=77.0.3
+    sympy>=1.13.3
+    networkx>=2.5.1
+    jinja2
+    fsspec>=0.8.5
+    cuda-toolkit[cublas,cudart,cufft,cufile,cupti,curand,cusolver,cusparse,nvjitlink,nvrtc,nvtx]==13.0.3; platform_system == "Linux"
+    cuda-bindings<14,>=13.0.3; platform_system == "Linux" and python_version < "3.15"
+    nvidia-cudnn-cu13==9.24.0.43; platform_system == "Linux"
+    nvidia-cusparselt-cu13==0.8.1; platform_system == "Linux"
+    nvidia-nccl-cu13==2.30.7; platform_system == "Linux"
+    nvidia-nvshmem-cu13==3.4.5; platform_system == "Linux"
+    triton~=3.8.0; platform_system == "Linux" and python_version < "3.15"
+    optree>=0.13.0; extra == "optree"
+    opt-einsum>=3.3; extra == "opt-einsum"
+    pyyaml; extra == "pyyaml"
+
+--- what the dynamic loader will be asked for ---
+
+  libtorch_global_deps.so  (SONAME libtorch_global_deps.so)
+      NEEDED   libpthread.so.0
+      NEEDED   libm.so.6
+      NEEDED   libdl.so.2
+      NEEDED   libcudart.so.13
+      NEEDED   libgomp.so.1
+      NEEDED   libc.so.6
+      RPATH    $ORIGIN/../../nvidia/cudnn/lib
+      RPATH    $ORIGIN/../../nvidia/nvshmem/lib
+      RPATH    $ORIGIN/../../nvidia/nccl/lib
+      RPATH    $ORIGIN/../../nvidia/cusparselt/lib
+      RPATH    $ORIGIN/../../nvidia/cu13/lib
+      RPATH    $ORIGIN
+
+  _C.cpython-312-x86_64-linux-gnu.so  (SONAME --)
+      NEEDED   libtorch_python.so
+      NEEDED   libc.so.6
+      RPATH    $ORIGIN/../../nvidia/cudnn/lib
+      RPATH    $ORIGIN/../../nvidia/nvshmem/lib
+      RPATH    $ORIGIN/../../nvidia/nccl/lib
+      RPATH    $ORIGIN/../../nvidia/cusparselt/lib
+      RPATH    $ORIGIN/../../nvidia/cu13/lib
+      RPATH    $ORIGIN
+      RPATH    $ORIGIN/lib
+
+  libcaffe2_nvrtc.so  (SONAME libcaffe2_nvrtc.so)
+      NEEDED   libnvrtc.so.13
+      NEEDED   libcuda.so.1
+      NEEDED   libstdc++.so.6
+      NEEDED   libm.so.6
+      NEEDED   libgcc_s.so.1
+      NEEDED   libc.so.6
+      RPATH    $ORIGIN/../../nvidia/cudnn/lib
+      RPATH    $ORIGIN/../../nvidia/nvshmem/lib
+      RPATH    $ORIGIN/../../nvidia/nccl/lib
+      RPATH    $ORIGIN/../../nvidia/cusparselt/lib
+      RPATH    $ORIGIN/../../nvidia/cu13/lib
+      RPATH    $ORIGIN
+
+  libshm.so  (SONAME libshm.so)
+      NEEDED   libtorch_cpu.so
+      NEEDED   librt.so.1
+      NEEDED   libc10.so
+      NEEDED   libpthread.so.0
+      NEEDED   libdl.so.2
+      NEEDED   libstdc++.so.6
+      NEEDED   libm.so.6
+      NEEDED   libgomp.so.1
+      NEEDED   libgcc_s.so.1
+      NEEDED   libc.so.6
+      RPATH    $ORIGIN/../../nvidia/cudnn/lib
+      RPATH    $ORIGIN/../../nvidia/nvshmem/lib
+      RPATH    $ORIGIN/../../nvidia/nccl/lib
+      RPATH    $ORIGIN/../../nvidia/cusparselt/lib
+      RPATH    $ORIGIN/../../nvidia/cu13/lib
+      RPATH    $ORIGIN
+
+  libtorch.so  (SONAME libtorch.so)
+      NEEDED   libtorch_cpu.so
+      NEEDED   libtorch_cuda.so
+      NEEDED   libgcc_s.so.1
+      NEEDED   libpthread.so.0
+      NEEDED   libc.so.6
+      RPATH    $ORIGIN/../../nvidia/cudnn/lib
+      RPATH    $ORIGIN/../../nvidia/nvshmem/lib
+      RPATH    $ORIGIN/../../nvidia/nccl/lib
+      RPATH    $ORIGIN/../../nvidia/cusparselt/lib
+      RPATH    $ORIGIN/../../nvidia/cu13/lib
+      RPATH    $ORIGIN
+
+  libc10_cuda.so  (SONAME libc10_cuda.so)
+      NEEDED   libc10.so
+      NEEDED   libdl.so.2
+      NEEDED   libcudart.so.13
+      NEEDED   libstdc++.so.6
+      NEEDED   libm.so.6
+      NEEDED   libgcc_s.so.1
+      NEEDED   libpthread.so.0
+      NEEDED   libc.so.6
+      NEEDED   ld-linux-x86-64.so.2
+      RPATH    $ORIGIN/../../nvidia/cudnn/lib
+      RPATH    $ORIGIN/../../nvidia/nvshmem/lib
+      RPATH    $ORIGIN/../../nvidia/nccl/lib
+      RPATH    $ORIGIN/../../nvidia/cusparselt/lib
+      RPATH    $ORIGIN/../../nvidia/cu13/lib
+      RPATH    $ORIGIN
+
+  libc10.so  (SONAME libc10.so)
+      NEEDED   libdl.so.2
+      NEEDED   libstdc++.so.6
+      NEEDED   libm.so.6
+      NEEDED   libgcc_s.so.1
+      NEEDED   libpthread.so.0
+      NEEDED   libc.so.6
+      NEEDED   ld-linux-x86-64.so.2
+      RPATH    $ORIGIN/../../nvidia/cudnn/lib
+      RPATH    $ORIGIN/../../nvidia/nvshmem/lib
+      RPATH    $ORIGIN/../../nvidia/nccl/lib
+      RPATH    $ORIGIN/../../nvidia/cusparselt/lib
+      RPATH    $ORIGIN/../../nvidia/cu13/lib
+      RPATH    $ORIGIN
+
+  libgomp.so.1  (SONAME libgomp.so.1)
+      NEEDED   libdl.so.2
+      NEEDED   libpthread.so.0
+      NEEDED   libc.so.6
+      RPATH    $ORIGIN/../../nvidia/cudnn/lib
+      RPATH    $ORIGIN/../../nvidia/nvshmem/lib
+      RPATH    $ORIGIN/../../nvidia/nccl/lib
+      RPATH    $ORIGIN/../../nvidia/cusparselt/lib
+      RPATH    $ORIGIN/../../nvidia/cu13/lib
+      RPATH    $ORIGIN
+
+  libtorch_nvshmem.so  (SONAME libtorch_nvshmem.so)
+      NEEDED   libtorch_cpu.so
+      NEEDED   libnvshmem_host.so.3
+      NEEDED   libc10.so
+      NEEDED   libpthread.so.0
+      NEEDED   libdl.so.2
+      NEEDED   libcudart.so.13
+      NEEDED   librt.so.1
+      NEEDED   libstdc++.so.6
+      NEEDED   libm.so.6
+      NEEDED   libgomp.so.1
+      NEEDED   libgcc_s.so.1
+      NEEDED   libc.so.6
+      RPATH    $ORIGIN/../../nvidia/cudnn/lib
+      RPATH    $ORIGIN/../../nvidia/nvshmem/lib
+      RPATH    $ORIGIN/../../nvidia/nccl/lib
+      RPATH    $ORIGIN/../../nvidia/cusparselt/lib
+      RPATH    $ORIGIN/../../nvidia/cu13/lib
+      RPATH    $ORIGIN
+
+  libtorch_python.so  (SONAME libtorch_python.so)
+      NEEDED   libtorch.so
+      NEEDED   libshm.so
+      NEEDED   libtorch_cpu.so
+      NEEDED   libtorch_cuda.so
+      NEEDED   libc10_cuda.so
+      NEEDED   libcudart.so.13
+      NEEDED   libc10.so
+      NEEDED   libpthread.so.0
+      NEEDED   libdl.so.2
+      NEEDED   libcudnn.so.9
+      NEEDED   libcufile.so.0
+      NEEDED   libnccl.so.2
+      NEEDED   libstdc++.so.6
+      NEEDED   libgcc_s.so.1
+      NEEDED   libc.so.6
+      NEEDED   ld-linux-x86-64.so.2
+      RPATH    $ORIGIN/../../nvidia/cudnn/lib
+      RPATH    $ORIGIN/../../nvidia/nvshmem/lib
+      RPATH    $ORIGIN/../../nvidia/nccl/lib
+      RPATH    $ORIGIN/../../nvidia/cusparselt/lib
+      RPATH    $ORIGIN/../../nvidia/cu13/lib
+      RPATH    $ORIGIN
+
+  libtorch_cuda_linalg.so  (SONAME libtorch_cuda_linalg.so)
+      NEEDED   libtorch_cuda.so
+      NEEDED   libcusolver.so.12
+      NEEDED   libc10_cuda.so
+      NEEDED   libcudart.so.13
+      NEEDED   libtorch_cpu.so
+      NEEDED   libc10.so
+      NEEDED   libpthread.so.0
+      NEEDED   libcublas.so.13
+      NEEDED   libcusparse.so.12
+      NEEDED   libstdc++.so.6
+      NEEDED   libm.so.6
+      NEEDED   libgcc_s.so.1
+      NEEDED   libc.so.6
+      NEEDED   ld-linux-x86-64.so.2
+      RPATH    $ORIGIN/../../nvidia/cudnn/lib
+      RPATH    $ORIGIN/../../nvidia/nvshmem/lib
+      RPATH    $ORIGIN/../../nvidia/nccl/lib
+      RPATH    $ORIGIN/../../nvidia/cusparselt/lib
+      RPATH    $ORIGIN/../../nvidia/cu13/lib
+      RPATH    $ORIGIN
+
+  skipped 2 library/libraries over 60.0 MB: libtorch_cuda.so, libtorch_cpu.so
+  Their dynamic section sits far into the file; reading it would mean
+  streaming most of the library, which this lab deliberately does not do.
+
+total transferred: 50.9 MB over 33 requests, examining 11 libraries
+
+############################################################
+# $ python3 resolve_stack.py torch 2.14.0
+############################################################
+
+resolving the declared dependency graph of torch
+
+torch==2.14.0 ships 13 shared libraries
+
+--- walking the graph ---
+  torch requires: filelock, typing-extensions, setuptools, sympy, networkx, jinja2, fsspec, cuda-toolkit[cublas,cudart,cufft,cufile,cupti,curand,cusolver,cusparse,nvjitlink,nvrtc,nvtx], cuda-bindings, nvidia-cudnn-cu13, nvidia-cusparselt-cu13, nvidia-nccl-cu13, nvidia-nvshmem-cu13, triton
+  cuda-bindings==13.4.3 provides 20 libraries, 4.3 MB
+          1.0 MB  runtime.cpython-312-x86_64-linux-gnu.so
+          0.8 MB  runtime_ptds.cpython-312-x86_64-linux-gnu.so
+          0.6 MB  driver.cpython-312-x86_64-linux-gnu.so
+          0.5 MB  nvml.cpython-312-x86_64-linux-gnu.so
+      ... and 16 more
+  nvidia-cudnn-cu13==9.26.0.51 provides 10 libraries, 887.7 MB
+        264.3 MB  libcudnn_engines_precompiled.so.9
+        216.0 MB  libcudnn_engines_tensor_ir.so.9
+        134.4 MB  libcudnn_graph.so.9
+        109.2 MB  libcudnn_adv.so.9
+      ... and 6 more
+  nvidia-cusparselt-cu13==0.9.1 provides 1 libraries, 237.2 MB
+        237.2 MB  libcusparseLt.so.0
+  nvidia-nccl-cu13==2.32.3 provides 1 libraries, 343.9 MB
+        343.9 MB  libnccl.so.2
+  nvidia-nvshmem-cu13==3.8.0 provides 13 libraries, 56.2 MB
+         49.5 MB  libnvshmem_host.so.3
+          1.5 MB  nvshmem_transport_gpunetio.so.7
+          1.3 MB  nvshmem_transport_ibgda.so.7
+          1.2 MB  nvshmem_transport_libfabric.so.7
+      ... and 9 more
+  triton==3.8.0 provides 15 libraries, 619.8 MB
+        505.6 MB  libtriton.so
+         33.8 MB  libnvperf_host.so
+         26.2 MB  libproton.so
+          7.6 MB  libcupti.so.12
+      ... and 11 more
+  MarkupSafe==3.0.3 provides 1 libraries, 0.0 MB
+          0.0 MB  _speedups.cpython-312-x86_64-linux-gnu.so
+  nvidia-cublas==13.8.0.4 provides 3 libraries, 603.9 MB
+        545.5 MB  libcublasLt.so.13
+         57.6 MB  libcublas.so.13
+          0.7 MB  libnvblas.so.13
+  nvidia-cuda-nvrtc==13.4.92 provides 2 libraries, 133.5 MB
+        126.4 MB  libnvrtc.so.13
+          7.1 MB  libnvrtc-builtins.so.13.4
+  nvidia-cuda-runtime==13.4.92 provides 1 libraries, 0.8 MB
+          0.8 MB  libcudart.so.13
+  nvidia-cufft==12.4.0.43 provides 2 libraries, 237.0 MB
+        234.9 MB  libcufft.so.12
+          2.1 MB  libcufftw.so.12
+  nvidia-nvjitlink==13.4.92 provides 1 libraries, 103.6 MB
+        103.6 MB  libnvJitLink.so.13
+  nvidia-cufile==1.19.1.55 provides 2 libraries, 4.2 MB
+          4.1 MB  libcufile.so.0
+          0.1 MB  libcufile_rdma.so.1
+  nvidia-cuda-cupti==13.4.92 provides 5 libraries, 52.4 MB
+         37.2 MB  libnvperf_host.so
+          6.5 MB  libcupti.so.13
+          6.3 MB  libnvperf_target.so
+          1.7 MB  libcheckpoint.so
+      ... and 1 more
+  nvidia-curand==10.4.4.72 provides 1 libraries, 126.5 MB
+        126.5 MB  libcurand.so.10
+  nvidia-cusolver==12.3.4.7 provides 2 libraries, 274.8 MB
+        174.1 MB  libcusolver.so.12
+        100.7 MB  libcusolverMg.so.12
+  nvidia-cusparse==12.8.6.72 provides 1 libraries, 187.8 MB
+        187.8 MB  libcusparse.so.12
+  nvidia-nvtx==13.4.92 provides 1 libraries, 0.0 MB
+          0.0 MB  libnvtx3interop.so.1
+
+--- every library torch's own binaries ask the loader for ---
+
+  library                    provided by                        asked for by
+  -------------------------- ---------------------------------- ----------------------------
+  ld-linux-x86-64.so.2       the base system (glibc, libstdc++) libc10.so, libc10_cuda.so +2
+  libc.so.6                  the base system (glibc, libstdc++) _C.cpython-312-x86_64-linux-gnu.so, libc10.so +9
+  libc10.so                  wheel: torch                       libc10_cuda.so, libshm.so +3
+  libc10_cuda.so             wheel: torch                       libtorch_cuda_linalg.so, libtorch_python.so
+  libcublas.so.13            wheel: nvidia-cublas               libtorch_cuda_linalg.so
+  libcuda.so.1               *** THE HOST NVIDIA DRIVER ***     libcaffe2_nvrtc.so
+  libcudart.so.13            wheel: nvidia-cuda-runtime         libc10_cuda.so, libtorch_cuda_linalg.so +3
+  libcudnn.so.9              wheel: nvidia-cudnn-cu13           libtorch_python.so
+  libcufile.so.0             wheel: nvidia-cufile               libtorch_python.so
+  libcusolver.so.12          wheel: nvidia-cusolver             libtorch_cuda_linalg.so
+  libcusparse.so.12          wheel: nvidia-cusparse             libtorch_cuda_linalg.so
+  libdl.so.2                 the base system (glibc, libstdc++) libc10.so, libc10_cuda.so +5
+  libgcc_s.so.1              the base system (glibc, libstdc++) libc10.so, libc10_cuda.so +6
+  libgomp.so.1               wheel: torch                       libshm.so, libtorch_global_deps.so +1
+  libm.so.6                  the base system (glibc, libstdc++) libc10.so, libc10_cuda.so +5
+  libnccl.so.2               wheel: nvidia-nccl-cu13            libtorch_python.so
+  libnvrtc.so.13             wheel: nvidia-cuda-nvrtc           libcaffe2_nvrtc.so
+  libnvshmem_host.so.3       wheel: nvidia-nvshmem-cu13         libtorch_nvshmem.so
+  libpthread.so.0            the base system (glibc, libstdc++) libc10.so, libc10_cuda.so +7
+  librt.so.1                 the base system (glibc, libstdc++) libshm.so, libtorch_nvshmem.so
+  libshm.so                  wheel: torch                       libtorch_python.so
+  libstdc++.so.6             the base system (glibc, libstdc++) libc10.so, libc10_cuda.so +5
+  libtorch.so                wheel: torch                       libtorch_python.so
+  libtorch_cpu.so            wheel: torch                       libshm.so, libtorch.so +3
+  libtorch_cuda.so           wheel: torch                       libtorch.so, libtorch_cuda_linalg.so +1
+  libtorch_python.so         wheel: torch                       _C.cpython-312-x86_64-linux-gnu.so
+
+  not read (larger than 60.0 MB): libtorch_cpu.so, libtorch_cuda.so
+  Their DT_NEEDED lists are not included above.
+
+--- what that adds up to ---
+  32 packages in the resolved graph
+  90 shared libraries
+  4.86 GB of compiled code, unpacked
+  and not one byte of it is the thing that talks to the GPU.
+
+--- the point ---
+  libcuda.so.1 is named by the binaries and shipped by no wheel in the
+  graph. It comes from the NVIDIA driver installed on the host, and that
+  is the one layer pip can never deliver.

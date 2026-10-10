@@ -1,0 +1,74 @@
+Captured 2026-09-23 on x86_64 Linux, python 3.14.4, with no NVIDIA GPU,
+no NVIDIA driver and no CUDA Toolkit installed. Package versions move;
+pin an explicit release, as the torch invocation below does, to reproduce.
+
+$ python3 cuda_versions.py torch 2.14.0
+=== torch 2.14.0 ==============================
+wheel            torch-2.14.0-cp312-cp312-manylinux_2_28_x86_64.whl
+index version    2.14.0   <- what pip resolved
+
+--- torch/version.py ---
+    __version__ = '2.14.0+cu130'
+    cuda: Optional[str] = '13.0'
+    git_version = '08187d9e0fba026dc8217405802ab5381dc88d90'
+    hip: Optional[str] = None
+    rocm: Optional[str] = None
+    xpu: Optional[str] = None
+
+    note: the local label '+cu130' is not part of the version pip
+          resolved. PyPI published this as 2.14.0.
+
+--- the pin chain ---
+    torch declares      cuda-toolkit[cublas,cudart,cufft,cufile,cupti,curand,cusolver,cusparse,nvjitlink,nvrtc,nvtx]==13.0.3
+    cuda-toolkit pins    nvidia-cuda-runtime==13.0.96.*
+
+--- headers inside nvidia_cuda_runtime-13.0.96-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl ---
+    CUDART_VERSION   13000   -> CUDA 13.0   (cuda_runtime_api.h)
+    CUDA_VERSION     13000   -> CUDA 13.0   (cuda.h)
+    ships            libcudart.so.13
+
+--- asking that runtime directly, with no driver present ---
+    loaded           /tmp/cudart-XXXXXXXX/libcudart.so.13
+    cudaRuntimeGetVersion() = 13000   -> CUDA 13.0
+    It answered without a GPU, a driver, or a CUDA context,
+    because since CUDA 12.0 the value is a compile-time constant.
+
+    transferred      0.5 MB in 11 requests
+
+--- what this tells you, and what it cannot ---
+    build-time CUDA  13.0        <- number 4, as the framework recorded it
+    runtime it loads 13.0        <- number 3, a constant in the binary
+    driver ceiling   unknown from here  <- number 2, a property of the host
+    kernel driver    unknown from here  <- number 1, a property of the host
+
+    Run check_host.py on the target machine for the other two.
+
+total transferred: 1.2 MB over 6 requests
+
+================================================================
+
+$ python3 check_host.py
+Four CUDA version numbers, each read from the artifact that owns it.
+python    3.14.4
+
+--- 1. kernel-mode driver (the KMD, nvidia.ko) ----------------
+    /proc/driver/nvidia/version is absent -- no NVIDIA kernel module is loaded
+    => KMD version: not present
+
+--- 2. CUDA driver ceiling (the UMD, libcuda.so.1) ------------
+    libcuda.so.1 could not be loaded -- libcuda.so.1: cannot open shared object file: No such file or directory
+    => highest CUDA this driver will serve: not present
+
+--- 3. CUDA runtime in this environment (libcudart) -----------
+    no libcudart found in site-packages or on the loader path -- nothing in this environment carries a CUDA runtime
+    => runtime your binaries were built against: none in this environment
+
+--- 4. Toolkit compiler (nvcc on PATH) ------------------------
+    no nvcc on PATH -- no CUDA Toolkit compiler is installed
+    => nvcc release: not installed
+
+--- the only comparison that decides whether a launch works ---
+    No CUDA runtime in this environment, so there is nothing to check.
+
+    Note that number 4 played no part in that comparison. nvcc decides
+    what gets built, never what gets loaded.

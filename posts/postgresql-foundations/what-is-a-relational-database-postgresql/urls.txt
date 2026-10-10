@@ -1,0 +1,14 @@
+https://minio.canery.in/media/labs/what-is-a-relational-database-postgresql/README.md
+https://minio.canery.in/media/labs/what-is-a-relational-database-postgresql/shopgen.py
+https://minio.canery.in/media/labs/what-is-a-relational-database-postgresql/run_lab.py
+https://minio.canery.in/media/labs/what-is-a-relational-database-postgresql/check.py
+https://minio.canery.in/media/labs/what-is-a-relational-database-postgresql/captures.md
+https://minio.canery.in/media/labs/what-is-a-relational-database-postgresql/captures.json
+https://minio.canery.in/media/cover-what-is-a-relational-database-postgresql.png
+https://minio.canery.in/media/fig-01-plan-as-a-tree-what-is-a-relational-database-postgresql.png
+https://minio.canery.in/media/fig-02-declared-keys-what-is-a-relational-database-postgresql.png
+https://minio.canery.in/media/fig-03-schema-is-data-what-is-a-relational-database-postgresql.png
+https://minio.canery.in/media/fig-04-path-of-a-query-what-is-a-relational-database-postgresql.png
+https://minio.canery.in/media/fig-05-system-r-vs-postgresql-what-is-a-relational-database-postgresql.png
+https://minio.canery.in/media/fig-06-duplicate-row-what-is-a-relational-database-postgresql.png
+https://minio.canery.in/media/fig-07-three-valued-logic-what-is-a-relational-database-postgresql.png

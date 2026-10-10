@@ -1,0 +1,2968 @@
+{
+  "machine": {
+    "cpu": "16",
+    "mem_mb": 15319,
+    "disk": "Samsung NVMe (MZVL8512HELU), ext4",
+    "kernel": "7.0.0-31-generic"
+  },
+  "version": "PostgreSQL 16.2 on x86_64-pc-linux-gnu, compiled by gcc (GCC) 10.2.1 20210130 (Red Hat 10.2.1-11), 64-bit",
+  "postmaster_pid": 128882,
+  "ps_tree_idle": " 128882    3166 18176 /home/prathamv/.cache/blog-pg-lab/pgvenv/lib/python3.12/site-packages/pgserver/pginstall/bin/postgres -D /home/prathamv/.cache/blog-pg-lab/pgdata -h  -k /home/prathamv/.cache/blog-pg-lab/sock\n 129064  128882 90240 postgres: checkpointer\n 129065  128882  5404 postgres: background writer\n 129144  128882  8204 postgres: walwriter\n 129145  128882  6768 postgres: autovacuum launcher\n 129146  128882  5856 postgres: logical replication launcher",
+  "backend_types_idle": [
+    [
+      "autovacuum launcher",
+      1
+    ],
+    [
+      "background writer",
+      1
+    ],
+    [
+      "checkpointer",
+      1
+    ],
+    [
+      "client backend",
+      1
+    ],
+    [
+      "logical replication launcher",
+      1
+    ],
+    [
+      "walwriter",
+      1
+    ]
+  ],
+  "settings": {
+    "allow_in_place_tablespaces": {
+      "setting": "off",
+      "boot_val": "off",
+      "context": "superuser"
+    },
+    "allow_system_table_mods": {
+      "setting": "off",
+      "boot_val": "off",
+      "context": "superuser"
+    },
+    "application_name": {
+      "setting": "",
+      "boot_val": "",
+      "context": "user"
+    },
+    "archive_cleanup_command": {
+      "setting": "",
+      "boot_val": "",
+      "context": "sighup"
+    },
+    "archive_command": {
+      "setting": "(disabled)",
+      "boot_val": "",
+      "context": "sighup"
+    },
+    "archive_library": {
+      "setting": "",
+      "boot_val": "",
+      "context": "sighup"
+    },
+    "archive_mode": {
+      "setting": "off",
+      "boot_val": "off",
+      "context": "postmaster"
+    },
+    "archive_timeout": {
+      "setting": "0",
+      "boot_val": "0",
+      "context": "sighup"
+    },
+    "array_nulls": {
+      "setting": "on",
+      "boot_val": "on",
+      "context": "user"
+    },
+    "authentication_timeout": {
+      "setting": "60",
+      "boot_val": "60",
+      "context": "sighup"
+    },
+    "autovacuum": {
+      "setting": "on",
+      "boot_val": "on",
+      "context": "sighup"
+    },
+    "autovacuum_analyze_scale_factor": {
+      "setting": "0.1",
+      "boot_val": "0.1",
+      "context": "sighup"
+    },
+    "autovacuum_analyze_threshold": {
+      "setting": "50",
+      "boot_val": "50",
+      "context": "sighup"
+    },
+    "autovacuum_freeze_max_age": {
+      "setting": "200000000",
+      "boot_val": "200000000",
+      "context": "postmaster"
+    },
+    "autovacuum_max_workers": {
+      "setting": "3",
+      "boot_val": "3",
+      "context": "postmaster"
+    },
+    "autovacuum_multixact_freeze_max_age": {
+      "setting": "400000000",
+      "boot_val": "400000000",
+      "context": "postmaster"
+    },
+    "autovacuum_naptime": {
+      "setting": "60",
+      "boot_val": "60",
+      "context": "sighup"
+    },
+    "autovacuum_vacuum_cost_delay": {
+      "setting": "2",
+      "boot_val": "2",
+      "context": "sighup"
+    },
+    "autovacuum_vacuum_cost_limit": {
+      "setting": "-1",
+      "boot_val": "-1",
+      "context": "sighup"
+    },
+    "autovacuum_vacuum_insert_scale_factor": {
+      "setting": "0.2",
+      "boot_val": "0.2",
+      "context": "sighup"
+    },
+    "autovacuum_vacuum_insert_threshold": {
+      "setting": "1000",
+      "boot_val": "1000",
+      "context": "sighup"
+    },
+    "autovacuum_vacuum_scale_factor": {
+      "setting": "0.2",
+      "boot_val": "0.2",
+      "context": "sighup"
+    },
+    "autovacuum_vacuum_threshold": {
+      "setting": "50",
+      "boot_val": "50",
+      "context": "sighup"
+    },
+    "autovacuum_work_mem": {
+      "setting": "-1",
+      "boot_val": "-1",
+      "context": "sighup"
+    },
+    "backend_flush_after": {
+      "setting": "0",
+      "boot_val": "0",
+      "context": "user"
+    },
+    "backslash_quote": {
+      "setting": "safe_encoding",
+      "boot_val": "safe_encoding",
+      "context": "user"
+    },
+    "backtrace_functions": {
+      "setting": "",
+      "boot_val": "",
+      "context": "superuser"
+    },
+    "bgwriter_delay": {
+      "setting": "200",
+      "boot_val": "200",
+      "context": "sighup"
+    },
+    "bgwriter_flush_after": {
+      "setting": "64",
+      "boot_val": "64",
+      "context": "sighup"
+    },
+    "bgwriter_lru_maxpages": {
+      "setting": "100",
+      "boot_val": "100",
+      "context": "sighup"
+    },
+    "bgwriter_lru_multiplier": {
+      "setting": "2",
+      "boot_val": "2",
+      "context": "sighup"
+    },
+    "block_size": {
+      "setting": "8192",
+      "boot_val": "8192",
+      "context": "internal"
+    },
+    "bonjour": {
+      "setting": "off",
+      "boot_val": "off",
+      "context": "postmaster"
+    },
+    "bonjour_name": {
+      "setting": "",
+      "boot_val": "",
+      "context": "postmaster"
+    },
+    "bytea_output": {
+      "setting": "hex",
+      "boot_val": "hex",
+      "context": "user"
+    },
+    "check_function_bodies": {
+      "setting": "on",
+      "boot_val": "on",
+      "context": "user"
+    },
+    "checkpoint_completion_target": {
+      "setting": "0.9",
+      "boot_val": "0.9",
+      "context": "sighup"
+    },
+    "checkpoint_flush_after": {
+      "setting": "32",
+      "boot_val": "32",
+      "context": "sighup"
+    },
+    "checkpoint_timeout": {
+      "setting": "300",
+      "boot_val": "300",
+      "context": "sighup"
+    },
+    "checkpoint_warning": {
+      "setting": "30",
+      "boot_val": "30",
+      "context": "sighup"
+    },
+    "client_connection_check_interval": {
+      "setting": "0",
+      "boot_val": "0",
+      "context": "user"
+    },
+    "client_encoding": {
+      "setting": "UTF8",
+      "boot_val": "SQL_ASCII",
+      "context": "user"
+    },
+    "client_min_messages": {
+      "setting": "notice",
+      "boot_val": "notice",
+      "context": "user"
+    },
+    "cluster_name": {
+      "setting": "",
+      "boot_val": "",
+      "context": "postmaster"
+    },
+    "commit_delay": {
+      "setting": "0",
+      "boot_val": "0",
+      "context": "superuser"
+    },
+    "commit_siblings": {
+      "setting": "5",
+      "boot_val": "5",
+      "context": "user"
+    },
+    "compute_query_id": {
+      "setting": "auto",
+      "boot_val": "auto",
+      "context": "superuser"
+    },
+    "config_file": {
+      "setting": "/home/prathamv/.cache/blog-pg-lab/pgdata/postgresql.conf",
+      "boot_val": null,
+      "context": "postmaster"
+    },
+    "constraint_exclusion": {
+      "setting": "partition",
+      "boot_val": "partition",
+      "context": "user"
+    },
+    "cpu_index_tuple_cost": {
+      "setting": "0.005",
+      "boot_val": "0.005",
+      "context": "user"
+    },
+    "cpu_operator_cost": {
+      "setting": "0.0025",
+      "boot_val": "0.0025",
+      "context": "user"
+    },
+    "cpu_tuple_cost": {
+      "setting": "0.01",
+      "boot_val": "0.01",
+      "context": "user"
+    },
+    "createrole_self_grant": {
+      "setting": "",
+      "boot_val": "",
+      "context": "user"
+    },
+    "cursor_tuple_fraction": {
+      "setting": "0.1",
+      "boot_val": "0.1",
+      "context": "user"
+    },
+    "data_checksums": {
+      "setting": "off",
+      "boot_val": "off",
+      "context": "internal"
+    },
+    "data_directory": {
+      "setting": "/home/prathamv/.cache/blog-pg-lab/pgdata",
+      "boot_val": null,
+      "context": "postmaster"
+    },
+    "data_directory_mode": {
+      "setting": "0700",
+      "boot_val": "448",
+      "context": "internal"
+    },
+    "data_sync_retry": {
+      "setting": "off",
+      "boot_val": "off",
+      "context": "postmaster"
+    },
+    "DateStyle": {
+      "setting": "ISO, MDY",
+      "boot_val": "ISO, MDY",
+      "context": "user"
+    },
+    "db_user_namespace": {
+      "setting": "off",
+      "boot_val": "off",
+      "context": "sighup"
+    },
+    "deadlock_timeout": {
+      "setting": "1000",
+      "boot_val": "1000",
+      "context": "superuser"
+    },
+    "debug_assertions": {
+      "setting": "off",
+      "boot_val": "off",
+      "context": "internal"
+    },
+    "debug_discard_caches": {
+      "setting": "0",
+      "boot_val": "0",
+      "context": "superuser"
+    },
+    "debug_io_direct": {
+      "setting": "",
+      "boot_val": "",
+      "context": "postmaster"
+    },
+    "debug_logical_replication_streaming": {
+      "setting": "buffered",
+      "boot_val": "buffered",
+      "context": "user"
+    },
+    "debug_parallel_query": {
+      "setting": "off",
+      "boot_val": "off",
+      "context": "user"
+    },
+    "debug_pretty_print": {
+      "setting": "on",
+      "boot_val": "on",
+      "context": "user"
+    },
+    "debug_print_parse": {
+      "setting": "off",
+      "boot_val": "off",
+      "context": "user"
+    },
+    "debug_print_plan": {
+      "setting": "off",
+      "boot_val": "off",
+      "context": "user"
+    },
+    "debug_print_rewritten": {
+      "setting": "off",
+      "boot_val": "off",
+      "context": "user"
+    },
+    "default_statistics_target": {
+      "setting": "100",
+      "boot_val": "100",
+      "context": "user"
+    },
+    "default_table_access_method": {
+      "setting": "heap",
+      "boot_val": "heap",
+      "context": "user"
+    },
+    "default_tablespace": {
+      "setting": "",
+      "boot_val": "",
+      "context": "user"
+    },
+    "default_text_search_config": {
+      "setting": "pg_catalog.english",
+      "boot_val": "pg_catalog.simple",
+      "context": "user"
+    },
+    "default_toast_compression": {
+      "setting": "pglz",
+      "boot_val": "pglz",
+      "context": "user"
+    },
+    "default_transaction_deferrable": {
+      "setting": "off",
+      "boot_val": "off",
+      "context": "user"
+    },
+    "default_transaction_isolation": {
+      "setting": "read committed",
+      "boot_val": "read committed",
+      "context": "user"
+    },
+    "default_transaction_read_only": {
+      "setting": "off",
+      "boot_val": "off",
+      "context": "user"
+    },
+    "dynamic_library_path": {
+      "setting": "$libdir",
+      "boot_val": "$libdir",
+      "context": "superuser"
+    },
+    "dynamic_shared_memory_type": {
+      "setting": "posix",
+      "boot_val": "posix",
+      "context": "postmaster"
+    },
+    "effective_cache_size": {
+      "setting": "524288",
+      "boot_val": "524288",
+      "context": "user"
+    },
+    "effective_io_concurrency": {
+      "setting": "1",
+      "boot_val": "1",
+      "context": "user"
+    },
+    "enable_async_append": {
+      "setting": "on",
+      "boot_val": "on",
+      "context": "user"
+    },
+    "enable_bitmapscan": {
+      "setting": "on",
+      "boot_val": "on",
+      "context": "user"
+    },
+    "enable_gathermerge": {
+      "setting": "on",
+      "boot_val": "on",
+      "context": "user"
+    },
+    "enable_hashagg": {
+      "setting": "on",
+      "boot_val": "on",
+      "context": "user"
+    },
+    "enable_hashjoin": {
+      "setting": "on",
+      "boot_val": "on",
+      "context": "user"
+    },
+    "enable_incremental_sort": {
+      "setting": "on",
+      "boot_val": "on",
+      "context": "user"
+    },
+    "enable_indexonlyscan": {
+      "setting": "on",
+      "boot_val": "on",
+      "context": "user"
+    },
+    "enable_indexscan": {
+      "setting": "on",
+      "boot_val": "on",
+      "context": "user"
+    },
+    "enable_material": {
+      "setting": "on",
+      "boot_val": "on",
+      "context": "user"
+    },
+    "enable_memoize": {
+      "setting": "on",
+      "boot_val": "on",
+      "context": "user"
+    },
+    "enable_mergejoin": {
+      "setting": "on",
+      "boot_val": "on",
+      "context": "user"
+    },
+    "enable_nestloop": {
+      "setting": "on",
+      "boot_val": "on",
+      "context": "user"
+    },
+    "enable_parallel_append": {
+      "setting": "on",
+      "boot_val": "on",
+      "context": "user"
+    },
+    "enable_parallel_hash": {
+      "setting": "on",
+      "boot_val": "on",
+      "context": "user"
+    },
+    "enable_partition_pruning": {
+      "setting": "on",
+      "boot_val": "on",
+      "context": "user"
+    },
+    "enable_partitionwise_aggregate": {
+      "setting": "off",
+      "boot_val": "off",
+      "context": "user"
+    },
+    "enable_partitionwise_join": {
+      "setting": "off",
+      "boot_val": "off",
+      "context": "user"
+    },
+    "enable_presorted_aggregate": {
+      "setting": "on",
+      "boot_val": "on",
+      "context": "user"
+    },
+    "enable_seqscan": {
+      "setting": "on",
+      "boot_val": "on",
+      "context": "user"
+    },
+    "enable_sort": {
+      "setting": "on",
+      "boot_val": "on",
+      "context": "user"
+    },
+    "enable_tidscan": {
+      "setting": "on",
+      "boot_val": "on",
+      "context": "user"
+    },
+    "escape_string_warning": {
+      "setting": "on",
+      "boot_val": "on",
+      "context": "user"
+    },
+    "event_source": {
+      "setting": "PostgreSQL",
+      "boot_val": "PostgreSQL",
+      "context": "postmaster"
+    },
+    "exit_on_error": {
+      "setting": "off",
+      "boot_val": "off",
+      "context": "user"
+    },
+    "external_pid_file": {
+      "setting": "",
+      "boot_val": null,
+      "context": "postmaster"
+    },
+    "extra_float_digits": {
+      "setting": "1",
+      "boot_val": "1",
+      "context": "user"
+    },
+    "from_collapse_limit": {
+      "setting": "8",
+      "boot_val": "8",
+      "context": "user"
+    },
+    "fsync": {
+      "setting": "on",
+      "boot_val": "on",
+      "context": "sighup"
+    },
+    "full_page_writes": {
+      "setting": "on",
+      "boot_val": "on",
+      "context": "sighup"
+    },
+    "geqo": {
+      "setting": "on",
+      "boot_val": "on",
+      "context": "user"
+    },
+    "geqo_effort": {
+      "setting": "5",
+      "boot_val": "5",
+      "context": "user"
+    },
+    "geqo_generations": {
+      "setting": "0",
+      "boot_val": "0",
+      "context": "user"
+    },
+    "geqo_pool_size": {
+      "setting": "0",
+      "boot_val": "0",
+      "context": "user"
+    },
+    "geqo_seed": {
+      "setting": "0",
+      "boot_val": "0",
+      "context": "user"
+    },
+    "geqo_selection_bias": {
+      "setting": "2",
+      "boot_val": "2",
+      "context": "user"
+    },
+    "geqo_threshold": {
+      "setting": "12",
+      "boot_val": "12",
+      "context": "user"
+    },
+    "gin_fuzzy_search_limit": {
+      "setting": "0",
+      "boot_val": "0",
+      "context": "user"
+    },
+    "gin_pending_list_limit": {
+      "setting": "4096",
+      "boot_val": "4096",
+      "context": "user"
+    },
+    "gss_accept_delegation": {
+      "setting": "off",
+      "boot_val": "off",
+      "context": "sighup"
+    },
+    "hash_mem_multiplier": {
+      "setting": "2",
+      "boot_val": "2",
+      "context": "user"
+    },
+    "hba_file": {
+      "setting": "/home/prathamv/.cache/blog-pg-lab/pgdata/pg_hba.conf",
+      "boot_val": null,
+      "context": "postmaster"
+    },
+    "hot_standby": {
+      "setting": "on",
+      "boot_val": "on",
+      "context": "postmaster"
+    },
+    "hot_standby_feedback": {
+      "setting": "off",
+      "boot_val": "off",
+      "context": "sighup"
+    },
+    "huge_page_size": {
+      "setting": "0",
+      "boot_val": "0",
+      "context": "postmaster"
+    },
+    "huge_pages": {
+      "setting": "try",
+      "boot_val": "try",
+      "context": "postmaster"
+    },
+    "icu_validation_level": {
+      "setting": "warning",
+      "boot_val": "warning",
+      "context": "user"
+    },
+    "ident_file": {
+      "setting": "/home/prathamv/.cache/blog-pg-lab/pgdata/pg_ident.conf",
+      "boot_val": null,
+      "context": "postmaster"
+    },
+    "idle_in_transaction_session_timeout": {
+      "setting": "0",
+      "boot_val": "0",
+      "context": "user"
+    },
+    "idle_session_timeout": {
+      "setting": "0",
+      "boot_val": "0",
+      "context": "user"
+    },
+    "ignore_checksum_failure": {
+      "setting": "off",
+      "boot_val": "off",
+      "context": "superuser"
+    },
+    "ignore_invalid_pages": {
+      "setting": "off",
+      "boot_val": "off",
+      "context": "postmaster"
+    },
+    "ignore_system_indexes": {
+      "setting": "off",
+      "boot_val": "off",
+      "context": "backend"
+    },
+    "in_hot_standby": {
+      "setting": "off",
+      "boot_val": "off",
+      "context": "internal"
+    },
+    "integer_datetimes": {
+      "setting": "on",
+      "boot_val": "on",
+      "context": "internal"
+    },
+    "IntervalStyle": {
+      "setting": "postgres",
+      "boot_val": "postgres",
+      "context": "user"
+    },
+    "jit": {
+      "setting": "on",
+      "boot_val": "on",
+      "context": "user"
+    },
+    "jit_above_cost": {
+      "setting": "100000",
+      "boot_val": "100000",
+      "context": "user"
+    },
+    "jit_debugging_support": {
+      "setting": "off",
+      "boot_val": "off",
+      "context": "superuser-backend"
+    },
+    "jit_dump_bitcode": {
+      "setting": "off",
+      "boot_val": "off",
+      "context": "superuser"
+    },
+    "jit_expressions": {
+      "setting": "on",
+      "boot_val": "on",
+      "context": "user"
+    },
+    "jit_inline_above_cost": {
+      "setting": "500000",
+      "boot_val": "500000",
+      "context": "user"
+    },
+    "jit_optimize_above_cost": {
+      "setting": "500000",
+      "boot_val": "500000",
+      "context": "user"
+    },
+    "jit_profiling_support": {
+      "setting": "off",
+      "boot_val": "off",
+      "context": "superuser-backend"
+    },
+    "jit_provider": {
+      "setting": "llvmjit",
+      "boot_val": "llvmjit",
+      "context": "postmaster"
+    },
+    "jit_tuple_deforming": {
+      "setting": "on",
+      "boot_val": "on",
+      "context": "user"
+    },
+    "join_collapse_limit": {
+      "setting": "8",
+      "boot_val": "8",
+      "context": "user"
+    },
+    "krb_caseins_users": {
+      "setting": "off",
+      "boot_val": "off",
+      "context": "sighup"
+    },
+    "krb_server_keyfile": {
+      "setting": "",
+      "boot_val": "",
+      "context": "sighup"
+    },
+    "lc_messages": {
+      "setting": "C",
+      "boot_val": "",
+      "context": "superuser"
+    },
+    "lc_monetary": {
+      "setting": "C",
+      "boot_val": "C",
+      "context": "user"
+    },
+    "lc_numeric": {
+      "setting": "C",
+      "boot_val": "C",
+      "context": "user"
+    },
+    "lc_time": {
+      "setting": "C",
+      "boot_val": "C",
+      "context": "user"
+    },
+    "listen_addresses": {
+      "setting": "",
+      "boot_val": "localhost",
+      "context": "postmaster"
+    },
+    "lo_compat_privileges": {
+      "setting": "off",
+      "boot_val": "off",
+      "context": "superuser"
+    },
+    "local_preload_libraries": {
+      "setting": "",
+      "boot_val": "",
+      "context": "user"
+    },
+    "lock_timeout": {
+      "setting": "0",
+      "boot_val": "0",
+      "context": "user"
+    },
+    "log_autovacuum_min_duration": {
+      "setting": "600000",
+      "boot_val": "600000",
+      "context": "sighup"
+    },
+    "log_checkpoints": {
+      "setting": "on",
+      "boot_val": "on",
+      "context": "sighup"
+    },
+    "log_connections": {
+      "setting": "off",
+      "boot_val": "off",
+      "context": "superuser-backend"
+    },
+    "log_destination": {
+      "setting": "stderr",
+      "boot_val": "stderr",
+      "context": "sighup"
+    },
+    "log_directory": {
+      "setting": "log",
+      "boot_val": "log",
+      "context": "sighup"
+    },
+    "log_disconnections": {
+      "setting": "off",
+      "boot_val": "off",
+      "context": "superuser-backend"
+    },
+    "log_duration": {
+      "setting": "off",
+      "boot_val": "off",
+      "context": "superuser"
+    },
+    "log_error_verbosity": {
+      "setting": "default",
+      "boot_val": "default",
+      "context": "superuser"
+    },
+    "log_executor_stats": {
+      "setting": "off",
+      "boot_val": "off",
+      "context": "superuser"
+    },
+    "log_file_mode": {
+      "setting": "0600",
+      "boot_val": "384",
+      "context": "sighup"
+    },
+    "log_filename": {
+      "setting": "postgresql-%Y-%m-%d_%H%M%S.log",
+      "boot_val": "postgresql-%Y-%m-%d_%H%M%S.log",
+      "context": "sighup"
+    },
+    "log_hostname": {
+      "setting": "off",
+      "boot_val": "off",
+      "context": "sighup"
+    },
+    "log_line_prefix": {
+      "setting": "%m [%p] ",
+      "boot_val": "%m [%p] ",
+      "context": "sighup"
+    },
+    "log_lock_waits": {
+      "setting": "off",
+      "boot_val": "off",
+      "context": "superuser"
+    },
+    "log_min_duration_sample": {
+      "setting": "-1",
+      "boot_val": "-1",
+      "context": "superuser"
+    },
+    "log_min_duration_statement": {
+      "setting": "-1",
+      "boot_val": "-1",
+      "context": "superuser"
+    },
+    "log_min_error_statement": {
+      "setting": "error",
+      "boot_val": "error",
+      "context": "superuser"
+    },
+    "log_min_messages": {
+      "setting": "warning",
+      "boot_val": "warning",
+      "context": "superuser"
+    },
+    "log_parameter_max_length": {
+      "setting": "-1",
+      "boot_val": "-1",
+      "context": "superuser"
+    },
+    "log_parameter_max_length_on_error": {
+      "setting": "0",
+      "boot_val": "0",
+      "context": "user"
+    },
+    "log_parser_stats": {
+      "setting": "off",
+      "boot_val": "off",
+      "context": "superuser"
+    },
+    "log_planner_stats": {
+      "setting": "off",
+      "boot_val": "off",
+      "context": "superuser"
+    },
+    "log_recovery_conflict_waits": {
+      "setting": "off",
+      "boot_val": "off",
+      "context": "sighup"
+    },
+    "log_replication_commands": {
+      "setting": "off",
+      "boot_val": "off",
+      "context": "superuser"
+    },
+    "log_rotation_age": {
+      "setting": "1440",
+      "boot_val": "1440",
+      "context": "sighup"
+    },
+    "log_rotation_size": {
+      "setting": "10240",
+      "boot_val": "10240",
+      "context": "sighup"
+    },
+    "log_startup_progress_interval": {
+      "setting": "10000",
+      "boot_val": "10000",
+      "context": "sighup"
+    },
+    "log_statement": {
+      "setting": "none",
+      "boot_val": "none",
+      "context": "superuser"
+    },
+    "log_statement_sample_rate": {
+      "setting": "1",
+      "boot_val": "1",
+      "context": "superuser"
+    },
+    "log_statement_stats": {
+      "setting": "off",
+      "boot_val": "off",
+      "context": "superuser"
+    },
+    "log_temp_files": {
+      "setting": "-1",
+      "boot_val": "-1",
+      "context": "superuser"
+    },
+    "log_timezone": {
+      "setting": "Asia/Kolkata",
+      "boot_val": "GMT",
+      "context": "sighup"
+    },
+    "log_transaction_sample_rate": {
+      "setting": "0",
+      "boot_val": "0",
+      "context": "superuser"
+    },
+    "log_truncate_on_rotation": {
+      "setting": "off",
+      "boot_val": "off",
+      "context": "sighup"
+    },
+    "logging_collector": {
+      "setting": "off",
+      "boot_val": "off",
+      "context": "postmaster"
+    },
+    "logical_decoding_work_mem": {
+      "setting": "65536",
+      "boot_val": "65536",
+      "context": "user"
+    },
+    "maintenance_io_concurrency": {
+      "setting": "10",
+      "boot_val": "10",
+      "context": "user"
+    },
+    "maintenance_work_mem": {
+      "setting": "65536",
+      "boot_val": "65536",
+      "context": "user"
+    },
+    "max_connections": {
+      "setting": "100",
+      "boot_val": "100",
+      "context": "postmaster"
+    },
+    "max_files_per_process": {
+      "setting": "1000",
+      "boot_val": "1000",
+      "context": "postmaster"
+    },
+    "max_function_args": {
+      "setting": "100",
+      "boot_val": "100",
+      "context": "internal"
+    },
+    "max_identifier_length": {
+      "setting": "63",
+      "boot_val": "63",
+      "context": "internal"
+    },
+    "max_index_keys": {
+      "setting": "32",
+      "boot_val": "32",
+      "context": "internal"
+    },
+    "max_locks_per_transaction": {
+      "setting": "64",
+      "boot_val": "64",
+      "context": "postmaster"
+    },
+    "max_logical_replication_workers": {
+      "setting": "4",
+      "boot_val": "4",
+      "context": "postmaster"
+    },
+    "max_parallel_apply_workers_per_subscription": {
+      "setting": "2",
+      "boot_val": "2",
+      "context": "sighup"
+    },
+    "max_parallel_maintenance_workers": {
+      "setting": "2",
+      "boot_val": "2",
+      "context": "user"
+    },
+    "max_parallel_workers": {
+      "setting": "8",
+      "boot_val": "8",
+      "context": "user"
+    },
+    "max_parallel_workers_per_gather": {
+      "setting": "2",
+      "boot_val": "2",
+      "context": "user"
+    },
+    "max_pred_locks_per_page": {
+      "setting": "2",
+      "boot_val": "2",
+      "context": "sighup"
+    },
+    "max_pred_locks_per_relation": {
+      "setting": "-2",
+      "boot_val": "-2",
+      "context": "sighup"
+    },
+    "max_pred_locks_per_transaction": {
+      "setting": "64",
+      "boot_val": "64",
+      "context": "postmaster"
+    },
+    "max_prepared_transactions": {
+      "setting": "0",
+      "boot_val": "0",
+      "context": "postmaster"
+    },
+    "max_replication_slots": {
+      "setting": "10",
+      "boot_val": "10",
+      "context": "postmaster"
+    },
+    "max_slot_wal_keep_size": {
+      "setting": "-1",
+      "boot_val": "-1",
+      "context": "sighup"
+    },
+    "max_stack_depth": {
+      "setting": "2048",
+      "boot_val": "100",
+      "context": "superuser"
+    },
+    "max_standby_archive_delay": {
+      "setting": "30000",
+      "boot_val": "30000",
+      "context": "sighup"
+    },
+    "max_standby_streaming_delay": {
+      "setting": "30000",
+      "boot_val": "30000",
+      "context": "sighup"
+    },
+    "max_sync_workers_per_subscription": {
+      "setting": "2",
+      "boot_val": "2",
+      "context": "sighup"
+    },
+    "max_wal_senders": {
+      "setting": "10",
+      "boot_val": "10",
+      "context": "postmaster"
+    },
+    "max_wal_size": {
+      "setting": "1024",
+      "boot_val": "1024",
+      "context": "sighup"
+    },
+    "max_worker_processes": {
+      "setting": "8",
+      "boot_val": "8",
+      "context": "postmaster"
+    },
+    "min_dynamic_shared_memory": {
+      "setting": "0",
+      "boot_val": "0",
+      "context": "postmaster"
+    },
+    "min_parallel_index_scan_size": {
+      "setting": "64",
+      "boot_val": "64",
+      "context": "user"
+    },
+    "min_parallel_table_scan_size": {
+      "setting": "1024",
+      "boot_val": "1024",
+      "context": "user"
+    },
+    "min_wal_size": {
+      "setting": "80",
+      "boot_val": "80",
+      "context": "sighup"
+    },
+    "old_snapshot_threshold": {
+      "setting": "-1",
+      "boot_val": "-1",
+      "context": "postmaster"
+    },
+    "parallel_leader_participation": {
+      "setting": "on",
+      "boot_val": "on",
+      "context": "user"
+    },
+    "parallel_setup_cost": {
+      "setting": "1000",
+      "boot_val": "1000",
+      "context": "user"
+    },
+    "parallel_tuple_cost": {
+      "setting": "0.1",
+      "boot_val": "0.1",
+      "context": "user"
+    },
+    "password_encryption": {
+      "setting": "scram-sha-256",
+      "boot_val": "scram-sha-256",
+      "context": "user"
+    },
+    "plan_cache_mode": {
+      "setting": "auto",
+      "boot_val": "auto",
+      "context": "user"
+    },
+    "port": {
+      "setting": "5432",
+      "boot_val": "5432",
+      "context": "postmaster"
+    },
+    "post_auth_delay": {
+      "setting": "0",
+      "boot_val": "0",
+      "context": "backend"
+    },
+    "pre_auth_delay": {
+      "setting": "0",
+      "boot_val": "0",
+      "context": "sighup"
+    },
+    "primary_conninfo": {
+      "setting": "",
+      "boot_val": "",
+      "context": "sighup"
+    },
+    "primary_slot_name": {
+      "setting": "",
+      "boot_val": "",
+      "context": "sighup"
+    },
+    "quote_all_identifiers": {
+      "setting": "off",
+      "boot_val": "off",
+      "context": "user"
+    },
+    "random_page_cost": {
+      "setting": "4",
+      "boot_val": "4",
+      "context": "user"
+    },
+    "recovery_end_command": {
+      "setting": "",
+      "boot_val": "",
+      "context": "sighup"
+    },
+    "recovery_init_sync_method": {
+      "setting": "fsync",
+      "boot_val": "fsync",
+      "context": "sighup"
+    },
+    "recovery_min_apply_delay": {
+      "setting": "0",
+      "boot_val": "0",
+      "context": "sighup"
+    },
+    "recovery_prefetch": {
+      "setting": "try",
+      "boot_val": "try",
+      "context": "sighup"
+    },
+    "recovery_target": {
+      "setting": "",
+      "boot_val": "",
+      "context": "postmaster"
+    },
+    "recovery_target_action": {
+      "setting": "pause",
+      "boot_val": "pause",
+      "context": "postmaster"
+    },
+    "recovery_target_inclusive": {
+      "setting": "on",
+      "boot_val": "on",
+      "context": "postmaster"
+    },
+    "recovery_target_lsn": {
+      "setting": "",
+      "boot_val": "",
+      "context": "postmaster"
+    },
+    "recovery_target_name": {
+      "setting": "",
+      "boot_val": "",
+      "context": "postmaster"
+    },
+    "recovery_target_time": {
+      "setting": "",
+      "boot_val": "",
+      "context": "postmaster"
+    },
+    "recovery_target_timeline": {
+      "setting": "latest",
+      "boot_val": "latest",
+      "context": "postmaster"
+    },
+    "recovery_target_xid": {
+      "setting": "",
+      "boot_val": "",
+      "context": "postmaster"
+    },
+    "recursive_worktable_factor": {
+      "setting": "10",
+      "boot_val": "10",
+      "context": "user"
+    },
+    "remove_temp_files_after_crash": {
+      "setting": "on",
+      "boot_val": "on",
+      "context": "sighup"
+    },
+    "reserved_connections": {
+      "setting": "0",
+      "boot_val": "0",
+      "context": "postmaster"
+    },
+    "restart_after_crash": {
+      "setting": "on",
+      "boot_val": "on",
+      "context": "sighup"
+    },
+    "restore_command": {
+      "setting": "",
+      "boot_val": "",
+      "context": "sighup"
+    },
+    "row_security": {
+      "setting": "on",
+      "boot_val": "on",
+      "context": "user"
+    },
+    "scram_iterations": {
+      "setting": "4096",
+      "boot_val": "4096",
+      "context": "user"
+    },
+    "search_path": {
+      "setting": "\"$user\", public",
+      "boot_val": "\"$user\", public",
+      "context": "user"
+    },
+    "segment_size": {
+      "setting": "131072",
+      "boot_val": "131072",
+      "context": "internal"
+    },
+    "send_abort_for_crash": {
+      "setting": "off",
+      "boot_val": "off",
+      "context": "sighup"
+    },
+    "send_abort_for_kill": {
+      "setting": "off",
+      "boot_val": "off",
+      "context": "sighup"
+    },
+    "seq_page_cost": {
+      "setting": "1",
+      "boot_val": "1",
+      "context": "user"
+    },
+    "server_encoding": {
+      "setting": "UTF8",
+      "boot_val": "SQL_ASCII",
+      "context": "internal"
+    },
+    "server_version": {
+      "setting": "16.2",
+      "boot_val": "16.2",
+      "context": "internal"
+    },
+    "server_version_num": {
+      "setting": "160002",
+      "boot_val": "160002",
+      "context": "internal"
+    },
+    "session_preload_libraries": {
+      "setting": "",
+      "boot_val": "",
+      "context": "superuser"
+    },
+    "session_replication_role": {
+      "setting": "origin",
+      "boot_val": "origin",
+      "context": "superuser"
+    },
+    "shared_buffers": {
+      "setting": "16384",
+      "boot_val": "16384",
+      "context": "postmaster"
+    },
+    "shared_memory_size": {
+      "setting": "143",
+      "boot_val": "0",
+      "context": "internal"
+    },
+    "shared_memory_size_in_huge_pages": {
+      "setting": "72",
+      "boot_val": "-1",
+      "context": "internal"
+    },
+    "shared_memory_type": {
+      "setting": "mmap",
+      "boot_val": "mmap",
+      "context": "postmaster"
+    },
+    "shared_preload_libraries": {
+      "setting": "",
+      "boot_val": "",
+      "context": "postmaster"
+    },
+    "ssl": {
+      "setting": "off",
+      "boot_val": "off",
+      "context": "sighup"
+    },
+    "ssl_ca_file": {
+      "setting": "",
+      "boot_val": "",
+      "context": "sighup"
+    },
+    "ssl_cert_file": {
+      "setting": "server.crt",
+      "boot_val": "server.crt",
+      "context": "sighup"
+    },
+    "ssl_ciphers": {
+      "setting": "none",
+      "boot_val": "none",
+      "context": "sighup"
+    },
+    "ssl_crl_dir": {
+      "setting": "",
+      "boot_val": "",
+      "context": "sighup"
+    },
+    "ssl_crl_file": {
+      "setting": "",
+      "boot_val": "",
+      "context": "sighup"
+    },
+    "ssl_dh_params_file": {
+      "setting": "",
+      "boot_val": "",
+      "context": "sighup"
+    },
+    "ssl_ecdh_curve": {
+      "setting": "none",
+      "boot_val": "none",
+      "context": "sighup"
+    },
+    "ssl_key_file": {
+      "setting": "server.key",
+      "boot_val": "server.key",
+      "context": "sighup"
+    },
+    "ssl_library": {
+      "setting": "",
+      "boot_val": "",
+      "context": "internal"
+    },
+    "ssl_max_protocol_version": {
+      "setting": "",
+      "boot_val": "",
+      "context": "sighup"
+    },
+    "ssl_min_protocol_version": {
+      "setting": "TLSv1.2",
+      "boot_val": "TLSv1.2",
+      "context": "sighup"
+    },
+    "ssl_passphrase_command": {
+      "setting": "",
+      "boot_val": "",
+      "context": "sighup"
+    },
+    "ssl_passphrase_command_supports_reload": {
+      "setting": "off",
+      "boot_val": "off",
+      "context": "sighup"
+    },
+    "ssl_prefer_server_ciphers": {
+      "setting": "on",
+      "boot_val": "on",
+      "context": "sighup"
+    },
+    "standard_conforming_strings": {
+      "setting": "on",
+      "boot_val": "on",
+      "context": "user"
+    },
+    "statement_timeout": {
+      "setting": "0",
+      "boot_val": "0",
+      "context": "user"
+    },
+    "stats_fetch_consistency": {
+      "setting": "cache",
+      "boot_val": "cache",
+      "context": "user"
+    },
+    "superuser_reserved_connections": {
+      "setting": "3",
+      "boot_val": "3",
+      "context": "postmaster"
+    },
+    "synchronize_seqscans": {
+      "setting": "on",
+      "boot_val": "on",
+      "context": "user"
+    },
+    "synchronous_commit": {
+      "setting": "on",
+      "boot_val": "on",
+      "context": "user"
+    },
+    "synchronous_standby_names": {
+      "setting": "",
+      "boot_val": "",
+      "context": "sighup"
+    },
+    "syslog_facility": {
+      "setting": "local0",
+      "boot_val": "local0",
+      "context": "sighup"
+    },
+    "syslog_ident": {
+      "setting": "postgres",
+      "boot_val": "postgres",
+      "context": "sighup"
+    },
+    "syslog_sequence_numbers": {
+      "setting": "on",
+      "boot_val": "on",
+      "context": "sighup"
+    },
+    "syslog_split_messages": {
+      "setting": "on",
+      "boot_val": "on",
+      "context": "sighup"
+    },
+    "tcp_keepalives_count": {
+      "setting": "0",
+      "boot_val": "0",
+      "context": "user"
+    },
+    "tcp_keepalives_idle": {
+      "setting": "0",
+      "boot_val": "0",
+      "context": "user"
+    },
+    "tcp_keepalives_interval": {
+      "setting": "0",
+      "boot_val": "0",
+      "context": "user"
+    },
+    "tcp_user_timeout": {
+      "setting": "0",
+      "boot_val": "0",
+      "context": "user"
+    },
+    "temp_buffers": {
+      "setting": "1024",
+      "boot_val": "1024",
+      "context": "user"
+    },
+    "temp_file_limit": {
+      "setting": "-1",
+      "boot_val": "-1",
+      "context": "superuser"
+    },
+    "temp_tablespaces": {
+      "setting": "",
+      "boot_val": "",
+      "context": "user"
+    },
+    "TimeZone": {
+      "setting": "Asia/Kolkata",
+      "boot_val": "GMT",
+      "context": "user"
+    },
+    "timezone_abbreviations": {
+      "setting": "Default",
+      "boot_val": null,
+      "context": "user"
+    },
+    "trace_notify": {
+      "setting": "off",
+      "boot_val": "off",
+      "context": "user"
+    },
+    "trace_recovery_messages": {
+      "setting": "log",
+      "boot_val": "log",
+      "context": "sighup"
+    },
+    "trace_sort": {
+      "setting": "off",
+      "boot_val": "off",
+      "context": "user"
+    },
+    "track_activities": {
+      "setting": "on",
+      "boot_val": "on",
+      "context": "superuser"
+    },
+    "track_activity_query_size": {
+      "setting": "1024",
+      "boot_val": "1024",
+      "context": "postmaster"
+    },
+    "track_commit_timestamp": {
+      "setting": "off",
+      "boot_val": "off",
+      "context": "postmaster"
+    },
+    "track_counts": {
+      "setting": "on",
+      "boot_val": "on",
+      "context": "superuser"
+    },
+    "track_functions": {
+      "setting": "none",
+      "boot_val": "none",
+      "context": "superuser"
+    },
+    "track_io_timing": {
+      "setting": "off",
+      "boot_val": "off",
+      "context": "superuser"
+    },
+    "track_wal_io_timing": {
+      "setting": "off",
+      "boot_val": "off",
+      "context": "superuser"
+    },
+    "transaction_deferrable": {
+      "setting": "off",
+      "boot_val": "off",
+      "context": "user"
+    },
+    "transaction_isolation": {
+      "setting": "read committed",
+      "boot_val": "read committed",
+      "context": "user"
+    },
+    "transaction_read_only": {
+      "setting": "off",
+      "boot_val": "off",
+      "context": "user"
+    },
+    "transform_null_equals": {
+      "setting": "off",
+      "boot_val": "off",
+      "context": "user"
+    },
+    "unix_socket_directories": {
+      "setting": "/home/prathamv/.cache/blog-pg-lab/sock",
+      "boot_val": "/tmp",
+      "context": "postmaster"
+    },
+    "unix_socket_group": {
+      "setting": "",
+      "boot_val": "",
+      "context": "postmaster"
+    },
+    "unix_socket_permissions": {
+      "setting": "0777",
+      "boot_val": "511",
+      "context": "postmaster"
+    },
+    "update_process_title": {
+      "setting": "on",
+      "boot_val": "on",
+      "context": "superuser"
+    },
+    "vacuum_buffer_usage_limit": {
+      "setting": "256",
+      "boot_val": "256",
+      "context": "user"
+    },
+    "vacuum_cost_delay": {
+      "setting": "0",
+      "boot_val": "0",
+      "context": "user"
+    },
+    "vacuum_cost_limit": {
+      "setting": "200",
+      "boot_val": "200",
+      "context": "user"
+    },
+    "vacuum_cost_page_dirty": {
+      "setting": "20",
+      "boot_val": "20",
+      "context": "user"
+    },
+    "vacuum_cost_page_hit": {
+      "setting": "1",
+      "boot_val": "1",
+      "context": "user"
+    },
+    "vacuum_cost_page_miss": {
+      "setting": "2",
+      "boot_val": "2",
+      "context": "user"
+    },
+    "vacuum_failsafe_age": {
+      "setting": "1600000000",
+      "boot_val": "1600000000",
+      "context": "user"
+    },
+    "vacuum_freeze_min_age": {
+      "setting": "50000000",
+      "boot_val": "50000000",
+      "context": "user"
+    },
+    "vacuum_freeze_table_age": {
+      "setting": "150000000",
+      "boot_val": "150000000",
+      "context": "user"
+    },
+    "vacuum_multixact_failsafe_age": {
+      "setting": "1600000000",
+      "boot_val": "1600000000",
+      "context": "user"
+    },
+    "vacuum_multixact_freeze_min_age": {
+      "setting": "5000000",
+      "boot_val": "5000000",
+      "context": "user"
+    },
+    "vacuum_multixact_freeze_table_age": {
+      "setting": "150000000",
+      "boot_val": "150000000",
+      "context": "user"
+    },
+    "wal_block_size": {
+      "setting": "8192",
+      "boot_val": "8192",
+      "context": "internal"
+    },
+    "wal_buffers": {
+      "setting": "512",
+      "boot_val": "-1",
+      "context": "postmaster"
+    },
+    "wal_compression": {
+      "setting": "off",
+      "boot_val": "off",
+      "context": "superuser"
+    },
+    "wal_consistency_checking": {
+      "setting": "",
+      "boot_val": "",
+      "context": "superuser"
+    },
+    "wal_decode_buffer_size": {
+      "setting": "524288",
+      "boot_val": "524288",
+      "context": "postmaster"
+    },
+    "wal_init_zero": {
+      "setting": "on",
+      "boot_val": "on",
+      "context": "superuser"
+    },
+    "wal_keep_size": {
+      "setting": "0",
+      "boot_val": "0",
+      "context": "sighup"
+    },
+    "wal_level": {
+      "setting": "replica",
+      "boot_val": "replica",
+      "context": "postmaster"
+    },
+    "wal_log_hints": {
+      "setting": "off",
+      "boot_val": "off",
+      "context": "postmaster"
+    },
+    "wal_receiver_create_temp_slot": {
+      "setting": "off",
+      "boot_val": "off",
+      "context": "sighup"
+    },
+    "wal_receiver_status_interval": {
+      "setting": "10",
+      "boot_val": "10",
+      "context": "sighup"
+    },
+    "wal_receiver_timeout": {
+      "setting": "60000",
+      "boot_val": "60000",
+      "context": "sighup"
+    },
+    "wal_recycle": {
+      "setting": "on",
+      "boot_val": "on",
+      "context": "superuser"
+    },
+    "wal_retrieve_retry_interval": {
+      "setting": "5000",
+      "boot_val": "5000",
+      "context": "sighup"
+    },
+    "wal_segment_size": {
+      "setting": "16777216",
+      "boot_val": "16777216",
+      "context": "internal"
+    },
+    "wal_sender_timeout": {
+      "setting": "60000",
+      "boot_val": "60000",
+      "context": "user"
+    },
+    "wal_skip_threshold": {
+      "setting": "2048",
+      "boot_val": "2048",
+      "context": "user"
+    },
+    "wal_sync_method": {
+      "setting": "fdatasync",
+      "boot_val": "fdatasync",
+      "context": "sighup"
+    },
+    "wal_writer_delay": {
+      "setting": "200",
+      "boot_val": "200",
+      "context": "sighup"
+    },
+    "wal_writer_flush_after": {
+      "setting": "128",
+      "boot_val": "128",
+      "context": "sighup"
+    },
+    "work_mem": {
+      "setting": "4096",
+      "boot_val": "4096",
+      "context": "user"
+    },
+    "xmlbinary": {
+      "setting": "base64",
+      "boot_val": "base64",
+      "context": "user"
+    },
+    "xmloption": {
+      "setting": "content",
+      "boot_val": "content",
+      "context": "user"
+    },
+    "zero_damaged_pages": {
+      "setting": "off",
+      "boot_val": "off",
+      "context": "superuser"
+    }
+  },
+  "conn_cost": {
+    "fresh_200_s": 0.3525,
+    "fresh_each_ms": 1.762,
+    "reuse_200_s": 0.006,
+    "reuse_each_ms": 0.0299,
+    "ratio": 59.0
+  },
+  "backend_rss_kb": {
+    "fresh": 13268,
+    "after_catalog_scan": 14880,
+    "end": 14880
+  },
+  "pages": {
+    "customers": 710,
+    "customers_pkey": 276,
+    "orders": 7693,
+    "orders_customer_idx": 1157,
+    "orders_created_idx": 1086
+  },
+  "checkpoint": {
+    "dirty_buffers_before": 10137,
+    "manual_checkpoint_seconds": 0.3252,
+    "before": {
+      "checkpoints_timed": 0,
+      "checkpoints_req": 0,
+      "checkpoint_write_time": 0.0,
+      "checkpoint_sync_time": 0.0,
+      "buffers_checkpoint": 0,
+      "buffers_clean": 0,
+      "maxwritten_clean": 0,
+      "buffers_backend": 8192,
+      "buffers_backend_fsync": 0,
+      "buffers_alloc": 10358
+    },
+    "after": {
+      "checkpoints_timed": 0,
+      "checkpoints_req": 1,
+      "checkpoint_write_time": 55.0,
+      "checkpoint_sync_time": 210.0,
+      "buffers_checkpoint": 10137,
+      "buffers_clean": 0,
+      "maxwritten_clean": 0,
+      "buffers_backend": 9543,
+      "buffers_backend_fsync": 0,
+      "buffers_alloc": 10913
+    },
+    "delta": {
+      "checkpoints_timed": 0,
+      "checkpoints_req": 1,
+      "checkpoint_write_time": 55.0,
+      "checkpoint_sync_time": 210.0,
+      "buffers_checkpoint": 10137,
+      "buffers_clean": 0,
+      "maxwritten_clean": 0,
+      "buffers_backend": 1351,
+      "buffers_backend_fsync": 0,
+      "buffers_alloc": 555
+    }
+  },
+  "checkpoint_log": [
+    "2026-09-19 16:35:32.748 IST [129064] LOG:  checkpoint starting: immediate force wait",
+    "2026-09-19 16:35:33.068 IST [129064] LOG:  checkpoint complete: wrote 10138 buffers (61.9%); 0 WAL file(s) added, 0 removed, 8 recycled; write=0.055 s, sync=0.210 s, total=0.321 s; sync files=313, longest=0.005 s, average=0.001 s; distance=131882 kB, estimate=539953 kB; lsn=3/236669F8, redo lsn=3/236669C0"
+  ],
+  "stat_io": [
+    [
+      "client backend",
+      "normal",
+      0,
+      0,
+      9238,
+      0,
+      null
+    ],
+    [
+      "checkpointer",
+      "normal",
+      10137,
+      312,
+      null,
+      null,
+      null
+    ]
+  ],
+  "sync_commit": {
+    "n": 5000,
+    "on_seconds": 5.7642,
+    "on_tps": 867.4,
+    "off_seconds": 0.3631,
+    "off_tps": 13771.4,
+    "speedup": 15.88,
+    "wal_on": {
+      "wal_records": 15168,
+      "wal_bytes": "830157",
+      "wal_write": 5000,
+      "wal_sync": 5000,
+      "wal_write_time": 0.0,
+      "wal_sync_time": 0.0
+    },
+    "wal_off": {
+      "wal_records": 15166,
+      "wal_bytes": "830688",
+      "wal_write": 105,
+      "wal_sync": 2,
+      "wal_write_time": 0.0,
+      "wal_sync_time": 0.0
+    }
+  },
+  "thresholds": [
+    [
+      "orders",
+      1000000,
+      200050,
+      201000,
+      100050,
+      0
+    ],
+    [
+      "customers",
+      100000,
+      20050,
+      21000,
+      10050,
+      0
+    ]
+  ],
+  "autovacuum_trigger": {
+    "seconds_until_autovacuum": 30.0,
+    "worker_seen_in_pg_stat_activity": [
+      [
+        130208,
+        "autovacuum worker",
+        "autovacuum: VACUUM ANALYZE public.customers"
+      ]
+    ]
+  },
+  "autovacuum_log": [
+    "2026-09-19 16:36:09.411 IST [130208] LOG:  automatic vacuum of table \"proclab.public.customers\": index scans: 1",
+    "\tpages: 0 removed, 984 remain, 566 scanned (57.52% of total)",
+    "\ttuples: 30000 removed, 95913 remain, 0 are dead but not yet removable",
+    "\tremovable cutoff: 71161, which was 0 XIDs old when operation ended",
+    "\tfrozen: 0 pages from table (0.00% of total) had 0 tuples frozen",
+    "\tindex scan needed: 296 pages from table (30.08% of total) had 25164 dead item identifiers removed",
+    "\tindex \"customers_pkey\": pages: 551 in total, 0 newly deleted, 0 currently deleted, 0 reusable",
+    "\tavg read rate: 0.000 MB/s, avg write rate: 0.000 MB/s",
+    "\tbuffer usage: 2019 hits, 0 misses, 0 dirtied",
+    "\tWAL usage: 1322 records, 0 full page images, 249396 bytes",
+    "\tsystem usage: CPU: user: 0.01 s, system: 0.00 s, elapsed: 0.03 s"
+  ],
+  "vacuum_index_passes": {
+    "small": {
+      "maintenance_work_mem": "1MB",
+      "dead_tuples": 800000,
+      "cold": false,
+      "index_scans": 5,
+      "seconds": 0.258,
+      "buffer_hits": 29051,
+      "buffer_misses": 0,
+      "wal_records": 36022,
+      "verbose": "INFO:  vacuuming \"proclab.public.vac_demo\"\nINFO:  launched 1 parallel vacuum worker for index vacuuming (planned: 1)\nINFO:  launched 1 parallel vacuum worker for index vacuuming (planned: 1)\nINFO:  launched 1 parallel vacuum worker for index vacuuming (planned: 1)\nINFO:  launched 1 parallel vacuum worker for index vacuuming (planned: 1)\nINFO:  launched 1 parallel vacuum worker for index vacuuming (planned: 1)\nINFO:  finished vacuuming \"proclab.public.vac_demo\": index scans: 5\npages: 0 removed, 7693 remain, 7693 scanned (100.00% of total)\ntuples: 800000 removed, 200000 remain, 0 are dead but not yet removable\nremovable cutoff: 71170, which was 0 XIDs old when operation ended\nfrozen: 0 pages from table (0.00% of total) had 0 tuples frozen\nindex scan needed: 7693 pages from table (100.00% of total) had 800000 dead item identifiers removed\nindex \"vac_demo_customer_idx\": pages: 1178 in total, 0 newly deleted, 0 currently deleted, 0 reusable\nindex \"vac_demo_created_idx\": pages: 1425 in total, 0 newly deleted, 0 currently deleted, 0 reusable\navg read rate: 0.000 MB/s, avg write rate: 0.031 MB/s\nbuffer usage: 29051 hits, 0 misses, 1 dirtied\nWAL usage: 36022 records, 0 full page images, 10357894 bytes\nsystem usage: CPU: user: 0.24 s, system: 0.01 s, elapsed: 0.25 s\nINFO:  vacuuming \"proclab.pg_toast.pg_toast_58170\"\nINFO:  finished vacuuming \"proclab.pg_toast.pg_toast_58170\": index scans: 0\npages: 0 removed, 0 remain, 0 scanned (100.00% of total)\ntuples: 0 removed, 0 remain, 0 are dead but not yet removable\nremovable cutoff: 71170, which was 0 XIDs old when operation ended\nnew relfrozenxid: 71170, which is 2 XIDs ahead of previous value\nfrozen: 0 pages from table (100.00% of total) had 0 tuples frozen\nindex scan not needed: 0 pages from table (100.00% of total) had 0 dead item identifiers removed\navg read rate: 0.000 MB/s, avg write rate: 0.000 MB/s\nbuffer usage: 20 hits, 0 misses, 0 dirtied\nWAL usage: 1 records, 0 full page images, 188 bytes\nsystem usage: CPU: user: 0.00 s, system: 0.00 s, elapsed: 0.00 s"
+    },
+    "big": {
+      "maintenance_work_mem": "256MB",
+      "dead_tuples": 800000,
+      "cold": false,
+      "index_scans": 1,
+      "seconds": 0.232,
+      "buffer_hits": 24323,
+      "buffer_misses": 0,
+      "wal_records": 25670,
+      "verbose": "INFO:  vacuuming \"proclab.public.vac_demo\"\nINFO:  launched 1 parallel vacuum worker for index vacuuming (planned: 1)\nINFO:  finished vacuuming \"proclab.public.vac_demo\": index scans: 1\npages: 0 removed, 7693 remain, 7693 scanned (100.00% of total)\ntuples: 800000 removed, 200000 remain, 0 are dead but not yet removable\nremovable cutoff: 71174, which was 0 XIDs old when operation ended\nfrozen: 0 pages from table (0.00% of total) had 0 tuples frozen\nindex scan needed: 7693 pages from table (100.00% of total) had 800000 dead item identifiers removed\nindex \"vac_demo_customer_idx\": pages: 1178 in total, 0 newly deleted, 0 currently deleted, 0 reusable\nindex \"vac_demo_created_idx\": pages: 1425 in total, 0 newly deleted, 0 currently deleted, 0 reusable\navg read rate: 0.000 MB/s, avg write rate: 35.973 MB/s\nbuffer usage: 24323 hits, 0 misses, 1050 dirtied\nWAL usage: 25670 records, 0 full page images, 5086568 bytes\nsystem usage: CPU: user: 0.21 s, system: 0.01 s, elapsed: 0.22 s\nINFO:  vacuuming \"proclab.pg_toast.pg_toast_58170\"\nINFO:  finished vacuuming \"proclab.pg_toast.pg_toast_58170\": index scans: 0\npages: 0 removed, 0 remain, 0 scanned (100.00% of total)\ntuples: 0 removed, 0 remain, 0 are dead but not yet removable\nremovable cutoff: 71174, which was 0 XIDs old when operation ended\nnew relfrozenxid: 71174, which is 2 XIDs ahead of previous value\nfrozen: 0 pages from table (100.00% of total) had 0 tuples frozen\nindex scan not needed: 0 pages from table (100.00% of total) had 0 dead item identifiers removed\navg read rate: 0.000 MB/s, avg write rate: 0.000 MB/s\nbuffer usage: 20 hits, 0 misses, 0 dirtied\nWAL usage: 1 records, 0 full page images, 188 bytes\nsystem usage: CPU: user: 0.00 s, system: 0.00 s, elapsed: 0.00 s"
+    },
+    "small_cold": {
+      "maintenance_work_mem": "1MB",
+      "dead_tuples": 800000,
+      "cold": true,
+      "index_scans": 5,
+      "seconds": 1.1,
+      "buffer_hits": 7763,
+      "buffer_misses": 21283,
+      "wal_records": 43715,
+      "verbose": "INFO:  vacuuming \"proclab.public.vac_demo\"\nINFO:  launched 1 parallel vacuum worker for index vacuuming (planned: 1)\nINFO:  launched 1 parallel vacuum worker for index vacuuming (planned: 1)\nINFO:  launched 1 parallel vacuum worker for index vacuuming (planned: 1)\nINFO:  launched 1 parallel vacuum worker for index vacuuming (planned: 1)\nINFO:  launched 1 parallel vacuum worker for index vacuuming (planned: 1)\nINFO:  finished vacuuming \"proclab.public.vac_demo\": index scans: 5\npages: 0 removed, 7693 remain, 7693 scanned (100.00% of total)\ntuples: 800000 removed, 200000 remain, 0 are dead but not yet removable\nremovable cutoff: 71178, which was 0 XIDs old when operation ended\nnew relfrozenxid: 71178, which is 3 XIDs ahead of previous value\nfrozen: 7693 pages from table (100.00% of total) had 200000 tuples frozen\nindex scan needed: 7693 pages from table (100.00% of total) had 800000 dead item identifiers removed\nindex \"vac_demo_customer_idx\": pages: 1178 in total, 0 newly deleted, 0 currently deleted, 0 reusable\nindex \"vac_demo_created_idx\": pages: 1425 in total, 0 newly deleted, 0 currently deleted, 0 reusable\navg read rate: 152.064 MB/s, avg write rate: 151.807 MB/s\nbuffer usage: 7763 hits, 21283 misses, 21247 dirtied\nWAL usage: 43715 records, 10283 full page images, 40538898 bytes\nsystem usage: CPU: user: 0.32 s, system: 0.12 s, elapsed: 1.09 s\nINFO:  vacuuming \"proclab.pg_toast.pg_toast_58170\"\nINFO:  finished vacuuming \"proclab.pg_toast.pg_toast_58170\": index scans: 0\npages: 0 removed, 0 remain, 0 scanned (100.00% of total)\ntuples: 0 removed, 0 remain, 0 are dead but not yet removable\nremovable cutoff: 71178, which was 0 XIDs old when operation ended\nnew relfrozenxid: 71178, which is 2 XIDs ahead of previous value\nfrozen: 0 pages from table (100.00% of total) had 0 tuples frozen\nindex scan not needed: 0 pages from table (100.00% of total) had 0 dead item identifiers removed\navg read rate: 94.127 MB/s, avg write rate: 0.000 MB/s\nbuffer usage: 19 hits, 1 misses, 0 dirtied\nWAL usage: 1 records, 0 full page images, 188 bytes\nsystem usage: CPU: user: 0.00 s, system: 0.00 s, elapsed: 0.00 s"
+    },
+    "big_cold": {
+      "maintenance_work_mem": "256MB",
+      "dead_tuples": 800000,
+      "cold": true,
+      "index_scans": 1,
+      "seconds": 0.867,
+      "buffer_hits": 7743,
+      "buffer_misses": 16575,
+      "wal_records": 33363,
+      "verbose": "INFO:  vacuuming \"proclab.public.vac_demo\"\nINFO:  launched 1 parallel vacuum worker for index vacuuming (planned: 1)\nINFO:  finished vacuuming \"proclab.public.vac_demo\": index scans: 1\npages: 0 removed, 7693 remain, 7693 scanned (100.00% of total)\ntuples: 800000 removed, 200000 remain, 0 are dead but not yet removable\nremovable cutoff: 71182, which was 0 XIDs old when operation ended\nnew relfrozenxid: 71182, which is 3 XIDs ahead of previous value\nfrozen: 7693 pages from table (100.00% of total) had 200000 tuples frozen\nindex scan needed: 7693 pages from table (100.00% of total) had 800000 dead item identifiers removed\nindex \"vac_demo_customer_idx\": pages: 1178 in total, 0 newly deleted, 0 currently deleted, 0 reusable\nindex \"vac_demo_created_idx\": pages: 1425 in total, 0 newly deleted, 0 currently deleted, 0 reusable\navg read rate: 150.462 MB/s, avg write rate: 150.354 MB/s\nbuffer usage: 7743 hits, 16575 misses, 16563 dirtied\nWAL usage: 33363 records, 10283 full page images, 23651118 bytes\nsystem usage: CPU: user: 0.26 s, system: 0.10 s, elapsed: 0.86 s\nINFO:  vacuuming \"proclab.pg_toast.pg_toast_58170\"\nINFO:  finished vacuuming \"proclab.pg_toast.pg_toast_58170\": index scans: 0\npages: 0 removed, 0 remain, 0 scanned (100.00% of total)\ntuples: 0 removed, 0 remain, 0 are dead but not yet removable\nremovable cutoff: 71182, which was 0 XIDs old when operation ended\nnew relfrozenxid: 71182, which is 2 XIDs ahead of previous value\nfrozen: 0 pages from table (100.00% of total) had 0 tuples frozen\nindex scan not needed: 0 pages from table (100.00% of total) had 0 dead item identifiers removed\navg read rate: 77.351 MB/s, avg write rate: 0.000 MB/s\nbuffer usage: 19 hits, 1 misses, 0 dirtied\nWAL usage: 1 records, 0 full page images, 188 bytes\nsystem usage: CPU: user: 0.00 s, system: 0.00 s, elapsed: 0.00 s"
+    },
+    "warm_ratio": 1.11,
+    "cold_ratio": 1.27
+  },
+  "tid_math": {
+    "bytes_per_tid_pg16": 6,
+    "tids_in_1mb": 174762,
+    "tids_in_64mb": 11184810,
+    "tids_in_256mb": 44739242,
+    "hard_cap_pg16": 178956970
+  },
+  "holder": [
+    [
+      130456,
+      "idle in transaction",
+      "71185",
+      "16:36:31",
+      "0:00:00.022949"
+    ]
+  ],
+  "vacuum_blocked": {
+    "removed": 0,
+    "nonremovable": 800000,
+    "removable_cutoff": 71185,
+    "cutoff_age": 1,
+    "index_scans": 0,
+    "pages_scanned": 7693,
+    "verbose": "INFO:  vacuuming \"proclab.public.vac_demo\"\nINFO:  launched 1 parallel vacuum worker for index cleanup (planned: 1)\nINFO:  finished vacuuming \"proclab.public.vac_demo\": index scans: 0\npages: 0 removed, 7693 remain, 7693 scanned (100.00% of total)\ntuples: 0 removed, 1000000 remain, 800000 are dead but not yet removable\nremovable cutoff: 71185, which was 1 XIDs old when operation ended\nfrozen: 0 pages from table (0.00% of total) had 0 tuples frozen\nindex scan not needed: 0 pages from table (0.00% of total) had 0 dead item identifiers removed\navg read rate: 0.000 MB/s, avg write rate: 0.000 MB/s\nbuffer usage: 15444 hits, 0 misses, 0 dirtied\nWAL usage: 1 records, 0 full page images, 188 bytes\nsystem usage: CPU: user: 0.04 s, system: 0.01 s, elapsed: 0.06 s\nINFO:  vacuuming \"proclab.pg_toast.pg_toast_58170\"\nINFO:  finished vacuuming \"proclab.pg_toast.pg_toast_58170\": index scans: 0\npages: 0 removed, 0 remain, 0 scanned (100.00% of total)\ntuples: 0 removed, 0 remain, 0 are dead but not yet removable\nremovable cutoff: 71185, which was 1 XIDs old when operation ended\nnew relfrozenxid: 71185, which is 1 XIDs ahead of previous value\nfrozen: 0 pages from table (100.00% of total) had 0 tuples frozen\nindex scan not needed: 0 pages from table (100.00% of total) had 0 dead item identifiers removed\navg read rate: 0.000 MB/s, avg write rate: 0.000 MB/s\nbuffer usage: 20 hits, 0 misses, 0 dirtied\nWAL usage: 1 records, 0 full page images, 188 bytes\nsystem usage: CPU: user: 0.00 s, system: 0.00 s, elapsed: 0.00 s"
+  },
+  "vacuum_released": {
+    "removed": 800000,
+    "nonremovable": 0,
+    "removable_cutoff": 71186,
+    "index_scans": 1,
+    "verbose": "INFO:  vacuuming \"proclab.public.vac_demo\"\nINFO:  launched 1 parallel vacuum worker for index vacuuming (planned: 1)\nINFO:  finished vacuuming \"proclab.public.vac_demo\": index scans: 1\npages: 0 removed, 7693 remain, 7693 scanned (100.00% of total)\ntuples: 800000 removed, 200000 remain, 0 are dead but not yet removable\nremovable cutoff: 71186, which was 0 XIDs old when operation ended\nfrozen: 0 pages from table (0.00% of total) had 0 tuples frozen\nindex scan needed: 7693 pages from table (100.00% of total) had 800000 dead item identifiers removed\nindex \"vac_demo_customer_idx\": pages: 1178 in total, 0 newly deleted, 0 currently deleted, 0 reusable\nindex \"vac_demo_created_idx\": pages: 1425 in total, 0 newly deleted, 0 currently deleted, 0 reusable\navg read rate: 0.000 MB/s, avg write rate: 0.035 MB/s\nbuffer usage: 24323 hits, 0 misses, 1 dirtied\nWAL usage: 25670 records, 0 full page images, 5086568 bytes\nsystem usage: CPU: user: 0.19 s, system: 0.02 s, elapsed: 0.22 s\nINFO:  vacuuming \"proclab.pg_toast.pg_toast_58170\"\nINFO:  finished vacuuming \"proclab.pg_toast.pg_toast_58170\": index scans: 0\npages: 0 removed, 0 remain, 0 scanned (100.00% of total)\ntuples: 0 removed, 0 remain, 0 are dead but not yet removable\nremovable cutoff: 71186, which was 0 XIDs old when operation ended\nnew relfrozenxid: 71186, which is 1 XIDs ahead of previous value\nfrozen: 0 pages from table (100.00% of total) had 0 tuples frozen\nindex scan not needed: 0 pages from table (100.00% of total) had 0 dead item identifiers removed\navg read rate: 0.000 MB/s, avg write rate: 0.000 MB/s\nbuffer usage: 20 hits, 0 misses, 0 dirtied\nWAL usage: 1 records, 0 full page images, 188 bytes\nsystem usage: CPU: user: 0.00 s, system: 0.00 s, elapsed: 0.00 s"
+  },
+  "vacuum_progress": [
+    [
+      "initializing",
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    [
+      "scanning heap",
+      7693,
+      0,
+      0,
+      0,
+      174761,
+      0
+    ],
+    [
+      "scanning heap",
+      7693,
+      249,
+      0,
+      0,
+      174761,
+      25896
+    ],
+    [
+      "scanning heap",
+      7693,
+      393,
+      0,
+      0,
+      174761,
+      40872
+    ],
+    [
+      "scanning heap",
+      7693,
+      526,
+      0,
+      0,
+      174761,
+      54704
+    ],
+    [
+      "scanning heap",
+      7693,
+      699,
+      0,
+      0,
+      174761,
+      72696
+    ],
+    [
+      "scanning heap",
+      7693,
+      864,
+      0,
+      0,
+      174761,
+      89856
+    ],
+    [
+      "scanning heap",
+      7693,
+      992,
+      0,
+      0,
+      174761,
+      103168
+    ],
+    [
+      "scanning heap",
+      7693,
+      1130,
+      0,
+      0,
+      174761,
+      117520
+    ],
+    [
+      "scanning heap",
+      7693,
+      1278,
+      0,
+      0,
+      174761,
+      132912
+    ],
+    [
+      "scanning heap",
+      7693,
+      1429,
+      0,
+      0,
+      174761,
+      148616
+    ],
+    [
+      "scanning heap",
+      7693,
+      1562,
+      0,
+      0,
+      174761,
+      162448
+    ],
+    [
+      "scanning heap",
+      7693,
+      1677,
+      0,
+      0,
+      174761,
+      174408
+    ],
+    [
+      "vacuuming indexes",
+      7693,
+      1678,
+      0,
+      0,
+      174761,
+      174512
+    ],
+    [
+      "vacuuming heap",
+      7693,
+      1678,
+      0,
+      1,
+      174761,
+      174512
+    ],
+    [
+      "vacuuming heap",
+      7693,
+      1678,
+      61,
+      1,
+      174761,
+      174512
+    ],
+    [
+      "vacuuming heap",
+      7693,
+      1678,
+      687,
+      1,
+      174761,
+      174512
+    ],
+    [
+      "vacuuming heap",
+      7693,
+      1678,
+      1302,
+      1,
+      174761,
+      174512
+    ],
+    [
+      "vacuuming heap",
+      7693,
+      1678,
+      1663,
+      1,
+      174761,
+      174512
+    ],
+    [
+      "scanning heap",
+      7693,
+      1678,
+      1677,
+      1,
+      174761,
+      174512
+    ],
+    [
+      "scanning heap",
+      7693,
+      1728,
+      1677,
+      1,
+      174761,
+      5200
+    ],
+    [
+      "scanning heap",
+      7693,
+      1868,
+      1677,
+      1,
+      174761,
+      19760
+    ],
+    [
+      "scanning heap",
+      7693,
+      1998,
+      1677,
+      1,
+      174761,
+      33280
+    ],
+    [
+      "scanning heap",
+      7693,
+      2145,
+      1677,
+      1,
+      174761,
+      48568
+    ],
+    [
+      "scanning heap",
+      7693,
+      2320,
+      1677,
+      1,
+      174761,
+      66768
+    ],
+    [
+      "scanning heap",
+      7693,
+      2493,
+      1677,
+      1,
+      174761,
+      84760
+    ],
+    [
+      "scanning heap",
+      7693,
+      2711,
+      1677,
+      1,
+      174761,
+      107432
+    ],
+    [
+      "scanning heap",
+      7693,
+      2882,
+      1677,
+      1,
+      174761,
+      125216
+    ],
+    [
+      "scanning heap",
+      7693,
+      3047,
+      1677,
+      1,
+      174761,
+      142376
+    ],
+    [
+      "scanning heap",
+      7693,
+      3197,
+      1677,
+      1,
+      174761,
+      157976
+    ],
+    [
+      "scanning heap",
+      7693,
+      3355,
+      1677,
+      1,
+      174761,
+      174408
+    ],
+    [
+      "vacuuming indexes",
+      7693,
+      3356,
+      1677,
+      1,
+      174761,
+      174512
+    ],
+    [
+      "vacuuming heap",
+      7693,
+      3356,
+      1704,
+      2,
+      174761,
+      174512
+    ],
+    [
+      "vacuuming heap",
+      7693,
+      3356,
+      2656,
+      2,
+      174761,
+      174512
+    ],
+    [
+      "vacuuming heap",
+      7693,
+      3356,
+      3342,
+      2,
+      174761,
+      174512
+    ],
+    [
+      "scanning heap",
+      7693,
+      3359,
+      3355,
+      2,
+      174761,
+      312
+    ],
+    [
+      "scanning heap",
+      7693,
+      3374,
+      3355,
+      2,
+      174761,
+      1872
+    ],
+    [
+      "scanning heap",
+      7693,
+      3564,
+      3355,
+      2,
+      174761,
+      21632
+    ],
+    [
+      "scanning heap",
+      7693,
+      3737,
+      3355,
+      2,
+      174761,
+      39624
+    ],
+    [
+      "scanning heap",
+      7693,
+      3916,
+      3355,
+      2,
+      174761,
+      58240
+    ],
+    [
+      "scanning heap",
+      7693,
+      4090,
+      3355,
+      2,
+      174761,
+      76336
+    ],
+    [
+      "scanning heap",
+      7693,
+      4286,
+      3355,
+      2,
+      174761,
+      96720
+    ],
+    [
+      "scanning heap",
+      7693,
+      4502,
+      3355,
+      2,
+      174761,
+      119184
+    ],
+    [
+      "scanning heap",
+      7693,
+      4682,
+      3355,
+      2,
+      174761,
+      137904
+    ],
+    [
+      "scanning heap",
+      7693,
+      4858,
+      3355,
+      2,
+      174761,
+      156208
+    ],
+    [
+      "scanning heap",
+      7693,
+      5033,
+      3355,
+      2,
+      174761,
+      174408
+    ],
+    [
+      "vacuuming indexes",
+      7693,
+      5034,
+      3355,
+      2,
+      174761,
+      174512
+    ],
+    [
+      "vacuuming heap",
+      7693,
+      5034,
+      3364,
+      3,
+      174761,
+      174512
+    ],
+    [
+      "vacuuming heap",
+      7693,
+      5034,
+      4227,
+      3,
+      174761,
+      174512
+    ],
+    [
+      "vacuuming heap",
+      7693,
+      5034,
+      5025,
+      3,
+      174761,
+      174512
+    ],
+    [
+      "scanning heap",
+      7693,
+      5046,
+      5033,
+      3,
+      174761,
+      1248
+    ],
+    [
+      "scanning heap",
+      7693,
+      5056,
+      5033,
+      3,
+      174761,
+      2288
+    ],
+    [
+      "scanning heap",
+      7693,
+      5256,
+      5033,
+      3,
+      174761,
+      23088
+    ],
+    [
+      "scanning heap",
+      7693,
+      5432,
+      5033,
+      3,
+      174761,
+      41392
+    ],
+    [
+      "scanning heap",
+      7693,
+      5598,
+      5033,
+      3,
+      174761,
+      58656
+    ],
+    [
+      "scanning heap",
+      7693,
+      5765,
+      5033,
+      3,
+      174761,
+      76024
+    ],
+    [
+      "scanning heap",
+      7693,
+      5932,
+      5033,
+      3,
+      174761,
+      93392
+    ],
+    [
+      "scanning heap",
+      7693,
+      6117,
+      5033,
+      3,
+      174761,
+      112632
+    ],
+    [
+      "scanning heap",
+      7693,
+      6329,
+      5033,
+      3,
+      174761,
+      134680
+    ],
+    [
+      "scanning heap",
+      7693,
+      6512,
+      5033,
+      3,
+      174761,
+      153712
+    ],
+    [
+      "scanning heap",
+      7693,
+      6689,
+      5033,
+      3,
+      174761,
+      172120
+    ],
+    [
+      "scanning heap",
+      7693,
+      6708,
+      5033,
+      3,
+      174761,
+      174096
+    ],
+    [
+      "vacuuming indexes",
+      7693,
+      6712,
+      5033,
+      3,
+      174761,
+      174512
+    ],
+    [
+      "vacuuming heap",
+      7693,
+      6712,
+      5047,
+      4,
+      174761,
+      174512
+    ],
+    [
+      "vacuuming heap",
+      7693,
+      6712,
+      5657,
+      4,
+      174761,
+      174512
+    ],
+    [
+      "vacuuming heap",
+      7693,
+      6712,
+      6420,
+      4,
+      174761,
+      174512
+    ],
+    [
+      "vacuuming heap",
+      7693,
+      6712,
+      6698,
+      4,
+      174761,
+      174512
+    ],
+    [
+      "scanning heap",
+      7693,
+      6713,
+      6711,
+      4,
+      174761,
+      104
+    ],
+    [
+      "scanning heap",
+      7693,
+      6819,
+      6711,
+      4,
+      174761,
+      11128
+    ],
+    [
+      "scanning heap",
+      7693,
+      6991,
+      6711,
+      4,
+      174761,
+      29016
+    ],
+    [
+      "scanning heap",
+      7693,
+      7183,
+      6711,
+      4,
+      174761,
+      48984
+    ],
+    [
+      "scanning heap",
+      7693,
+      7361,
+      6711,
+      4,
+      174761,
+      67496
+    ],
+    [
+      "scanning heap",
+      7693,
+      7537,
+      6711,
+      4,
+      174761,
+      85800
+    ],
+    [
+      "scanning heap",
+      7693,
+      7685,
+      6711,
+      4,
+      174761,
+      101192
+    ],
+    [
+      "vacuuming indexes",
+      7693,
+      7693,
+      6711,
+      4,
+      174761,
+      101952
+    ],
+    [
+      "vacuuming heap",
+      7693,
+      7693,
+      6730,
+      5,
+      174761,
+      101952
+    ],
+    [
+      "vacuuming heap",
+      7693,
+      7693,
+      6762,
+      5,
+      174761,
+      101952
+    ],
+    [
+      "vacuuming heap",
+      7693,
+      7693,
+      7672,
+      5,
+      174761,
+      101952
+    ],
+    [
+      "cleaning up indexes",
+      7693,
+      7693,
+      7693,
+      5,
+      174761,
+      101952
+    ],
+    [
+      "initializing",
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  ],
+  "vacuum_progress_samples": 1375,
+  "vacuum_phase_names": [
+    "cleaning up indexes",
+    "initializing",
+    "scanning heap",
+    "vacuuming heap",
+    "vacuuming indexes"
+  ],
+  "parallel": {
+    "default": {
+      "planned": 2,
+      "launched": 2
+    },
+    "guc_raised_only": {
+      "planned": 2,
+      "launched": 2
+    },
+    "table_option": {
+      "planned": 6,
+      "launched": 6
+    },
+    "starved": {
+      "planned": 6,
+      "launched": 1
+    }
+  },
+  "parallel_workers_caught": [
+    [
+      130513,
+      "client backend",
+      null,
+      "active",
+      null,
+      null
+    ],
+    [
+      130517,
+      "parallel worker",
+      130513,
+      "active",
+      null,
+      null
+    ],
+    [
+      130518,
+      "parallel worker",
+      130513,
+      "active",
+      null,
+      null
+    ],
+    [
+      130519,
+      "parallel worker",
+      130513,
+      "active",
+      null,
+      null
+    ],
+    [
+      130520,
+      "parallel worker",
+      130513,
+      "active",
+      null,
+      null
+    ]
+  ],
+  "cancel_vs_terminate": {
+    "backend_pid": 130523,
+    "after_cancel_connection_usable": "still here",
+    "after_cancel_rows_in_pg_stat_activity": 1,
+    "after_terminate_rows_in_pg_stat_activity": 0,
+    "cancel_error": "canceling statement due to user request",
+    "terminate_error": "terminating connection due to administrator command"
+  },
+  "wait_events": [
+    {
+      "backend_type": "client backend",
+      "type": "(running)",
+      "event": "(cpu)",
+      "samples": 34
+    },
+    {
+      "backend_type": "parallel worker",
+      "type": "(running)",
+      "event": "(cpu)",
+      "samples": 31
+    },
+    {
+      "backend_type": "autovacuum launcher",
+      "type": "Activity",
+      "event": "AutoVacuumMain",
+      "samples": 19
+    },
+    {
+      "backend_type": "logical replication launcher",
+      "type": "Activity",
+      "event": "LogicalLauncherMain",
+      "samples": 19
+    },
+    {
+      "backend_type": "background writer",
+      "type": "Activity",
+      "event": "BgWriterMain",
+      "samples": 19
+    },
+    {
+      "backend_type": "checkpointer",
+      "type": "Timeout",
+      "event": "CheckpointWriteDelay",
+      "samples": 19
+    },
+    {
+      "backend_type": "walwriter",
+      "type": "Activity",
+      "event": "WalWriterMain",
+      "samples": 19
+    },
+    {
+      "backend_type": "client backend",
+      "type": "IO",
+      "event": "DataFileWrite",
+      "samples": 2
+    },
+    {
+      "backend_type": "parallel worker",
+      "type": "IO",
+      "event": "DataFileRead",
+      "samples": 2
+    },
+    {
+      "backend_type": "parallel worker",
+      "type": "IPC",
+      "event": "BufferIO",
+      "samples": 1
+    },
+    {
+      "backend_type": "client backend",
+      "type": "IO",
+      "event": "DataFileRead",
+      "samples": 1
+    },
+    {
+      "backend_type": "client backend",
+      "type": "IPC",
+      "event": "BgWorkerShutdown",
+      "samples": 1
+    }
+  ],
+  "freeze": [
+    [
+      "customers",
+      10037
+    ],
+    [
+      "orders",
+      10042
+    ],
+    [
+      "vac_demo",
+      7
+    ]
+  ],
+  "crash": {
+    "killed_pid": 130554,
+    "bystander_pid": 130555,
+    "log": [
+      "2026-09-19 16:36:36.149 IST [130380] LOG:  server process (PID 130554) was terminated by signal 9: Killed",
+      "2026-09-19 16:36:36.149 IST [130380] DETAIL:  Failed process was running: select pg_backend_pid()",
+      "2026-09-19 16:36:36.149 IST [130380] LOG:  terminating any other active server processes",
+      "2026-09-19 16:36:36.152 IST [130380] LOG:  all server processes terminated; reinitializing",
+      "2026-09-19 16:36:36.200 IST [130556] LOG:  database system was interrupted; last known up at 2026-09-19 16:36:26 IST",
+      "2026-09-19 16:36:37.387 IST [130556] LOG:  database system was not properly shut down; automatic recovery in progress",
+      "2026-09-19 16:36:37.393 IST [130556] LOG:  redo starts at 3/73592518"
+    ],
+    "bystander_survived": false,
+    "bystander_error": "consuming input failed: server closed the connection unexpectedly"
+  }
+}

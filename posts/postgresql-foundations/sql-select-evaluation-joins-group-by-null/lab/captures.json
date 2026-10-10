@@ -1,0 +1,727 @@
+{
+  "full": {
+    "customers": 101000,
+    "e4_broken": {
+      "A": [
+        [
+          "BR",
+          10999670037,
+          10999670037
+        ],
+        [
+          "DE",
+          11000210037,
+          11000210037
+        ],
+        [
+          "IN",
+          10999790148,
+          10999790148
+        ],
+        [
+          "JP",
+          11000159064,
+          11000159064
+        ],
+        [
+          "US",
+          10999549815,
+          10999549815
+        ]
+      ],
+      "B": [
+        [
+          0
+        ]
+      ],
+      "C": [
+        [
+          "BR",
+          200000
+        ],
+        [
+          "DE",
+          200000
+        ],
+        [
+          "IN",
+          200000
+        ],
+        [
+          "JP",
+          199999
+        ],
+        [
+          "US",
+          200000
+        ]
+      ]
+    },
+    "e4_reference": {
+      "A": [
+        [
+          "BR",
+          3333266642,
+          3333200037
+        ],
+        [
+          "DE",
+          3333366716,
+          3333399963
+        ],
+        [
+          "IN",
+          3333366679,
+          3333200037
+        ],
+        [
+          "JP",
+          3333309725,
+          3333499963
+        ],
+        [
+          "US",
+          3333166605,
+          3333200000
+        ]
+      ],
+      "B": [
+        [
+          1000
+        ]
+      ],
+      "C": [
+        [
+          "BR",
+          20000
+        ],
+        [
+          "DE",
+          20000
+        ],
+        [
+          "IN",
+          20000
+        ],
+        [
+          "JP",
+          20000
+        ],
+        [
+          "US",
+          20000
+        ]
+      ]
+    },
+    "except": 1000,
+    "except_after_null": 1000,
+    "exists_paid": 100000,
+    "group_order_default": [
+      "BR",
+      "DE",
+      "IN",
+      "JP",
+      "US"
+    ],
+    "group_order_no_parallel": [
+      "US",
+      "BR",
+      "JP",
+      "IN",
+      "DE"
+    ],
+    "groups": 5,
+    "groups_country_status_inner": 15,
+    "groups_country_status_left": 20,
+    "groups_formed_having": 15,
+    "groups_formed_where": 5,
+    "having_count_gt_66666": 10,
+    "in_paid": 100000,
+    "inner_join": 1000000,
+    "join_paid": 333333,
+    "join_paid_distinct": 100000,
+    "left_join": 1001000,
+    "left_join_is_null": 1000,
+    "left_join_is_null_after_null": 1000,
+    "left_join_on_paid": 334333,
+    "left_join_where_paid": 333333,
+    "limit_2": [
+      [
+        "DE",
+        66667,
+        3333366716
+      ],
+      [
+        "IN",
+        66667,
+        3333366679
+      ]
+    ],
+    "not_exists": 1000,
+    "not_exists_after_null": 1000,
+    "not_exists_after_null_ms": 50.547,
+    "not_exists_ms": 46.298,
+    "not_in": 1000,
+    "not_in_after_null": 0,
+    "not_in_after_null_ms": 117924.868,
+    "not_in_filtered_after_null": 1000,
+    "not_in_hashed_ms": 191.92,
+    "not_in_ms": 117526.877,
+    "null_groups": [
+      [
+        "BR",
+        200,
+        0,
+        null
+      ],
+      [
+        "DE",
+        200,
+        0,
+        null
+      ],
+      [
+        "IN",
+        200,
+        0,
+        null
+      ],
+      [
+        "JP",
+        200,
+        0,
+        null
+      ],
+      [
+        "US",
+        200,
+        0,
+        null
+      ]
+    ],
+    "orders_per_customer": [
+      [
+        0,
+        1000
+      ],
+      [
+        10,
+        100000
+      ]
+    ],
+    "padded_rows": 1000,
+    "paid_ids_rows": 333333,
+    "paid_per_customer": [
+      [
+        3,
+        66667
+      ],
+      [
+        4,
+        33333
+      ]
+    ],
+    "paid_union_itself": 100000,
+    "plan_having": "                           QUERY PLAN                            \n-----------------------------------------------------------------\n Finalize GroupAggregate\n   Group Key: c.country\n   ->  Gather Merge\n         Workers Planned: 2\n         ->  Sort\n               Sort Key: c.country\n               ->  Partial HashAggregate\n                     Group Key: c.country\n                     ->  Hash Join\n                           Hash Cond: (o.customer_id = c.id)\n                           ->  Parallel Seq Scan on orders o\n                                 Filter: (status = 'paid'::text)\n                           ->  Hash\n                                 ->  Seq Scan on customers c\n(14 rows)",
+    "query_a_broken": [
+      [
+        "BR",
+        10999670037,
+        10999670037
+      ],
+      [
+        "DE",
+        11000210037,
+        11000210037
+      ],
+      [
+        "IN",
+        10999790148,
+        10999790148
+      ],
+      [
+        "JP",
+        11000329926,
+        11000329926
+      ],
+      [
+        "US",
+        10999549815,
+        10999549815
+      ]
+    ],
+    "query_a_fixed": [
+      [
+        "BR",
+        3333266642,
+        3333200037
+      ],
+      [
+        "DE",
+        3333366716,
+        3333399963
+      ],
+      [
+        "IN",
+        3333366679,
+        3333200037
+      ],
+      [
+        "JP",
+        3333366679,
+        3333499963
+      ],
+      [
+        "US",
+        3333166605,
+        3333200000
+      ]
+    ],
+    "query_a_rows_before_grouping": 1099998,
+    "refunded_ids_rows": 333333,
+    "report_ordered": [
+      [
+        "DE",
+        66667,
+        3333366716
+      ],
+      [
+        "IN",
+        66667,
+        3333366679
+      ],
+      [
+        "JP",
+        66666,
+        3333366679
+      ],
+      [
+        "BR",
+        66667,
+        3333266642
+      ],
+      [
+        "US",
+        66666,
+        3333166605
+      ]
+    ],
+    "rows_into_grouping_having": 1000000,
+    "rows_into_grouping_where": 333333,
+    "second_row_by_plan": {
+      "both": "IN",
+      "default": "IN",
+      "enable_hashagg = off": "IN",
+      "enable_sort = off": "JP",
+      "max_parallel_workers_per_gather = 0": "JP"
+    },
+    "six_after": {
+      "q1_join_count": 999999,
+      "q2_in": 100000,
+      "q3_not_in": 0,
+      "q4_not_exists": 1000,
+      "q5_count_distinct": 100000,
+      "q6_groups": 100001
+    },
+    "six_before": {
+      "q1_join_count": 1000000,
+      "q2_in": 100000,
+      "q3_not_in": 1000,
+      "q4_not_exists": 1000,
+      "q5_count_distinct": 100000,
+      "q6_groups": 100000
+    },
+    "six_changed": [
+      "q1_join_count",
+      "q3_not_in",
+      "q6_groups"
+    ],
+    "status_report_nulls_last": [
+      [
+        "JP",
+        "refunded",
+        66667,
+        3333499963
+      ],
+      [
+        "JP",
+        "shipped",
+        66667,
+        3333433358
+      ],
+      [
+        "DE",
+        "refunded",
+        66666,
+        3333399963
+      ],
+      [
+        "DE",
+        "paid",
+        66667,
+        3333366716
+      ],
+      [
+        "JP",
+        "paid",
+        66666,
+        3333366679
+      ]
+    ],
+    "status_report_nulls_last_all": [
+      [
+        "JP",
+        "refunded",
+        66667,
+        3333499963
+      ],
+      [
+        "JP",
+        "shipped",
+        66667,
+        3333433358
+      ],
+      [
+        "DE",
+        "refunded",
+        66666,
+        3333399963
+      ],
+      [
+        "DE",
+        "paid",
+        66667,
+        3333366716
+      ],
+      [
+        "JP",
+        "paid",
+        66666,
+        3333366679
+      ],
+      [
+        "IN",
+        "paid",
+        66667,
+        3333366679
+      ],
+      [
+        "DE",
+        "shipped",
+        66667,
+        3333333321
+      ],
+      [
+        "IN",
+        "shipped",
+        66667,
+        3333333284
+      ],
+      [
+        "BR",
+        "paid",
+        66667,
+        3333266642
+      ],
+      [
+        "BR",
+        "shipped",
+        66666,
+        3333233321
+      ],
+      [
+        "BR",
+        "refunded",
+        66667,
+        3333200037
+      ],
+      [
+        "IN",
+        "refunded",
+        66666,
+        3333200037
+      ],
+      [
+        "US",
+        "refunded",
+        66667,
+        3333200000
+      ],
+      [
+        "US",
+        "paid",
+        66666,
+        3333166605
+      ],
+      [
+        "US",
+        "shipped",
+        66667,
+        3333133395
+      ],
+      [
+        "JP",
+        null,
+        0,
+        null
+      ],
+      [
+        "DE",
+        null,
+        0,
+        null
+      ],
+      [
+        "BR",
+        null,
+        0,
+        null
+      ],
+      [
+        "US",
+        null,
+        0,
+        null
+      ],
+      [
+        "IN",
+        null,
+        0,
+        null
+      ]
+    ],
+    "status_report_top5": [
+      [
+        "DE",
+        null,
+        0,
+        null
+      ],
+      [
+        "BR",
+        null,
+        0,
+        null
+      ],
+      [
+        "US",
+        null,
+        0,
+        null
+      ],
+      [
+        "JP",
+        null,
+        0,
+        null
+      ],
+      [
+        "IN",
+        null,
+        0,
+        null
+      ]
+    ],
+    "status_report_with_ties": [
+      [
+        "JP",
+        "refunded",
+        66667,
+        3333499963
+      ],
+      [
+        "JP",
+        "shipped",
+        66667,
+        3333433358
+      ],
+      [
+        "DE",
+        "refunded",
+        66666,
+        3333399963
+      ],
+      [
+        "DE",
+        "paid",
+        66667,
+        3333366716
+      ],
+      [
+        "JP",
+        "paid",
+        66666,
+        3333366679
+      ],
+      [
+        "IN",
+        "paid",
+        66667,
+        3333366679
+      ]
+    ],
+    "union": 100000,
+    "union_after_null": 100001,
+    "union_all": 666666,
+    "union_all_after_null": 666666,
+    "where_having_plans_identical": true,
+    "where_paid": 333333,
+    "where_vs_having_same_rows": true,
+    "with_ties": [
+      [
+        "DE",
+        66667,
+        3333366716
+      ],
+      [
+        "IN",
+        66667,
+        3333366679
+      ],
+      [
+        "JP",
+        66666,
+        3333366679
+      ]
+    ]
+  },
+  "postgresql_auto_conf_entries_after": 0,
+  "postgresql_auto_conf_entries_before": 0,
+  "provenance": {
+    "captured_utc": "2026-10-02T08:41:05+00:00",
+    "cpus": 16,
+    "os": "Linux 7.0.0-31-generic",
+    "python": "3.14.4",
+    "server_version": "PostgreSQL 18.6 on x86_64-pc-linux-gnu, compiled by gcc (Ubuntu 15.2.0-16ubuntu1) 15.2.0, 64-bit",
+    "settings": {
+      "block_size": "8192",
+      "enable_hashagg": "on",
+      "max_parallel_workers_per_gather": "2",
+      "shared_buffers": "16384",
+      "work_mem": "4096"
+    }
+  },
+  "sample": {
+    "customers": 6,
+    "exists_paid": 5,
+    "first": [
+      "DE",
+      3,
+      9500
+    ],
+    "groups": 3,
+    "groups_country_status_inner": 9,
+    "groups_country_status_left": 10,
+    "having_count_ge_2": [
+      [
+        "DE",
+        3,
+        9500
+      ],
+      [
+        "JP",
+        2,
+        7000
+      ]
+    ],
+    "in_paid": 5,
+    "inner_join": 14,
+    "join_paid": 6,
+    "join_paid_distinct": 5,
+    "left_join": 15,
+    "left_join_on_paid": 7,
+    "left_join_where_paid": 6,
+    "limit_2": [
+      [
+        "DE",
+        3,
+        9500
+      ],
+      [
+        "JP",
+        2,
+        7000
+      ]
+    ],
+    "not_exists": 1,
+    "not_exists_after_null": 1,
+    "not_in": 1,
+    "not_in_after_null": 0,
+    "query_a_broken": [
+      [
+        "DE",
+        8000,
+        4000
+      ],
+      [
+        "IN",
+        7000,
+        4000
+      ],
+      [
+        "JP",
+        7000,
+        11500
+      ]
+    ],
+    "query_a_fixed": [
+      [
+        "DE",
+        9500,
+        2000
+      ],
+      [
+        "IN",
+        7000,
+        4000
+      ],
+      [
+        "JP",
+        7000,
+        11500
+      ]
+    ],
+    "report": [
+      [
+        "DE",
+        3,
+        9500
+      ],
+      [
+        "IN",
+        1,
+        7000
+      ],
+      [
+        "JP",
+        2,
+        7000
+      ]
+    ],
+    "second_row_by_plan": {
+      "both": "IN",
+      "default": "JP",
+      "enable_hashagg = off": "IN",
+      "enable_sort = off": "JP",
+      "max_parallel_workers_per_gather = 0": "JP"
+    },
+    "tied": [
+      "IN",
+      "JP"
+    ],
+    "union": 5,
+    "union_all": 10,
+    "where_paid": 6,
+    "with_ties": 3
+  },
+  "three_differences": {
+    "except": [
+      1
+    ],
+    "not_exists": [
+      1,
+      null
+    ],
+    "not_in": []
+  }
+}

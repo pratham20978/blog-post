@@ -1,0 +1,37 @@
+flowchart TB
+  IN["FEATURE MAP FROM THE PREVIOUS BLOCK · 320 × 64 × 64"]
+  T["TIMESTEP t · sinusoid of width 320 → MLP → 1,280"]
+  TXT["PROMPT · CLIP ViT-L/14 → 77 tokens × 768"]
+  subgraph RES[" "]
+    direction TB
+    R1["RESNET BLOCK · 2.26M parameters<br/>GroupNorm (32 groups) · SiLU · conv 3×3, 320 → 320"]
+    TBIAS["+ time bias: SiLU · Linear 1,280 → 320<br/>the same 320 values at all 4,096 positions"]
+    R2["GroupNorm · SiLU · conv 3×3, 320 → 320"]
+    RADD["+ identity path"]
+  end
+  subgraph TRN[" "]
+    direction TB
+    P1["TRANSFORMER BLOCK · 2.55M parameters<br/>GroupNorm · conv 1×1 · flatten to 4,096 tokens × 320"]
+    SA["LayerNorm · SELF-ATTENTION, 8 heads × 40 · + residual<br/>Q, K, V from image tokens · 4,096 × 4,096 scores per head"]
+    CA["LayerNorm · CROSS-ATTENTION, 8 heads × 40 · + residual<br/>Q from image tokens, K and V from text · 4,096 × 77 scores per head"]
+    FF["LayerNorm · GEGLU feed-forward 320 → 2 × 1,280 → 320 · + residual"]
+    P2["conv 1×1 · reshape to 320 × 64 × 64 · + block input"]
+  end
+  OUT["TO THE NEXT BLOCK, AND SAVED AS A SKIP · 320 × 64 × 64"]
+
+  IN -- "320×64×64" --> R1
+  R1 -- "320×64×64" --> TBIAS
+  T -- "1,280 per image" --> TBIAS
+  TBIAS -- "320×64×64" --> R2
+  R2 -- "320×64×64" --> RADD
+  IN -. "identity · 320×64×64" .-> RADD
+  RADD -- "320×64×64" --> P1
+  P1 -- "4,096 × 320" --> SA
+  SA -- "4,096 × 320" --> CA
+  TXT -- "77 × 768 → K and V of width 320" --> CA
+  CA -- "4,096 × 320" --> FF
+  FF -- "4,096 × 320" --> P2
+  P2 -- "320×64×64" --> OUT
+
+  style CA fill:#fdf0ea,stroke:#eb6c36,stroke-width:1.5px
+  style TBIAS fill:#eef2f7,stroke:#2e5aa8

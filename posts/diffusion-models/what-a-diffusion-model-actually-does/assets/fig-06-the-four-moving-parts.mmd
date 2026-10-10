@@ -1,0 +1,39 @@
+flowchart LR
+  S["① THE SCHEDULE<br/>β₁ … β_T — fixed constants<br/>never learned, never updated"]
+
+  subgraph TRAIN["② TRAINING — done once, offline"]
+    direction TB
+    D["x₀ — one real image"]
+    T["pick t, uniform in 1…T"]
+    E["draw ε ~ N(0, I)"]
+    C["corrupt, in one operation<br/>xₜ = √ᾱₜ·x₀ + √(1−ᾱₜ)·ε"]
+    L["loss = ‖ε − ε̂‖²"]
+    U["update θ"]
+  end
+
+  N["③ THE DENOISER  εθ(xₜ, t)<br/>the only trained part of the system<br/>in: xₜ and t  —  out: ε̂, its guess at ε"]
+
+  subgraph SAMPLE["④ SAMPLING — every time you generate"]
+    direction TB
+    Z["x_T ~ N(0, I) — the seed<br/>the only new thing in the system"]
+    R["THE SAMPLER<br/>xₜ₋₁ from xₜ, ε̂, βₜ and σₜ"]
+    K{"t > 1 ?"}
+    O["x₀ — a new image"]
+  end
+
+  S -- "ᾱₜ" --> C
+  D -- "x₀" --> C
+  T -- "t" --> C
+  E -- "ε" --> C
+  C -- "xₜ , t" --> N
+  E -- "the target: the ε we drew" --> L
+  N -- "ε̂" --> L
+  L -- "∇θ" --> U
+  U -- "new θ" --> N
+
+  Z -- "x_T , t = T" --> N
+  N -- "ε̂" --> R
+  S -- "βₜ , σₜ" --> R
+  R -- "xₜ₋₁" --> K
+  K -- "yes — set t ← t−1, call the denoiser again" --> N
+  K -- "no — that was the last step" --> O

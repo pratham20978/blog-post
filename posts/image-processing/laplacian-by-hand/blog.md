@@ -1,0 +1,562 @@
+---
+title: "The Laplacian by Hand: Edges, Blobs, Pyramids, Sharpening"
+slug: laplacian-by-hand
+date: 2026-09-14
+updated: 2026-09-14
+summary: "The Laplacian is what Gaussian blur removes per unit of scale. One identity explains sharpening, zero-crossing edges, blob scale selection and the pyramid."
+tags: [algorithms, image-processing, laplacian, edge-detection, scale-space, opencv, convolution]
+category: algorithms
+categories: [algorithms]
+tier: L4
+difficulty: advanced
+series: image-processing
+series_position: 2
+prerequisites: ["the four stages from Image Processing by Hand", "second derivatives and a Taylor expansion", "complex exponentials", "reading Python signatures"]
+reading_minutes: 42
+cover_image_url: "https://minio.canery.in/media/cover-laplacian-by-hand.png"
+cover_image_alt: "The Laplacian stencil at the centre with five arrows out to sharpening, zero-crossing edges, blob scale selection, the pyramid and Poisson editing"
+canonical_url: "https://canery.in/blogs/laplacian-by-hand"
+---
+
+> [!NOTE]
+> **Insights** — The Laplacian is the quantity Gaussian blur removes, per unit of scale: blur an image slightly and the difference from the original *is* the Laplacian, exactly on smooth data. Every use of the operator follows from that one identity. Sharpening adds the Laplacian back, zero-crossing edge detection locates where it is zero, blob detection scales it by σ² and searches for the σ that makes it extremal, the Laplacian pyramid stores it once per octave, and Poisson editing keeps it and discards the pixels. All of it is worked here by hand on one 5×5 patch, then mapped onto what `cv2.Laplacian`, `scipy.ndimage` and `skimage.feature.blob_log` actually compute — including why `ksize=3` returns four times the value `ksize=1` does.
+
+**Level:** advanced · **You need:** the four stages from [Image Processing by Hand](https://canery.in/blogs/image-processing-by-hand), second derivatives and one Taylor expansion, complex exponentials for a single transfer function, and enough Python to read a signature · **Time:** ~42 min
+
+This is the first child of *Image Processing by Hand*. It reuses that post's 5×5 patch, its 3×3 Gaussian and its border rules, and it does not re-teach sampling, separability or correlation-versus-convolution. Where one of those matters here, it is named and linked.
+
+**Jump to:** [The problem](#the-problem) · [Worked example](#worked-example) · [Intuition](#intuition) · [Which discrete Laplacian?](#which-discrete-laplacian) · [Sharpening](#sharpening-the-thing-blur-removes) · [Zero-crossings](#zero-crossings-why-the-laplacian-finds-edges-twice) · [Scale selection](#scale-selection-the-laplacian-as-a-ruler) · [The pyramid](#the-pyramid-the-same-operator-resampled) · [Keeping the Laplacian](#keeping-the-laplacian-instead-of-the-pixels) · [The math](#the-math) · [Implementation](#implementation-the-tooling-map) · [Limitations](#limitations-and-common-mistakes)
+
+> [!IMPORTANT]
+> Nothing in this post was run against an image. Every number is worked by hand on integers you can check on paper; the arithmetic was cross-checked with plain Python and nothing else — no NumPy, OpenCV, SciPy or scikit-image call was executed. There are no timings, no benchmarks, and no measured curves. The five figures that draw curves or profiles are plotted from closed-form expressions and say so in the caption.
+
+## Why this matters
+
+You have a working edge map from `cv2.Laplacian(img, cv2.CV_64F, ksize=1)` and a threshold tuned against it. You change `ksize` to 3, expecting a slightly smoother version of the same thing. Three things happen at once. Every value in the output is about four times larger, so yesterday's threshold now passes almost everything. The one hot pixel in the old map is still there, twice as loud rather than four times — the ×4 holds only on smooth data — but the smear it made on the pixels beside it is gone. And a new smear has appeared on the four pixels diagonal to it.
+
+None of that is a bug in your code. OpenCV's `ksize=3` is not a smoothed version of `ksize=1`; it is a different discrete Laplacian — one that weights only the diagonal neighbours — at four times the scale. <!-- L59 --> <!-- L61 --> That is the shape of nearly every surprise this operator produces. "The Laplacian" names a family of stencils that agree on smooth data and disagree on exactly the pixels you care about: edges, impulses, corners. Libraries pick different members of the family, apply different scale factors, and drop the sign at different points, and the documentation states each of these facts on a different page.
+
+The way out is not to memorise the pages. It is to know what the operator measures — how far a pixel sits from what its neighbours predict — and then the ×4, the moved impulse, the halo in sharpening, the phantom edge in a zero-crossing map and the missing σ² in a scale search each become a one-line consequence you can derive at the keyboard.
+
+## The problem
+
+Your code holds an array of integers, $`I[r, c]`$. You want its second derivative. The array does not have one.
+
+The parent post made the point for first derivatives, and it is sharper here: a sampled signal has no derivative of any order, because between the samples there is nothing to differentiate. What you can compute is a *difference*, and a difference estimates the derivative of the continuous signal the samples were taken from only to the extent that the signal was smooth at the sampling scale. For a second derivative the estimate is worse than for a first, because differencing twice amplifies whatever roughness is present twice.
+
+So there are two decisions hiding in the phrase "take the Laplacian", and every library makes both for you.
+
+**Which continuous operator.** The Laplacian is the sum of the two second partial derivatives, $`\nabla^2 f = f_{xx} + f_{yy}`$. Marr and Hildreth chose it for edge detection because it is the only linear second-order differential operator that does not depend on orientation: rotate the image and the Laplacian rotates with it, unchanged. <!-- L01 --> A second derivative *across* an edge would be more selective, but it needs the edge direction first, and a rotation-invariant operator does not.
+
+**How to estimate it from samples.** Torre and Poggio showed that numerical differentiation of an image is ill-posed in Hadamard's sense — a small change in the input can produce an arbitrarily large change in the output — and that the only cure is to regularise by filtering before differentiating. <!-- L35 --> Every discrete Laplacian you will ever compute is therefore really $`\nabla^2 (G_\sigma * f)`$ for some smoothing $G_\sigma$, and the bare 3×3 stencil is simply the case where the only smoothing is the sampling grid itself.
+
+Figure 1 shows the shape of the answer on the parent patch's middle row, before any of that is decided.
+
+![Row profile 40 40 40 200 200 drawn as a step, with its first difference below showing one positive peak of 160 at the step and its second difference below that showing a positive lobe of 160 then a negative lobe of minus 160 with the zero between them on the step](https://minio.canery.in/media/fig-01-two-signatures-laplacian-by-hand.png)
+
+*Figure 1 — The edge is a peak in the first difference and a zero-crossing in the second — the same place, two signatures. The second difference also has twice the peak-to-peak swing, which is the noise story in miniature.*
+
+Read the middle row of the patch as a 1-D profile, $f = [40, 40, 40, 200, 200]$. The forward difference $`f[c+1] - f[c]`$ is $[0, 0, 160, 0]$: the edge appears once, as a peak. The second difference $`f[c-1] - 2f[c] + f[c+1]`$ is $[\,\cdot\,, 0, 160, -160, \,\cdot\,]$: the edge appears twice, as a positive lobe on the dark side and a negative lobe on the bright side, and the quantity is zero *between* them, which is where the step is. That is what "finding edges twice" means, and it is also why the second derivative can locate an edge to within a pixel without any threshold: you look for the sign change, not for a large value.
+
+The cost is in the last column of Figure 1. The stencil weights sum to zero, so a flat region returns exactly 0 and the output has no DC term; but the centre weight is −2 in one dimension and −4 in two, so a single sample that differs from its neighbours by $\delta$ returns $-4\delta$. The problem statement is therefore: choose a stencil (it decides the scale factor and the anisotropy), choose a $\sigma$ (it decides which structures survive and how much noise is amplified), and choose what to do with the output — locate its zero, search for its extremum over $\sigma$, or keep its value. Each of those choices is one section below.
+
+## Worked example
+
+One patch carries this post, the same one that carried the parent: 5 rows by 5 columns, 8-bit grayscale, dark on the left, bright on the right, a step between column 2 and column 3, and a single bad pixel of value 255 at row 2, column 1.
+
+|       | c0 | c1  | c2 | c3  | c4  |
+|-------|----|-----|----|-----|-----|
+| **r0** | 40 | 40  | 40 | 200 | 200 |
+| **r1** | 40 | 40  | 40 | 200 | 200 |
+| **r2** | 40 | **255** | 40 | 200 | 200 |
+| **r3** | 40 | 40  | 40 | 200 | 200 |
+| **r4** | 40 | 40  | 40 | 200 | 200 |
+
+The operator is the four-neighbour stencil, which is what OpenCV applies for `ksize=1` and what `scipy.ndimage.laplace` applies always: <!-- L54 --> <!-- L62 -->
+
+```
+ 0   1   0
+ 1  -4   1
+ 0   1   0
+```
+
+Lay it over a pixel, multiply each neighbour by its weight, add. There are only five products, and one of them is the centre times −4.
+
+### The clean patch: the step
+
+Start with the impulse removed, so that (2,1) holds 40 like everything else on the left. Figure 2 shows the two windows that matter.
+
+![Two 3 by 3 windows from the clean patch side by side: the window centred at row 2 column 2 with up 40, down 40, left 40, right 200 and centre 40 giving 320 minus 160 equals plus 160, and the window at row 2 column 3 with up 200, down 200, left 40, right 200 and centre 200 giving 640 minus 800 equals minus 160](https://minio.canery.in/media/fig-02-clean-windows-laplacian-by-hand.png)
+
+*Figure 2 — The zero-crossing lies between column 2 and column 3, which is exactly where the step is. Neither window needed a threshold to say so.*
+
+At (2,2): up 40, down 40, left 40, right 200. Sum of neighbours 320. Centre 40 × 4 = 160. Laplacian = 320 − 160 = **+160**.
+
+At (2,3): up 200, down 200, left 40, right 200. Sum 640. Centre 200 × 4 = 800. Laplacian = 640 − 800 = **−160**.
+
+At (2,1), and everywhere else in a flat region: four neighbours equal to the centre, so 4×40 − 4×40 = **0**.
+
+Two things to read off. The sign is positive on the dark side of the step and negative on the bright side; that will be the sign convention throughout, and it is why sharpening *subtracts* the Laplacian. And the values are symmetric, +160 and −160, so a straight line between them crosses zero at column 2.5 — the boundary between the two pixels, which is the sub-pixel position of the step. No first-derivative operator locates the edge that cheaply; the parent's Sobel put a peak of 640 on column 3 and left the sub-pixel question open.
+
+### The impulse: what one pixel does
+
+Now restore the 255 at (2,1). Figure 3 repeats the arithmetic.
+
+![Three 3 by 3 windows from the patch with the impulse: at row 2 column 1 the centre 255 with four neighbours of 40 gives 160 minus 1020 equals minus 860; at row 2 column 2 the left neighbour is now 255 so the sum is 535 and the result 535 minus 160 equals 375; at row 1 column 2 the impulse is diagonal and not in the stencil so the result stays 160](https://minio.canery.in/media/fig-03-impulse-windows-laplacian-by-hand.png)
+
+*Figure 3 — One pixel three columns from nothing in particular changes the edge response at (2,2) by 134% and produces the largest magnitude in the whole patch at its own location. The window at (1,2) does not see it at all, because the four-neighbour stencil has no diagonal weights.*
+
+At the impulse itself, (2,1): neighbours 40 + 40 + 40 + 40 = 160, centre 255 × 4 = 1020, Laplacian = **−860**. That is 5.4 times the magnitude of the genuine edge response. A hot pixel is, to this operator, the most edge-like thing in the image.
+
+At the edge pixel (2,2): the left neighbour is now 255, so the neighbour sum is 40 + 40 + 255 + 200 = 535, and the Laplacian is 535 − 160 = **375** instead of 160. A 134% error in the edge response, caused by a pixel that is not adjacent to the step. The parent post found a 67% error in the Sobel response from the same pixel; the Laplacian doubles it, because Sobel's [1 2 1] smoothing along the edge averages the damage over three rows and the four-neighbour stencil averages over nothing.
+
+At (1,2), directly above the edge pixel: the impulse sits diagonally, the stencil has a 0 there, and the response is still 160. Keep that in mind for the `ksize=3` story: a stencil with diagonal weights sees the impulse from (1,2) and not from (2,2), which is the smear that moved in the opening section.
+
+### Does the zero-crossing survive?
+
+With the impulse present, row 2 of the Laplacian reads $[\,\cdot\,, -860, 375, -160, \,\cdot\,]$. The genuine crossing between columns 2 and 3 is still there, but it has moved: linear interpolation between +375 and −160 puts the zero at $2 + 375/535 = 2.70$ rather than 2.50, a fifth of a pixel toward the bright side. And a second crossing has appeared between −860 and 375, at column $1 + 860/1235 = 1.70$. The clean patch has one edge in this row; the patch with one bad pixel has two. That second crossing is the whole argument for smoothing first, and it is the subject of the zero-crossing section.
+
+### Smooth first, then difference
+
+The parent post's 3×3 Gaussian has weights 0.0571 at the corners, 0.1248 at the edges and 0.2725 at the centre, sampled at nominal σ = 0.8. Smooth the patch with it, then apply the four-neighbour stencil at (2,2). Because both operations are linear, the same answer comes from applying the combined 5×5 kernel once, and that combined kernel is shown as numbers in the zero-crossing section. The results:
+
+| At (2,2) | Raw Laplacian | After the 3×3 Gaussian |
+|---|---|---|
+| Clean patch | 160 | 45.3 |
+| With the impulse | 375 | 21.1 |
+| Error from the impulse | +215 (134%) | −24.2 (53%) |
+
+Smoothing at σ = 0.8 cut the absolute damage nine times over. It did not cut the relative error below half, because σ = 0.8 is a smoothing radius smaller than a pixel and the impulse is a pixel wide: the Gaussian spread the bad value over its neighbours rather than removing it. It also shrank the genuine edge response from 160 to 45, because the second derivative of a smoothed step is lower and wider than the second derivative of a sharp one. Every design decision in the rest of this post is a version of that trade.
+
+## Intuition
+
+The four-neighbour stencil has a reading in plain words, and it is worth stating before the symbol appears, because it explains all four behaviours seen so far — the sign, the zero on a flat region, the −860, and why smoothing helps.
+
+### Neighbour average minus centre
+
+Rewrite the stencil: $\text{up} + \text{down} + \text{left} + \text{right} - 4 \times \text{centre}$ is the same as $4 \times (\text{mean of the four neighbours} - \text{centre})$. Figure 4 shows the two readings side by side on the numbers you already have.
+
+![The window at row 2 column 2 shown twice: on the left as the stencil arithmetic 320 minus 160 equals 160, on the right as the neighbour mean 80 minus the centre 40 equals 40, times four equals 160; below, the impulse window as mean 40 minus centre 255 equals minus 215, times four equals minus 860](https://minio.canery.in/media/fig-04-mean-minus-centre-laplacian-by-hand.png)
+
+*Figure 4 — The Laplacian asks one question: how far is this pixel from what its neighbours expect? Four times that gap, with the sign chosen so that a pixel brighter than its surroundings scores negative.*
+
+At (2,2) the neighbour mean is (40 + 40 + 40 + 200)/4 = 80, the centre is 40, the gap is 40, and four times that is 160. At the impulse the neighbour mean is 40, the centre is 255, the gap is −215, and four times that is −860. A pixel exactly matching its neighbours' average scores zero, which is why flat regions and straight ramps both vanish: on a ramp the neighbours' average *is* the centre.
+
+That reading gives the sign convention a meaning. A negative Laplacian says "brighter than the neighbourhood predicts", a positive one "darker". The dark side of a step is darker than its average neighbour (one of the four is on the bright side), so it scores positive; the bright side scores negative. And it gives the noise behaviour a meaning: a pixel that disagrees with its neighbours by $\delta$ scores $4\delta$ no matter what caused the disagreement, so an isolated defect produces the largest response in the image, not the smallest.
+
+### Curvature, summed in two directions
+
+The second reading is geometric. In one dimension, the second difference is the curvature of the profile: positive where it bends upward, negative where it bends downward, zero where it is straight. The Laplacian adds the curvature in two perpendicular directions. On a straight edge running vertically, the curvature along the edge is zero, so the Laplacian *is* the curvature across it, which is why the numbers at (2,2) and (2,3) match the 1-D profile of Figure 1 exactly. On a corner or a blob, both directions contribute. That second term is the whole disagreement between Marr–Hildreth and Canny, and it returns in the zero-crossing section.
+
+### What blur removes
+
+The third reading is the one this post is built on. Averaging a pixel with its neighbours moves it toward the neighbour mean, and by the first reading the distance to the neighbour mean is a quarter of the Laplacian. So replacing every pixel by the average of itself and its four neighbours — the crudest blur there is — subtracts, from each pixel, exactly one fifth of $\text{centre} - \text{mean}$, which is $-\nabla^2 f / 20$. A Gaussian blur does the same thing with better weights, and the amount it subtracts is the Laplacian times half the kernel's variance: for the parent's 3×3 Gaussian, on the quadratic $x^2 + y^2$ whose Laplacian is 4 everywhere, blurring changes the value at the origin by 0.956, and 0.956 is $4 \times 0.478 / 2$, where 0.478 is that kernel's actual variance. The sharpening section makes this exact.
+
+### The analogy, and where it breaks
+
+Think of the image as a temperature map. Heat flows from warm pixels to cool ones at a rate proportional to the Laplacian: a hot spot cools, a cold spot warms, a linear gradient stays as it is. Gaussian blurring is letting the image cool for a while, and σ² is how long. That is not a metaphor — it is the heat equation, and it is why the Laplacian is the generator of Gaussian scale space.
+
+The analogy breaks in two places. Heat flow is a process in time and the image has no time in it: a Gaussian blur is the solution at one instant, so you cannot get "half the blur back" by subtracting, only the leading term. And temperatures have no ceiling, while pixel values are clipped at 0 and 255; every halo in a sharpened image is a temperature the display could not show.
+
+## Which discrete Laplacian?
+
+There is more than one 3×3 stencil with the right symmetry, and they are not interchangeable. Figure 5 lists the five that matter and, for each, the multiple of $\nabla^2$ it approximates on smooth data — obtained by applying it to $f = x^2 + y^2$, whose Laplacian is exactly 4.
+
+![Five 3 by 3 stencils with their integer weights: five-point with 1 on the four edges and minus 4 at the centre, labelled times 1; diagonal with 1 at the four corners and minus 4 at the centre, labelled times 2; eight-neighbour with 1 everywhere and minus 8 at the centre, labelled times 3; OpenCV ksize 3 with 2 at the corners and minus 8 at the centre, labelled times 4; nine-point with 1 at the corners, 4 at the edges and minus 20 at the centre, divided by 6, labelled times 1 and isotropic](https://minio.canery.in/media/fig-05-five-stencils-laplacian-by-hand.png)
+
+*Figure 5 — Five-point ×1, diagonal ×2, eight-neighbour ×3, OpenCV's ksize=3 ×4, nine-point ×1: the same operator at four scales, with two different anisotropies. The scale factors are what libraries forget to mention.*
+
+On $x^2 + y^2$ the four edge-neighbours of the origin each hold 1 and the four corners each hold 2. The five-point stencil gives $4 \times 1 - 0 = 4$: scale ×1. The **diagonal** stencil, with weights only at the corners, gives $4 \times 2 = 8$: scale ×2, because the diagonal spacing is $\sqrt{2}$ and a second difference across a gap of $\sqrt{2}$ reads twice the curvature. The **eight-neighbour** stencil is the sum of those two: 12, scale ×3. **OpenCV's `ksize=3`** kernel, `[2 0 2; 0 −8 0; 2 0 2]`, is twice the diagonal stencil: 16, scale ×4. <!-- L59 --> It is not an arbitrary choice — it is exactly the Sobel second-x kernel $[1\ 2\ 1]^T [1\ {-2}\ 1]$ plus its transpose, which the documentation describes and the source precomputes as one 3×3 array. <!-- L61 --> <!-- L54 --> And the **nine-point** stencil $\tfrac{1}{6}[1\ 4\ 1;\ 4\ {-20}\ 4;\ 1\ 4\ 1]$ is four five-point stencils plus one diagonal, divided by six: $(16 + 8)/6 = 4$, scale ×1.
+
+On the patch these read, at the clean edge pixel (2,2): 160, 320, 480, 640 and 160. Same edge, five answers, and the ratios are the scale factors.
+
+### Anisotropy: which direction the stencil believes
+
+The scale factor is a nuisance; the anisotropy is a property. Take a pure sinusoid at the highest frequency the grid can hold, $|\omega| = \pi$, once running along the axis and once along the diagonal, and ask what each stencil returns relative to the true value $-\pi^2 = -9.87$. Figure 6 draws the full curves; the two numbers that matter are in the caption.
+
+![Two curves of the magnitude of the transfer function against spatial frequency from zero to pi for the five-point and nine-point stencils, each drawn once for a wave along the axis and once along the diagonal, with the continuous omega squared curve for reference; at pi the five-point axis curve reaches 4 and its diagonal curve 6.42, the nine-point reaches 4 and 4.70, and the continuous curve 9.87](https://minio.canery.in/media/fig-06-transfer-functions-laplacian-by-hand.png)
+
+*Figure 6 — A model, plotted from the closed forms in the math section. At the top of the band the five-point stencil reads 60% more curvature on the diagonal than on the axis; the nine-point stencil reads 18% more; both under-read the continuous operator, by a factor of 2.5 on the axis.*
+
+The five-point stencil returns −4 along the axis and −6.42 along the diagonal. The same edge, the same sharpness, and a 60% different answer depending on its orientation — at the scale of a pixel, which is exactly the scale at which the raw stencil is usually applied. The nine-point stencil returns −4 and −4.70, an 18% spread, and its leading error term depends only on $|\omega|$ rather than on the direction; Patra and Karttunen derived that stencil, and its three-dimensional relatives, from the requirement that the lowest-order error be isotropic, at a computational cost they put at under 20% extra. <!-- L51 --> The Taylor expansions that produce these numbers are in the math section, and LeVeque's chapter on elliptic equations treats both stencils. <!-- L52 -->
+
+Two rules fall out. A Laplacian output is comparable with another only after dividing by the stencil's scale factor — `scale=0.25` makes OpenCV's `ksize=3` agree with `ksize=1` on smooth data, and nothing makes them agree on an impulse. And near the top of the band, no 3×3 stencil returns the continuous Laplacian; if the number matters rather than the sign, smooth first so that there is no energy up there. OpenCV's `ksize=5` and `7` do that smoothing implicitly, with Sobel second-derivative kernels whose scale factor is $2^{2\cdot\text{ksize}-4}$ unless normalised. <!-- L55 --> <!-- L60 --> The design of such kernels is the parent's kernel-design child post.
+
+## Sharpening: the thing blur removes
+
+Now make the intuition section's third reading exact, because sharpening is that reading run backwards.
+
+Take any smoothing kernel that is symmetric and sums to one, and call $v$ its variance along one axis. On a quadratic surface, blurring with it changes each pixel by exactly $\tfrac{v}{2}\nabla^2 f$; on a general image, that is the leading term. Check it on the numbers from the intuition section: the parent's 3×3 Gaussian has one-dimensional weights $[0.239, 0.522, 0.239]$, so its variance is $2 \times 0.239 = 0.478$, and on $x^2 + y^2$ the blurred value at the origin is $4 \times 0.478 / 2 = 0.956$, which is what the nine multiplications give. The nominal σ = 0.8 would have predicted $0.64 \times 4 / 2 = 1.28$ and been wrong by a third, because a sampled-and-renormalised 3×3 Gaussian does not have the variance of the continuous Gaussian it was sampled from; the parent post's discrete-versus-sampled point, and Lindeberg's, bites here in the first decimal place. <!-- L31 --> In the continuous limit the statement is the heat equation, $\partial L / \partial s = \tfrac{1}{2} \nabla^2 L$ with $s = \sigma^2$, <!-- L28 --> and the discrete analogue of the Gaussian satisfies the same equation with the five-point stencil in place of $\nabla^2$. <!-- L29 -->
+
+Three consequences.
+
+**Unsharp masking is Laplacian sharpening.** The unsharp mask adds back a multiple of what blurring removed: $g = f + k (f - G * f)$. Substitute the identity and it is $g = f - k \tfrac{v}{2} \nabla^2 f$, which is Laplacian sharpening with $c = kv/2$. Gonzalez and Woods present the two as neighbours in one section; they are one operator with the strength parameter written two ways. <!-- L53 -->
+
+**The halo is the Laplacian with its sign flipped.** Apply $g = f - \nabla^2 f$ to the clean patch, which is the stencil `[0 −1 0; −1 5 −1; 0 −1 0]` in one pass. Figure 7 shows the row.
+
+![The row profile 40 40 40 200 200 drawn three times: the original step; the Laplacian below it as 0, 160, minus 160, 0; and the sharpened row 40, minus 120, 360, 200 with the clipped values 0 and 255 marked, showing an undershoot on the dark side of the step and an overshoot on the bright side](https://minio.canery.in/media/fig-07-sharpening-halo-laplacian-by-hand.png)
+
+*Figure 7 — The halo is the Laplacian subtracted, and it is one pixel wide on each side because the stencil is. Both lobes are clipped by the 8-bit range, which is why sharpening artefacts look like a hard dark line beside a hard bright one.*
+
+At (2,2): $40 - 160 = -120$, clipped to 0. At (2,3): $200 + 160 = 360$, clipped to 255. The step of 160 has become a step of 255 flanked by a dark and a bright fringe, each exactly as wide as the stencil's reach. Use a wider Gaussian in the unsharp mask and the fringe widens with the kernel's negative lobe. At the impulse the arithmetic is worse: (2,1) goes to $255 + 860$, already clipped, and its neighbour (2,2) goes to $40 - 375 = -335$, clipped to 0 — sharpening manufactures a dark ring around every hot pixel.
+
+**Noise is amplified by $1 + 4c$ on the axis and $1 + 8c$ on a checkerboard.** The five-point stencil returns −8 on an alternating ±1 pattern, so $c = 1$ turns a one-level checkerboard into a nine-level one. This is the direct cost of the identity: whatever blur removes, sharpening adds back, noise included. Sharpening without halos means smoothing that stops at edges, which is the parent's edge-preserving child post; and the pyramid section names the modern way to do it with Laplacians alone.
+
+## Zero-crossings: why the Laplacian finds edges twice
+
+The Laplacian had been tried as an edge detector before 1980 — Rosenfeld and Kak discuss it — without much to show for it, and Marr and Hildreth's diagnosis was that it had been applied without band-limiting and without looking for zero-crossings. <!-- L06 --> Their detector fixes both. It is three steps: convolve with $\nabla^2 G$, locate the zero-crossings of the result, and check that neighbouring crossings line up into oriented segments. <!-- L09 --> The worked example already did the first two on the raw stencil; this section says what the Gaussian adds and what the method gets wrong.
+
+### The operator
+
+The choice of the Laplacian rests on a theorem: if the smoothed intensity varies linearly *along* a line of zero-crossings, then the zeros of $\nabla^2 (G * I)$ coincide with the zeros of the second derivative taken across the line, which are the edge. Where that condition fails — the intensity varies non-linearly along the edge, as at a corner — the Laplacian's zero is displaced to one side. <!-- L01 --> The kernel is the second derivative of a Gaussian in two dimensions,
+
+$$
+\nabla^2 G(r) = -\frac{1}{\pi \sigma^4}\left(1 - \frac{r^2}{2\sigma^2}\right) e^{-r^2/2\sigma^2},
+$$
+
+a negative disc surrounded by a positive ring: the Mexican hat. <!-- L02 --> It is a band-pass filter with a half-power bandwidth of about 1.2 octaves, so each σ looks at roughly one octave of the image's spectrum. <!-- L07 --> Its zeros lie on the circle $r = \sqrt{2}\,\sigma$, so the negative disc has diameter $w = 2\sqrt{2}\,\sigma$, and Marr and Hildreth ran it with $w$ = 6, 12 and 24 pixels. <!-- L03 --> Figure 8 draws it.
+
+![The Mexican hat profile of the Laplacian of Gaussian against radius, with the central negative lobe, the zero at root two sigma marked and the width w equals two root two sigma marked across the lobe, and a difference of two Gaussians with ratio 1.6 drawn over it in a second stroke, visibly wider and about half as deep at the centre](https://minio.canery.in/media/fig-08-mexican-hat-dog-laplacian-by-hand.png)
+
+*Figure 8 — A model, plotted from the two closed forms. The difference-of-Gaussians at ratio 1.6 has a central lobe 24% wider and half as deep as the Laplacian of Gaussian at the same σ; neither matters for where the zero is, and neither matters for extrema across scale.*
+
+At σ = 0.8 the same kernel is small enough to write as numbers. Convolving the five-point stencil with the parent's 3×3 Gaussian gives the 5×5 kernel in Figure 9, which is what the worked example's "smooth first" column applied in one pass.
+
+![A 5 by 5 grid of decimal weights: centre minus 0.591, the four edge-neighbours minus 0.1123, the four diagonals plus 0.021, the next ring 0.1248 at the axis positions and 0.0571 at the off-axis positions, and zeros in the four corners, with the negative cells shaded and the sum annotated as zero](https://minio.canery.in/media/fig-09-log-kernel-laplacian-by-hand.png)
+
+*Figure 9 — This is the Mexican hat at σ = 0.8: a negative disc of radius 1.13 pixels covering the centre and its four neighbours, a positive ring outside it, and weights that sum to zero so that flat regions return exactly nothing.*
+
+The centre weight is −0.591 and the four neighbours are −0.1123; the diagonals, at distance 1.41, are already positive, +0.021, because $\sqrt{2}\,\sigma = 1.13$ falls between the two. The ring at distance 2 carries the parent's Gaussian weights unchanged. On the patch this kernel gives 45.3 at the clean edge pixel and 21.1 with the impulse: the numbers from the worked example, now with a picture of what produced them.
+
+Marr and Hildreth also proposed computing the kernel as a difference of two Gaussians, which is cheaper, and settled on a ratio of 1.6 between the two standard deviations. <!-- L04 --> That number is often repeated as if it were a best fit. It is not: their appendix chooses 1.6 as the point where the filter's bandwidth is still narrow but its sensitivity has recovered to about a third of the single Gaussian's, a bandwidth-versus-sensitivity trade-off, with the resulting filter having a half-sensitivity bandwidth of 1.8 octaves. <!-- L05 --> The closed forms behind Figure 8 show what the trade costs pointwise: at ratio 1.6 the difference of Gaussians has half the central depth of $(k-1)\sigma^2 \nabla^2 G$ and a lobe 24% wider than $\nabla^2 G$ at σ. For locating a zero, or an extremum over scale, a constant factor and a slightly larger effective σ change nothing — which is why the scale-selection section can use the same trick without apology, and why `skimage.feature.blob_dog` still defaults to `sigma_ratio=1.6` forty-six years later. <!-- L66 -->
+
+### The edges that are not there
+
+Every zero of a second derivative is either a maximum or a minimum of the first derivative's magnitude. Only the maxima are edges. Figure 10 shows the other case.
+
+![A one-dimensional profile with two nearby steps of the same sign, its first derivative below showing two peaks with a dip between them, and its second derivative below that with three zero-crossings marked: two at the peaks labelled authentic, one at the dip labelled phantom](https://minio.canery.in/media/fig-10-phantom-edges-laplacian-by-hand.png)
+
+*Figure 10 — A model profile. All three are zeros of the second derivative; two sit on maxima of the gradient and are edges, one sits on the minimum between them and is not. The slope of the crossing — whether the second derivative falls or rises through zero in the gradient direction — tells them apart.*
+
+Clark named these phantom edges and gave the practical test: shrink the filter scale and an authentic edge's contrast rises while a phantom's falls, so "the closer one examines it, the weaker it becomes". <!-- L37 --> The worked example produced one — the crossing at column 1.70 that exists only because of the bad pixel — and OpenCV's own Laplace tutorial warns that zeros "can actually appear in other meaningless locations". <!-- L58 --> Marr and Hildreth's detector has no threshold to suppress them, because it never computes an edge strength; Canny's does, and that is one of his two arguments against the Laplacian. <!-- L08 -->
+
+### Canny's argument, and the one that answers it
+
+Canny's first point is that in one dimension his operator and the Marr–Hildreth detector are almost the same thing, since the maxima of a first-derivative response are the zero-crossings of the second. <!-- L32 --> His second is the one that matters in two dimensions, and Figure 11 draws it.
+
+![A straight edge with the coordinate frame rotated so one axis points across the edge and the other along it; the Laplacian written as the sum of the second derivative across plus the second derivative along, with the across term labelled signal and the along term labelled zero on the edge and noise elsewhere](https://minio.canery.in/media/fig-11-canny-decomposition-laplacian-by-hand.png)
+
+*Figure 11 — The Laplacian is the second derivative across the edge plus the second derivative along it. On a straight edge the second term is zero; on a noisy one it is pure noise, which is Canny's case for a directional operator.*
+
+Decompose the Laplacian into a second derivative along the gradient and one along the edge. The first is the directional operator Canny derived; the second contributes nothing to detection or localisation on a straight edge, because the intensity is constant along it, but it adds its full share of noise to the output. <!-- L33 --> Torre and Poggio worked out the same relation between the Laplacian and the second derivative along the gradient from the regularisation side, and drew the same conclusion: the Laplacian's zero-crossings are not the only thing worth computing. <!-- L36 --> Haralick's tests of the same period ranked zero-crossings of the second directional derivative first and the Marr–Hildreth Laplacian last, on synthetic step edges and with his own implementation of $\nabla^2 G$. <!-- L38 -->
+
+The counter-argument is Yuille and Poggio's, and it is about scale rather than noise. As the Gaussian's σ increases, new zero-crossings of the Laplacian are never created, in any number of dimensions, and the Gaussian is the only linear filter with that property. For the second derivative along the gradient, no filter has it. <!-- L39 --> Babaud, Witkin, Baudin and Duda proved the one-dimensional version in the same journal issue: the Gaussian is the only kernel for which extrema of the first derivative only ever disappear as the bandwidth narrows. <!-- L40 --> So if edges are to be tracked from coarse to fine — which is how Marr and Hildreth intended their channels to be combined, and how every scale-space method since has worked — the Laplacian's zero-crossings are the ones that behave, and the directional operator's are not. Canny wins on a single scale; the Laplacian wins across scales. Marr and Hildreth's operator also did something neither argument mentions: it made large-support operators practical at all, because a Gaussian window has the narrowest bandwidth for its width. <!-- L34 --> The four steps that replaced zero-crossings in practice — smooth, gradient, thin, link — are the parent's Canny child post.
+
+## Scale selection: the Laplacian as a ruler
+
+The zero-crossing section held σ fixed. This section varies only σ, and the Laplacian becomes a measuring instrument.
+
+### Why the raw response cannot be compared across σ
+
+Convolve a structure with $\nabla^2 G$ at increasing σ and the response falls off like $1/\sigma^2$ regardless of the structure, because the kernel's amplitude shrinks as $1/\sigma^4$ while its area grows as $\sigma^2$. Any search for "the σ with the strongest response" therefore returns the smallest σ tried. Lindeberg's fix is to multiply each derivative by $\sigma$ per order — for a second derivative, by $\sigma^2$ — which makes the operator dimensionless and the comparison across scales meaningful. <!-- L16 --> The quantity is $\sigma^2 \nabla^2 (G_\sigma * f)$, and the claim is that the σ at which it is extremal is the size of the structure under the kernel. For a Gaussian blob of scale $t_0$, Lindeberg showed the extremum falls exactly at $t = t_0$. <!-- L17 -->
+
+For two shapes you can draw, the closed forms are short enough to work by hand, and Figure 12 plots them.
+
+![Two curves of the magnitude of the scale-normalised Laplacian response at the centre of a structure against sigma from 0.5 to 4: a bar of width 3 peaking at sigma 1.5 with value 77.4, and a disc of radius 3 peaking at sigma 2.12 with value 117.7, with the values at sigma 1 and sigma 3 marked on each](https://minio.canery.in/media/fig-12-scale-selection-laplacian-by-hand.png)
+
+*Figure 12 — A model, plotted from the closed forms in the math section, for structures of contrast 160. The σ at the peak is the size: half the width for a bar, the radius over √2 for a disc. Neither curve is sharp, which is why the search compares neighbours rather than fitting.*
+
+For a bar of width $w$ and contrast $A$, the normalised response at the centre is $-\tfrac{A w}{\sqrt{2\pi}\,\sigma}\, e^{-w^2/8\sigma^2}$, and setting its σ-derivative to zero gives $\sigma = w/2$. For a bar three pixels wide with the patch's contrast of 160, that is σ = 1.5, where the response is −77.4; at σ = 1.0 it is −62.2 and at σ = 3.0 it is −56.3. For a disc of radius $r$ the response is $-A \tfrac{r^2}{\sigma^2} e^{-r^2/2\sigma^2}$, peaking at $\sigma = r/\sqrt{2}$: for $r = 3$, σ = 2.12 and a response of −117.7, against −86.6 at σ = 1.5 and −67.9 at σ = 4.0. The disc result is why Lindeberg draws each detected blob as a circle whose radius is proportional to the selected scale, <!-- L19 --> and why `skimage.feature.blob_log` reports the radius of each blob as $\sqrt{2}\,\sigma$ in two dimensions. <!-- L64 --> For a sinusoid the same calculation gives $\sigma = \lambda / (\sqrt{2}\,\pi)$, the wavelength over 4.44. <!-- L18 -->
+
+### The difference of Gaussians, again
+
+Lowe's observation makes this cheap. Write the heat equation in σ rather than in $s = \sigma^2$: $\partial G / \partial \sigma = \sigma \nabla^2 G$. A finite difference in σ then gives
+
+$$
+G(k\sigma) - G(\sigma) \approx (k - 1)\,\sigma^2 \nabla^2 G,
+$$
+
+so a difference of two Gaussians whose σ differ by a constant factor already carries the $\sigma^2$ normalisation. <!-- L22 --> The factor $(k-1)$ is the same at every scale, so it moves no extremum; the approximation degrades as $k$ grows, and Lowe reports it makes almost no difference to the stability of the extrema even at $k = \sqrt{2}$. <!-- L23 --> The check behind Figure 8 agrees: at $k = 1.6$ the amplitude is half and the lobe is wider, and both are the same at every σ. SIFT builds its octaves this way with a base σ of 1.6 chosen for efficiency and $k = 2^{1/3}$. <!-- L27 -->
+
+Figure 13 shows what the search actually does.
+
+![A stack of five image planes drawn as layers along a vertical scale axis labelled with sigma values increasing by a factor k, each plane the scale-normalised Laplacian response, with one pixel on the middle plane highlighted and its 8 spatial neighbours plus the 9 pixels above and 9 below marked as the 26 comparisons](https://minio.canery.in/media/fig-13-scale-space-cube-laplacian-by-hand.png)
+
+*Figure 13 — A blob is a point that beats its 8 spatial neighbours and its 18 neighbours one scale up and one scale down. In a DoG stack each plane is (k−1)σ²∇²G, so the σ² is built in; in a `gaussian_laplace` stack it must be multiplied in by hand.*
+
+A scale-space extremum is a pixel whose normalised response exceeds all 26 neighbours in the 3×3×3 block around it in space and scale, refined by fitting a parabola over σ. <!-- L20 --> That is the test `blob_log` runs, after multiplying each `gaussian_laplace` plane by σ² and flipping the sign so that bright blobs are maxima; `blob_dog` instead multiplies its differences by $1/(k-1)$. <!-- L65 --> <!-- L66 --> Lindeberg notes that for discrete kernels the plain $\sigma^2$ factor is one of two options, and that normalising each discrete kernel's $l_p$ norm to match the continuous one gives more accurate scales when the kernel is only a few pixels wide. <!-- L21 -->
+
+### What the evidence says
+
+Mikolajczyk and Schmid compared the candidates and found that the Laplacian of Gaussian selects the correct characteristic scale most often, and that the Harris measure, good at locating a corner, rarely reaches a maximum over scale at all. <!-- L41 --> Their reading of why is the matched-filter one: the normalised $\nabla^2 G$ peaks when its size matches the blob under it. <!-- L44 --> Their Harris-Laplace detector splits the job accordingly: Harris for position, normalised Laplacian for scale. <!-- L43 --> The Laplacian's weakness is the one Canny identified in a different costume: it also peaks along straight edges, where the change is in one direction only and the position along the edge is undetermined, and such maxima are unstable. <!-- L42 --> SIFT rejects them with the Hessian: a keypoint whose principal curvatures have ratio above $r = 10$ — the test $\text{Tr}(H)^2 / \text{Det}(H) < (r+1)^2/r$ — is discarded. <!-- L26 --> Lindeberg's normalisation is what makes any of this scale-invariant, and Mikolajczyk's earlier experiments found the extrema of $\sigma^2 \nabla^2 G$ more stable than those of the gradient, the Hessian or the Harris function. <!-- L24 --> Why σ is a search dimension at all is the parent's scale-space child post; the structure tensor that Harris-Laplace borrows is another.
+
+## The pyramid: the same operator, resampled
+
+Burt and Adelson's Laplacian pyramid, published in 1983, <!-- L69 --> is what you get when the difference of Gaussians from the last section is computed at octave spacing with the arithmetic reordered so that nothing is stored twice.
+
+### REDUCE, EXPAND, subtract
+
+Build a Gaussian pyramid by blurring with a small separable kernel and keeping every other sample; call that REDUCE. Burt and Adelson constrain the five-tap kernel three ways — it sums to one, it is symmetric, and every sample contributes the same total weight to the next level — and those constraints fix all but one coefficient: the weights are $[c, \tfrac14, a, \tfrac14, c]$ with $c = \tfrac14 - \tfrac{a}{2}$. <!-- L10 --> The one free parameter decides the shape:
+
+| $a$ | Kernel | Shape of the equivalent weighting |
+|---|---|---|
+| 0.5 | [0, ¼, ½, ¼, 0] | triangular |
+| 0.4 | [0.05, 0.25, 0.4, 0.25, 0.05] | Gaussian-like |
+| 0.375 | [1, 4, 6, 4, 1] / 16 | binomial — OpenCV's `pyrDown` |
+| 0.3 | [0.1, 0.25, 0.3, 0.25, 0.1] | broader than Gaussian |
+
+The shape descriptions are Burt and Adelson's; <!-- L11 --> the third row is a derivation: put $a = 0.375$ into $c = \tfrac14 - \tfrac{a}{2}$ and the kernel is $[1, 4, 6, 4, 1]/16$, whose outer product with itself is the $5 \times 5$ kernel that `cv2.pyrDown` convolves with before dropping the even rows and columns. <!-- L57 --> Figure 14 shows the construction.
+
+![Flowchart: the image g0 passes through REDUCE to g1, g1 through REDUCE to g2, and so on to a small top level gN; each gl plus 1 is passed through EXPAND and subtracted from gl to give the Laplacian level Ll; the top level is stored as is; a return path shows reconstruction as EXPAND the previous result and add the next Laplacian level down](https://minio.canery.in/media/fig-14-laplacian-pyramid-laplacian-by-hand.png)
+
+*Figure 14 — The pyramid stores the Laplacian at each octave and the residual blur at the top; adding them back is exact by construction, because the same EXPAND that was subtracted is added. Redrawn from the construction in Burt and Adelson 1983.*
+
+The Laplacian level is the prediction error: $L_l = g_l - \text{EXPAND}(g_{l+1})$, with the smallest level stored whole, $L_N = g_N$. <!-- L12 --> Reconstruction reverses the steps — expand the top, add the next level, repeat — and it is exact, not approximately so, because nothing was rounded away in the subtraction. <!-- L12 --> EXPAND itself is zero-insertion followed by the same kernel scaled by 4, which is what `cv2.pyrUp` does, and its documentation notes that this is how one builds the Laplacian pyramid. <!-- L57 -->
+
+### Why it is called a Laplacian
+
+Each level is the difference between the image blurred at two scales an octave apart. By the last section that difference is a scaled $\sigma^2 \nabla^2 G$ — loosely, at $k = 2$ — and Burt and Adelson say as much: each level equals the image convolved with the difference of two Gaussian-like functions, which resembles a Laplacian at that scale, so the pyramid is a set of band-pass copies with the operator's scale doubling per level. <!-- L13 --> The levels of a $256 \times 256$ image hold $1 + \tfrac14 + \tfrac1{16} + \dots = \tfrac43$ as many samples as the image; the redundancy buys the exact reconstruction. On their 257×257 "Lady" image, whose pixels carry an estimated 7.57 bits of entropy each, quantising the Laplacian levels and coding them with variable-length codes reached 1.58 bits per pixel; "Walter" reached 0.73. <!-- L14 --> Sending the top levels first gives progressive transmission: levels 4 to 8 alone are 0.03 bits per pixel and already a recognisable picture. <!-- L15 -->
+
+Two later uses show what a per-scale Laplacian buys. The multiresolution spline blends two images level by level, with a transition zone as wide as the wavelengths in that level, so coarse content blends over a long distance while fine detail is joined sharply. <!-- L67 --> Local Laplacian filters apply a point-wise nonlinearity per level and obtain edge-preserving smoothing, detail enhancement and tone mapping — the halo-free sharpening the sharpening section asked for — from nothing but pyramids and small Gaussian blurs. <!-- L68 --> Where the pyramid stops being enough and orthogonal bases take over is the parent's wavelets child post.
+
+## Keeping the Laplacian instead of the pixels
+
+The last job inverts the others. Instead of reading the Laplacian off an image, keep the Laplacian, throw the pixels away, and ask what image is consistent with it.
+
+### Poisson image editing
+
+A function on a bounded region is determined by two things: its values on the boundary and its Laplacian inside. Given both, the Poisson equation has exactly one solution. <!-- L45 --> Pérez, Gangnet and Blake turned that into an editing tool: cut a region Ω out of a source image, take its Laplacian, keep the *target* image's values on the boundary of Ω, and solve for the pixels inside. Figure 15 shows what is kept from where.
+
+![A target image with a region omega outlined; the boundary of omega carries the target's pixel values, the interior carries the source's Laplacian, and the interior pixel values are labelled as the unknowns solved for by the five-point stencil equation at every interior pixel](https://minio.canery.in/media/fig-15-poisson-editing-laplacian-by-hand.png)
+
+*Figure 15 — What is transplanted is the source's Laplacian; the pixel values inside are whatever makes that Laplacian consistent with the target's boundary. The seam disappears because the only thing that changed across it is a slow gradient.*
+
+Why the seam vanishes is a perceptual fact Pérez and colleagues cite from Land and McCann: slow gradients of intensity, which are exactly what the Laplacian suppresses, can be laid over an image without being noticed. <!-- L46 --> Solving for the interior lets a slow gradient absorb the mismatch between the source's brightness and the target's, while the source's edges, textures and highlights — the second derivatives — come through untouched. In discrete form the equation at every interior pixel is the five-point stencil: $4 f_p - \sum f_q = 4 g_p - \sum g_q$ over the four neighbours, with $f_q$ replaced by the target's value wherever $q$ lies on the boundary; the authors recommend discretising the variational form rather than the differential equation when the boundary is irregular. <!-- L47 --> On the patch, what would be kept from the middle row is $[0, 160, -160, 0]$ — the shape of the step — while the levels 40 and 200 come from whatever the target holds at the ends. Burt and Adelson's blending is the approximate version of this, inserting the source Laplacian at the finest level only; Poisson editing does it exactly. <!-- L48 -->
+
+### The variance of the Laplacian
+
+The other way to keep the Laplacian is as a statistic. An in-focus image has large second derivatives and a defocused one does not, so the variance of the Laplacian response over an image, or a window, is a focus measure. Pech-Pacheco and colleagues reported a modified-Laplacian measure outperforming the Tenengrad gradient measure for microscope autofocus, <!-- L49 --> and it has been a default choice since. Its weakness follows from the worked example: a single hot pixel contributes $860^2$ to the variance, which is 29 times what the genuine edge contributes at $160^2$. Pertuz, Puig and Garcia's comparison of focus measures found the Laplacian-based ones the most sensitive to noise, and concluded that no absolute ranking of focus measures holds across conditions. <!-- L50 --> Smooth first, or measure the median of the absolute response instead of the variance, and the hot pixel counts once rather than 29 times.
+
+Gradient-domain editing in general — Poisson cloning, HDR compression, seamless tiling — is its own child post.
+
+## The math
+
+The symbols, then the forms, then each collapsed back onto the patch.
+
+| Symbol | Meaning | Units |
+|---|---|---|
+| $f$, $I$ | the image as a continuous surface, and as a sampled array | intensity |
+| $\nabla^2$ | the Laplacian, $\partial^2/\partial x^2 + \partial^2/\partial y^2$ | intensity / length² |
+| $`\nabla^2_5`$ | the five-point stencil $[0\ 1\ 0;\ 1\ {-4}\ 1;\ 0\ 1\ 0]$ | intensity / pixel² |
+| $H$ | the Hessian matrix of second partial derivatives | intensity / length² |
+| $\omega$ | spatial frequency, radians per pixel; $\pi$ is the highest the grid holds | rad / pixel |
+| $\sigma$, $s = \sigma^2$ | the Gaussian's standard deviation and variance; $s$ is the scale parameter | pixel, pixel² |
+| $v$ | a discrete kernel's actual variance along one axis | pixel² |
+| $G_\sigma$ | the Gaussian, $e^{-r^2/2\sigma^2} / 2\pi\sigma^2$ | 1 / length² |
+| $k$ | the ratio between adjacent scales in a difference of Gaussians | dimensionless |
+
+### The operator
+
+$$
+\nabla^2 f = f_{xx} + f_{yy} = \operatorname{tr} H .
+$$
+
+The Laplacian is the trace of the Hessian, and the trace of a matrix does not change under rotation of the axes, which is the algebraic reason it is the one orientation-free second-order operator. Rotate the axes so that one points along the gradient and the trace becomes the second derivative across the edge plus the second derivative along it — Canny's decomposition, in one line.
+
+On the grid the second derivative along a row is the second difference $`f[c-1] - 2f[c] + f[c+1]`$, and the five-point stencil is that difference along rows plus the same along columns. At (2,2) on the clean patch the row term is $40 - 80 + 200 = 160$ and the column term is $40 - 80 + 40 = 0$; their sum is the 160 from the worked example.
+
+### The transfer function
+
+A stencil applied to the wave $`e^{i(\omega_x c + \omega_y r)}`$ returns the same wave times a number, and that number is the transfer function. For the five-point stencil,
+
+$$
+H_5(\omega_x, \omega_y) = 2\cos\omega_x + 2\cos\omega_y - 4 = -4\left[\sin^2\tfrac{\omega_x}{2} + \sin^2\tfrac{\omega_y}{2}\right],
+$$
+
+against the continuous operator's $-(\omega_x^2 + \omega_y^2)$. At low frequency the two agree; at the top of the band the stencil returns −4 for a wave along the axis, where the continuous value is −9.87, and −6.42 for a wave of the same frequency along the diagonal.
+
+<details>
+<summary>Where the anisotropy comes from</summary>
+
+Expand each cosine to fourth order, $\cos\omega = 1 - \omega^2/2 + \omega^4/24 - \dots$:
+
+$$
+H_5 = -(\omega_x^2 + \omega_y^2) + \frac{\omega_x^4 + \omega_y^4}{12} + \dots
+$$
+
+The leading error, $(\omega_x^4 + \omega_y^4)/12$, is not a function of $|\omega|$ alone: for $|\omega|$ fixed it is largest on the axes and smallest on the diagonal, which is why the diagonal wave is over-read relative to the axis wave by a growing margin as $|\omega|$ rises. The same expansion for the nine-point stencil, $\tfrac16(8\cos\omega_x + 8\cos\omega_y + 4\cos\omega_x\cos\omega_y - 20)$, gives
+
+$$
+H_9 = -(\omega_x^2 + \omega_y^2) + \frac{(\omega_x^2 + \omega_y^2)^2}{12} + \dots
+$$
+
+whose leading error depends only on $|\omega|$: the first correction is isotropic. The residual 18% spread at $|\omega| = \pi$ comes from the sixth-order terms. Evaluating both exact forms at $(\pi, 0)$ and $(\pi/\sqrt2, \pi/\sqrt2)$ gives the four numbers in Figure 6.
+
+</details>
+
+### The heat equation and the sharpening identity
+
+$$
+\frac{\partial L}{\partial s} = \frac{1}{2}\nabla^2 L, \qquad L(\cdot; 0) = f, \qquad s = \sigma^2 .
+$$
+
+Gaussian blurring to scale $s$ is the same as running this equation for time $s$; the Laplacian is the rate at which blur changes the image, per unit of scale. <!-- L28 --> The Gaussian is not one choice among many here: Koenderink and Lindeberg showed that, under mild assumptions, it is the only kernel whose family of blurs never creates structure that was not in the image, so "the Laplacian of the smoothing kernel" means the Laplacian of the Gaussian and nothing else. <!-- L25 --> Integrate for a short time and $G_s * f - f \approx \tfrac{s}{2}\nabla^2 f$; for a discrete kernel the exact statement on quadratics replaces $s$ by the kernel's own variance $v$, and for the parent's 3×3 Gaussian that is $0.478 \times 4 / 2 = 0.956$, not $0.64 \times 4 / 2 = 1.28$. The discrete analogue of the Gaussian satisfies the same equation with $`\nabla^2_5`$ in place of $\nabla^2$, so the five-point stencil is not merely an approximation to the generator of blur on the grid; it is that generator. <!-- L29 -->
+
+### The Laplacian of Gaussian and its stand-in
+
+Differentiating $G_\sigma$ twice in $r$ and once in $\sigma$ gives two results that look different and are the same:
+
+$$
+\nabla^2 G = -\frac{1}{\pi\sigma^4}\left(1 - \frac{r^2}{2\sigma^2}\right)e^{-r^2/2\sigma^2}, \qquad \frac{\partial G}{\partial\sigma} = \sigma\,\nabla^2 G .
+$$
+
+The first is the Mexican hat, with zeros at $r = \sqrt2\,\sigma$; <!-- L02 --> the second is the heat equation in σ rather than in $s$, and a one-step finite difference of it is Lowe's $G(k\sigma) - G(\sigma) \approx (k-1)\sigma^2\nabla^2 G$. <!-- L22 --> At $k = 1.6$ and $\sigma = 1$ the two sides evaluate at the centre to −0.097 and −0.191, and the difference of Gaussians crosses zero at $r = 1.76$ rather than 1.41; those are the 0.51 and 24% in Figure 8, and they are the same at every σ.
+
+### The normalised Laplacian on a disc
+
+<details>
+<summary>Why the peak sits at σ = r/√2</summary>
+
+The response of $\sigma^2\nabla^2 G$ at the centre of a disc of radius $r$ and unit contrast is $\sigma^2$ times the integral of $\nabla^2 G$ over the disc. By the divergence theorem that integral is the flux of $\nabla G$ through the circle, $2\pi r\, G'(r)$, and $G'(r) = -\tfrac{r}{\sigma^2} G(r)$, so
+
+$$
+\sigma^2 \iint_{\text{disc}} \nabla^2 G = -\frac{r^2}{\sigma^2}\, e^{-r^2/2\sigma^2} .
+$$
+
+Differentiate the magnitude with respect to $s = \sigma^2$: $\tfrac{d}{ds}\left[\tfrac{r^2}{s}e^{-r^2/2s}\right] = 0$ gives $-\tfrac1s + \tfrac{r^2}{2s^2} = 0$, so $s = r^2/2$ and $\sigma = r/\sqrt2$. For $r = 3$ that is 2.12, and the response there, times the patch's contrast of 160, is −117.7. The bar result $\sigma = w/2$ comes from the same manipulation in one dimension, where the flux is $2G'(w/2)$.
+
+</details>
+
+The peak of the normalised response over σ is a *size*, not a strength; the strength at the peak still depends on the contrast, which is why blob detectors threshold on it afterwards. Lindeberg's general statement is that for a Gaussian blob the peak falls at the blob's own scale, <!-- L17 --> and the disc and bar are the two cases you can check on paper.
+
+### The pyramid and the Poisson equation
+
+$$
+L_l = g_l - E(g_{l+1}), \qquad g_{l+1} = R(g_l), \qquad g_l = L_l + E(g_{l+1}) .
+$$
+
+The third equation is the second rearranged; reconstruction is exact because it is the same $E(g_{l+1})$ subtracted and added back. <!-- L12 --> And for editing, on the interior of Ω with $f$ pinned to the target on its boundary,
+
+$$
+\nabla^2 f = \nabla^2 g \quad\Longleftrightarrow\quad 4f_p - \sum_{q \sim p} f_q = 4g_p - \sum_{q \sim p} g_q ,
+$$
+
+one linear equation per interior pixel, five unknowns each, which is the five-point stencil written as a constraint rather than as a filter. <!-- L47 -->
+
+## Implementation: the tooling map
+
+None of the library calls below were executed for this post; the OpenCV entries follow the 4.13.0 documentation build and the 4.x source. <!-- L70 --> The first block is the by-hand arithmetic written as code, and it is the only code here that was run; the rest is the map from each job to the call that performs it, with the scale factor each call applies written down, because that is what the documentation leaves for the reader to find.
+
+```python
+"""The worked example, as code. Pure Python; this is what was actually run."""
+P = [[40, 40, 40, 200, 200],
+     [40, 40, 40, 200, 200],
+     [40, 255, 40, 200, 200],
+     [40, 40, 40, 200, 200],
+     [40, 40, 40, 200, 200]]
+
+def laplacian5(img, r, c):
+    """Neighbour sum minus four times the centre: the four-neighbour stencil."""
+    return img[r-1][c] + img[r+1][c] + img[r][c-1] + img[r][c+1] - 4 * img[r][c]
+
+print(laplacian5(P, 2, 1), laplacian5(P, 2, 2), laplacian5(P, 2, 3))   # -860 375 -160
+```
+
+Figure 16 is the map.
+
+![Six rows, one per job, each with the math on the left and the exact library call on the right: five-point Laplacian to cv2.Laplacian ksize 1 and scipy.ndimage.laplace; the diagonal Laplacian times four to cv2.Laplacian ksize 3 with scale 0.25 on the arrow; Laplacian of Gaussian to GaussianBlur then Laplacian and to scipy.ndimage.gaussian_laplace with no sigma squared on the arrow; blob scale selection to skimage.feature.blob_log with sigma squared on the arrow and blob_dog with 1 over k minus 1; the pyramid to cv2.pyrDown, pyrUp and buildPyramid; Poisson editing to a sparse linear solve](https://minio.canery.in/media/fig-16-tooling-map-laplacian-by-hand.png)
+
+*Figure 16 — The map from math to call site, with the ×4, the missing σ² and the 1/(k−1) written on the arrows. None of it was executed for this post.*
+
+**The stencil.** `cv2.Laplacian(src, ddepth, ksize=1)` applies the five-point stencil; `ksize=3` applies `[2 0 2; 0 −8 0; 2 0 2]`, which is 4× the scale, so pass `scale=0.25` to compare the two on smooth data; `ksize=5` and `7` sum Sobel second derivatives with scale $2^{2\cdot\text{ksize}-4}$. <!-- L54 --> <!-- L59 --> <!-- L55 --> Give `ddepth` as `cv2.CV_16S` or `cv2.CV_64F`: an 8-bit destination truncates every negative value, which is half of the output and the half the zero-crossing needs. <!-- L56 --> `scipy.ndimage.laplace` is the five-point stencil with `reflect` borders and no options to get anything else. <!-- L62 -->
+
+**The Laplacian of Gaussian.** Either `cv2.GaussianBlur` followed by `cv2.Laplacian` — the pattern in OpenCV's own tutorial, which then calls `convertScaleAbs` and so discards the sign, making zero-crossing detection impossible on its output <!-- L58 --> — or `scipy.ndimage.gaussian_laplace(img, sigma)`, which sums the analytic second derivative of a sampled Gaussian along each axis, truncated at 4σ, with no σ² factor. <!-- L63 --> For σ below about a pixel, Lindeberg's analysis says the sampled derivative is the wrong discretisation and the discrete Gaussian followed by the plain stencil is the right one. <!-- L30 -->
+
+**Blob scale selection.** `skimage.feature.blob_log(img, min_sigma, max_sigma, num_sigma, threshold)` returns rows of `(r, c, σ)`; multiply σ by √2 for the radius. <!-- L64 --> It builds `-gaussian_laplace(img, s) * s**2` per scale and runs a 3×3×3 maximum search over the cube. <!-- L65 --> `blob_dog` does the same with Gaussian differences scaled by `1/(sigma_ratio − 1)`, ratio 1.6 by default. <!-- L66 -->
+
+**The pyramid.** `cv2.pyrDown` is REDUCE with the binomial kernel; `cv2.pyrUp(x, dstsize=...)` is EXPAND; the Laplacian level is `g − pyrUp(pyrDown(g), dstsize=g.shape[::-1])`, and `cv2.buildPyramid` produces the Gaussian levels in one call. <!-- L57 -->
+
+**Poisson editing.** One five-point equation per interior pixel, assembled as a sparse linear system with the target's boundary values moved to the right-hand side, and handed to any sparse solver; the reference formulation is in the paper. <!-- L47 -->
+
+## Limitations and common mistakes
+
+> [!WARNING]
+> **Common mistake:** writing the Laplacian into an 8-bit image. Half of the output is negative, and an unsigned destination stores it as zero — or, after `convertScaleAbs`, as its magnitude. Either way the sign is gone, and with it every zero-crossing. The symptom is an edge map that shows two parallel lines where there is one edge, or no edge at all where the crossing was. Use `CV_16S` or a float depth, and keep the sign until the last step. <!-- L56 -->
+
+- **Comparing `ksize=1` with `ksize=3`.** They are different stencils at different scales, not two smoothings of one operator. Symptoms: magnitudes ×4, and an impulse whose spill moves from its four edge-neighbours to its four diagonal neighbours. <!-- L59 --> Pass `scale=0.25`, and expect agreement only on smooth data.
+- **Detecting anything on the raw stencil.** On the patch the impulse scores −860 and the genuine edge 160. Every discrete Laplacian without smoothing is a defect detector first and an edge detector second; the fix is σ, and the cost is the reduction from 160 to 45.
+- **Trusting every zero-crossing.** Between two nearby edges of the same sign there is always a third crossing, at the minimum of the gradient, that is not an edge. <!-- L37 --> Shrink σ: real edges strengthen, phantoms fade.
+- **Searching over σ without σ².** The raw response falls as $1/\sigma^2$, so the smallest scale always wins and every blob is reported at `min_sigma`. `gaussian_laplace` does not normalise; `blob_log` does. <!-- L63 --> <!-- L65 -->
+- **Reading a small kernel's nominal σ as its variance.** The parent's 3×3 Gaussian at σ = 0.8 has variance 0.478, not 0.64, so an unsharp mask that assumes 0.64 is 34% stronger than intended. <!-- L31 --> For kernels under about five taps, measure the variance of the weights you actually have.
+- **Expecting the five-point stencil to be isotropic.** At the top of the band it over-reads diagonal structure by 60% relative to axis-aligned structure. If the magnitude matters, either smooth away the top of the band or use the nine-point stencil. <!-- L51 -->
+- **Using the variance of the Laplacian on unsmoothed frames.** One hot pixel counts 29 times a real edge in that statistic. Smooth, or use a robust summary. <!-- L50 -->
+
+Where the operator itself fails: at a corner, the linear-variation condition breaks and the zero-crossing is displaced from the true edge; <!-- L01 --> on a straight noisy edge, half of the Laplacian's output is noise from the along-edge term; <!-- L33 --> and across a tuning of σ it will always find some structure at some scale, so a threshold on the normalised response is not optional. What to use instead: a directional second derivative or Canny's gradient chain for edge position at one scale, the Hessian determinant to reject edge-like blobs, and the Laplacian for what it does better than anything else — choosing the scale.
+
+## Key takeaways
+
+- The Laplacian is what Gaussian blur removes per unit of scale: $\partial L/\partial s = \tfrac12\nabla^2 L$, and on the grid the five-point stencil is that generator exactly.
+- The four-neighbour stencil is four times "neighbour average minus centre", so it scores a straight edge as ±160 with a zero between, and a single bad pixel as −860.
+- There are at least five 3×3 Laplacians; they approximate ×1, ×2, ×3, ×4 and ×1 of $\nabla^2$, and OpenCV's `ksize=3` is the ×4 one.
+- A zero of the second derivative is an edge only if it sits on a maximum of the gradient; the others are phantoms, and they fade as σ shrinks.
+- Multiply the Laplacian response by σ² and the σ at its extremum is the size of the structure — $w/2$ for a bar, $r/\sqrt2$ for a disc — and a difference of Gaussians at constant ratio carries that σ² for free.
+
+## Try it yourself
+
+1. Apply the eight-neighbour stencil `[1 1 1; 1 −8 1; 1 1 1]` at (2,2) of the patch with the impulse present. What multiple of the five-point answer would you expect on smooth data, and why does the patch not give that multiple?
+
+<details><summary>Answer</summary>
+
+The eight neighbours are (1,1) = 40, (1,2) = 40, (1,3) = 200, (2,1) = 255, (2,3) = 200, (3,1) = 40, (3,2) = 40 and (3,3) = 200, which sum to 1015. Subtract 8 × 40 = 320: the result is 695. On smooth data the eight-neighbour stencil is ×3 (five-point plus diagonal), and the clean patch gives 480 = 3 × 160 at this pixel. The impulse adds 215 once, not three times, because it sits in exactly one of the eight cells.
+
+</details>
+
+2. A round cell in a microscope image has a radius of about 5 pixels. At which σ should `blob_log` report it, and what does scikit-image's radius convention return?
+
+<details><summary>Answer</summary>
+
+$\sigma = r/\sqrt2 = 5/1.414 = 3.54$. scikit-image multiplies the reported σ by √2 to give the radius, so it returns 5.0.
+
+</details>
+
+3. Your `cv2.Laplacian(img, cv2.CV_64F, ksize=3)` output has a mean absolute value of 48 on a region where `ksize=1` gives 12. Is that consistent, and what argument restores the match?
+
+<details><summary>Answer</summary>
+
+Yes: 48/12 = 4, the scale factor of the `[2 0 2; 0 −8 0; 2 0 2]` kernel. `scale=0.25` restores the match on smooth regions; on impulses and diagonal edges the two will still differ, because they are different stencils.
+
+</details>
+
+## References
+
+**Papers and books**
+
+1. D. Marr and E. Hildreth. *Theory of edge detection.* Proc. R. Soc. Lond. B 207(1167):187–217, 1980. https://www.hms.harvard.edu/bss/neuro/bornlab/qmbc/beta/day4/marr-hildreth-edge-prsl1980.pdf (accessed 2026-09-14)
+2. P. J. Burt and E. H. Adelson. *The Laplacian pyramid as a compact image code.* IEEE Trans. Commun. COM-31(4):532–540, 1983. https://persci.mit.edu/pub_pdfs/pyramid83.pdf (accessed 2026-09-14)
+3. T. Lindeberg. *Feature detection with automatic scale selection.* Int. J. Comput. Vis. 30(2):79–116, 1998. https://people.kth.se/~tony/papers/cvap198.pdf (accessed 2026-09-14)
+4. T. Lindeberg. *Scale selection.* In K. Ikeuchi (ed.), Computer Vision: A Reference Guide, Springer, 701–713, 2014. https://people.kth.se/~tony/papers/Lin14-ScSel-CompVisRefGuide.pdf (accessed 2026-09-14)
+5. D. G. Lowe. *Distinctive image features from scale-invariant keypoints.* Int. J. Comput. Vis. 60(2):91–110, 2004. https://www.cs.ubc.ca/~lowe/papers/ijcv04.pdf (accessed 2026-09-14)
+6. J. J. Koenderink. *The structure of images.* Biol. Cybern. 50(5):363–370, 1984. https://doi.org/10.1007/BF00336961 — cited through references 5 and 7.
+7. T. Lindeberg. *Discrete approximations of Gaussian smoothing and Gaussian derivatives.* J. Math. Imaging Vis., 2024. https://arxiv.org/abs/2311.11317 (accessed 2026-09-14)
+8. J. Canny. *A computational approach to edge detection.* IEEE Trans. Pattern Anal. Mach. Intell. 8(6):679–698, 1986. https://cecas.clemson.edu/~ahoover/ece431/refs/Canny.pdf (accessed 2026-09-14)
+9. V. Torre and T. Poggio. *On edge detection.* IEEE Trans. Pattern Anal. Mach. Intell. 8(2):147–163, 1986. https://dspace.mit.edu/handle/1721.1/5636 (accessed 2026-09-14)
+10. J. J. Clark. *Authenticating edges produced by zero-crossing algorithms.* IEEE Trans. Pattern Anal. Mach. Intell. 11(1):43–57, 1989. https://doi.org/10.1109/34.23112 (accessed 2026-09-14)
+11. R. M. Haralick. *Digital step edges from zero crossing of second directional derivatives.* IEEE Trans. Pattern Anal. Mach. Intell. 6(1):58–68, 1984. https://www.haralick.org/journals/04767475.pdf (accessed 2026-09-14)
+12. A. L. Yuille and T. Poggio. *Scaling theorems for zero crossings.* IEEE Trans. Pattern Anal. Mach. Intell. 8(1):15–25, 1986. https://doi.org/10.1109/TPAMI.1986.4767748 (accessed 2026-09-14)
+13. K. Mikolajczyk and C. Schmid. *Scale & affine invariant interest point detectors.* Int. J. Comput. Vis. 60(1):63–86, 2004. https://www.robots.ox.ac.uk/~vgg/research/affine/det_eval_files/mikolajczyk_ijcv2004.pdf (accessed 2026-09-14)
+14. P. Pérez, M. Gangnet and A. Blake. *Poisson image editing.* ACM Trans. Graph. 22(3):313–318, 2003. http://www.irisa.fr/vista/Papers/2003_siggraph_perez.pdf (accessed 2026-09-14)
+15. J. L. Pech-Pacheco, G. Cristóbal, J. Chamorro-Martínez and J. Fernández-Valdivia. *Diatom autofocusing in brightfield microscopy: a comparative study.* Proc. ICPR 2000, vol. 3, 314–317. https://doi.org/10.1109/icpr.2000.903548 (accessed 2026-09-14)
+16. S. Pertuz, D. Puig and M. A. Garcia. *Analysis of focus measure operators for shape-from-focus.* Pattern Recognit. 46(5):1415–1432, 2013. Used through the authors' summary page, https://sites.google.com/view/cvia/focus-measure (accessed 2026-09-14)
+17. M. Patra and M. Karttunen. *Stencils with isotropic discretization error for differential operators.* Numer. Methods Partial Differ. Equ. 22(4):936–953, 2006. https://doi.org/10.1002/num.20129 (accessed 2026-09-14)
+18. R. J. LeVeque. *Finite Difference Methods for Ordinary and Partial Differential Equations.* SIAM, 2007, ch. 3. https://faculty.washington.edu/rjl/fdmbook/ (accessed 2026-09-14)
+19. R. C. Gonzalez and R. E. Woods. *Digital Image Processing*, 4th ed., Pearson, 2018, §3.6 and §4.9.
+20. P. J. Burt and E. H. Adelson. *A multiresolution spline with application to image mosaics.* ACM Trans. Graph. 2(4):217–236, 1983. https://doi.org/10.1145/245.247 (accessed 2026-09-14)
+21. S. Paris, S. W. Hasinoff and J. Kautz. *Local Laplacian filters: edge-aware image processing with a Laplacian pyramid.* ACM Trans. Graph. 30(4), 2011. https://doi.org/10.1145/2010324.1964963 (accessed 2026-09-14)
+
+**Documentation and source**
+
+22. OpenCV 4.13.0, Image Filtering module: `Laplacian`, `Sobel`, `getDerivKernels`, `pyrDown`, `pyrUp`, `buildPyramid`. https://docs.opencv.org/4.x/d4/d86/group__imgproc__filter.html (accessed 2026-09-14)
+23. OpenCV source, `modules/imgproc/src/deriv.cpp` at commit 2f779c5. https://github.com/opencv/opencv/blob/2f779c5c36b33dd48355ae841664e7df52a805b2/modules/imgproc/src/deriv.cpp (accessed 2026-09-14)
+24. OpenCV 4.13.0, tutorial *Laplace Operator*. https://docs.opencv.org/4.x/d5/db5/tutorial_laplace_operator.html (accessed 2026-09-14)
+25. SciPy 1.18.0, `scipy.ndimage.laplace` and `scipy.ndimage.gaussian_laplace`; source `scipy/ndimage/_filters.py` at commit 3f34207. https://docs.scipy.org/doc/scipy/reference/generated/scipy.ndimage.gaussian_laplace.html (accessed 2026-09-14)
+26. scikit-image 0.26.0, `skimage.feature.blob_log` and `blob_dog`; source `src/_skimage2/feature/blob.py` at commit 5d91fed. https://scikit-image.org/docs/stable/api/skimage.feature.html (accessed 2026-09-14)

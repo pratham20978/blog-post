@@ -1,0 +1,68 @@
+provenance: {'date': '2026-10-03', 'os': 'Linux-7.0.0-31-generic-x86_64-with-glibc2.43', 'cpu': 'AMD Ryzen 7 5825U with Radeon Graphics', 'python': '3.12.13', 'torch': '2.14.0+cpu', 'diffusers': '0.40.0', 'threads': 8}
+
+== patch: part 1's 4x4 x_t, patchified ==
+  p=4:  1 tokens of length 16,   1 attention pairs
+  p=2:  4 tokens of length  4,  16 attention pairs
+  p=1: 16 tokens of length  1, 256 attention pairs
+  p=2 tokens: [[0.43, 1.32, 1.15, -0.45], [0.03, -1.34, -0.59, -0.3], [1.19, 0.26, -0.43, 0.38], [-1.13, -0.67, 0.19, -1.46]]
+  2x2 average pool (U-Net view): [[0.6125, -0.55], [0.35, -0.7675]]
+  64x64 latent tokens by patch size: {'p8': 64, 'p4': 256, 'p2': 1024, 'p1': 4096}
+
+== unet: Stable Diffusion 1.5 U-Net, 512x512 image, batch 1 ==
+  params 859,520,964   forward 803.27 GFLOP (conv 443.95, linear 233.28, attention core 126.05)
+  input [1, 4, 64, 64] + context [1, 77, 768] -> output [1, 4, 64, 64]
+  conv_in          [1, 4, 64, 64]       -> [1, 320, 64, 64]         0.0M
+  down_blocks.0    [1, 320, 64, 64]     -> [1, 320, 32, 32]        10.5M  pushes 320x64x64, 320x64x64, 320x32x32
+  down_blocks.1    [1, 320, 32, 32]     -> [1, 640, 16, 16]        36.8M  pushes 640x32x32, 640x32x32, 640x16x16
+  down_blocks.2    [1, 640, 16, 16]     -> [1, 1280, 8, 8]        140.0M  pushes 1280x16x16, 1280x16x16, 1280x8x8
+  down_blocks.3    [1, 1280, 8, 8]      -> [1, 1280, 8, 8]         62.3M  pushes 1280x8x8, 1280x8x8
+  mid_block        [1, 1280, 8, 8]      -> [1, 1280, 8, 8]         97.0M
+  up_blocks.0      [1, 1280, 8, 8]      -> [1, 1280, 16, 16]      162.2M  pops 1280x8x8, 1280x8x8, 1280x8x8
+  up_blocks.1      [1, 1280, 16, 16]    -> [1, 1280, 32, 32]      258.3M  pops 640x16x16, 1280x16x16, 1280x16x16
+  up_blocks.2      [1, 1280, 32, 32]    -> [1, 640, 64, 64]        71.4M  pops 320x32x32, 640x32x32, 640x32x32
+  up_blocks.3      [1, 640, 64, 64]     -> [1, 320, 64, 64]        18.8M  pops 320x64x64, 320x64x64, 320x64x64
+  conv_out         [1, 320, 64, 64]     -> [1, 4, 64, 64]           0.0M
+  skip stack: 12 tensors, 6,635,520 values = 13.3 MB in fp16 per image
+  level 0      64px params   29.3M ( 3.4%)  GFLOP  307.12 (38.2%)  attn-core 109.39
+  level 1      32px params  108.2M (12.6%)  GFLOP  235.19 (29.3%)  attn-core  14.43
+  level 2      16px params  398.3M (46.3%)  GFLOP  215.32 (26.8%)  attn-core   2.18
+  level 3       8px params  321.6M (37.4%)  GFLOP   45.46 ( 5.7%)  attn-core   0.05
+  level other   -px params    2.1M ( 0.2%)  GFLOP    0.19 ( 0.0%)  attn-core   0.00
+  executed on CPU: output [1, 4, 64, 64] in 4.43 s
+
+== dit: DiT-XL at three patch sizes (batch 1) ==
+  DiT-XL/8  256px latent [4, 32, 32] ->   16 tokens  params  675.7M (paper 676M)     7.39 GMAC (paper 7.39 'Gflops')  attention core  0.2%  adaLN 33.0% of params
+  DiT-XL/4  256px latent [4, 32, 32] ->   64 tokens  params  675.1M (paper 675M)    29.04 GMAC (paper 29.05 'Gflops')  attention core  0.9%  adaLN 33.1% of params
+  DiT-XL/2  256px latent [4, 32, 32] ->  256 tokens  params  675.1M (paper 675M)   118.62 GMAC (paper 118.64 'Gflops')  attention core  3.6%  adaLN 33.1% of params
+  DiT-XL/2  512px latent [4, 64, 64] -> 1024 tokens  params  676.0M (paper 675M)   524.54 GMAC (paper 524.6 'Gflops')  attention core 12.9%  adaLN 33.0% of params
+
+== mmdit: SD3 MM-DiT ==
+  d=24: width 1536, 24 heads, params 2,028,328,000  (image stream 1020M, text stream 989M, outside blocks 19M)
+  d=38: width 2432, 38 heads, params 8,056,617,792  (image stream 4047M, text stream 3970M, outside blocks 40M)
+  d=24 at 1024px: latent [1, 16, 128, 128] -> 4096 image + 154 text = 4250 joint tokens, 8437.36 GFLOP
+    outside_blocks              3.6 GFLOP ( 0.0%)
+    image                    5567.0 GFLOP (66.0%)
+    text                      203.4 GFLOP ( 2.4%)
+    joint_attention_core     2663.4 GFLOP (31.6%)
+    (blocks covered: 100.0% of the call)
+
+== attention: one DiT-XL block (width 1152, 16 heads) ==
+  N=   64: attention core     0.02 GFLOP, rest     2.05 GFLOP, core share  0.9% (model N/(N+6D)  0.9%)
+  N=  256: attention core     0.30 GFLOP, rest     8.17 GFLOP, core share  3.6% (model N/(N+6D)  3.6%)
+  N= 1024: attention core     4.83 GFLOP, rest    32.63 GFLOP, core share 12.9% (model N/(N+6D) 12.9%)
+  N= 4096: attention core    77.31 GFLOP, rest   130.48 GFLOP, core share 37.2% (model N/(N+6D) 37.2%)
+  N=16384: attention core  1236.95 GFLOP, rest   521.85 GFLOP, core share 70.3% (model N/(N+6D) 70.3%)
+  one attention layer on this CPU (8 threads, fp32, batch 1):
+  N=  256: naive     7.82 ms, largest alloc     5.37 MB | fused     0.70 ms, largest alloc   1.18 MB
+  N= 1024: naive    61.13 ms, largest alloc    71.83 MB | fused    18.58 ms, largest alloc   4.87 MB
+  N= 2048: naive   253.28 ms, largest alloc   277.87 MB | fused    41.53 ms, largest alloc   9.44 MB
+  N= 4096: naive   864.01 ms, largest alloc  1092.62 MB | fused   169.16 ms, largest alloc  18.87 MB
+
+== memory: arithmetic, batch 1, decimal units ==
+  SD 1.5 U-Net, 512px       0.860B params: weights  3.44 GB fp32 /  1.72 GB bf16, Adam state   13.8 GB, one 8-head score matrix at N=4096:   268.4 MB
+  DiT-XL/2, 256px           0.675B params: weights  2.70 GB fp32 /  1.35 GB bf16, Adam state   10.8 GB, one 16-head score matrix at N=256:     2.1 MB, activations   0.43 GB ( 0.28 GB without scores)
+  DiT-XL/2, 512px           0.675B params: weights  2.70 GB fp32 /  1.35 GB bf16, Adam state   10.8 GB, one 16-head score matrix at N=1024:    33.6 MB, activations   3.47 GB ( 1.12 GB without scores)
+  SD3 MM-DiT d=24, 1024px   2.028B params: weights  8.11 GB fp32 /  4.06 GB bf16, Adam state   32.5 GB, one 24-head score matrix at N=4250:   867.0 MB, activations  57.35 GB ( 5.33 GB without scores)
+  SD3 MM-DiT d=38, 1024px   8.057B params: weights 32.23 GB fp32 / 16.11 GB bf16, Adam state  128.9 GB, one 38-head score matrix at N=4250:  1372.8 MB, activations 143.77 GB (13.35 GB without scores)
+
+wrote captures.json

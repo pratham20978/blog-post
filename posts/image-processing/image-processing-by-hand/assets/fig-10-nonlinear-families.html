@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<title>Where linearity stops</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 40px; background: #f5f5f5; color: #2d3142;
+         font-family: 'Geist', system-ui, sans-serif; }
+  .eyebrow { font-family: 'Geist Mono', ui-monospace, monospace; font-size: 8px; letter-spacing: 0.18em;
+              text-transform: uppercase; color: #7a8399; margin: 0 0 6px; }
+  h1 { font-family: 'Instrument Serif', Georgia, serif; font-weight: 400; font-size: 1.75rem; margin: 0 0 4px; }
+  .sub { font-family: 'Geist', system-ui, sans-serif; font-size: 13px; color: #4f5d75; margin: 0 0 24px;
+          max-width: 62ch; }
+  svg { display: block; max-width: 100%; height: auto; }
+  footer { margin-top: 28px; padding-top: 12px; border-top: 1px solid rgba(45,49,66,0.12);
+            font-family: 'Geist Mono', ui-monospace, monospace; font-size: 9px; color: #7a8399;
+            letter-spacing: 0.06em; }
+</style></head><body>
+<p class="eyebrow">STAGE 4 — DECIDE</p>
+<h1>Where linearity stops</h1>
+<p class="sub">Three families of non-linear operator, separated by what they order over.</p>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1016 400" width="1016" height="400" role="img">
+  <defs>
+    <style>/*<![CDATA[*/@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&display=swap');/*]]>*/</style>
+    <marker id="arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#4f5d75"/>
+    </marker>
+    <marker id="arrow-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#eb6c36"/>
+    </marker>
+    <marker id="arrow-link" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#2e5aa8"/>
+    </marker>
+  </defs>
+  <rect width="100%" height="100%" fill="#f5f5f5"/>
+<text x="32" y="44" fill="#7a8399" font-size="8" font-weight="500" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="start" letter-spacing="0.18em">ALL THREE SORT — WHAT DIFFERS IS THE SET</text><rect x="32" y="96" width="312" height="152" rx="6" fill="#f5f5f5"/><rect x="32" y="96" width="312" height="152" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/><rect x="48" y="112" width="45" height="12" rx="2" fill="transparent" stroke="#2d3142" stroke-opacity="0.40" stroke-width="0.8"/><text x="70.5" y="121" fill="#2d3142" font-size="7" font-weight="500" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.08em">SORTS</text><text x="188" y="152" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', system-ui, sans-serif" text-anchor="middle">Threshold</text><text x="188" y="172" fill="#7a8399" font-size="9" font-weight="400" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle">against one constant</text><line x1="72" y1="188" x2="304" y2="188" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/><text x="188" y="208" fill="#4f5d75" font-size="8" font-weight="400" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.06em">otsu · adaptive</text><text x="188" y="228" fill="#7a8399" font-size="8" font-weight="400" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.04em">one comparison per pixel</text><rect x="352" y="96" width="312" height="152" rx="6" fill="#f5f5f5"/><rect x="352" y="96" width="312" height="152" rx="6" fill="rgba(235,108,54,0.08)" stroke="#eb6c36" stroke-width="1"/><rect x="368" y="112" width="45" height="12" rx="2" fill="transparent" stroke="#eb6c36" stroke-opacity="0.40" stroke-width="0.8"/><text x="390.5" y="121" fill="#eb6c36" font-size="7" font-weight="500" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.08em">SORTS</text><text x="508" y="152" fill="#eb6c36" font-size="12" font-weight="600" font-family="'Geist', system-ui, sans-serif" text-anchor="middle">Rank</text><text x="508" y="172" fill="#7a8399" font-size="9" font-weight="400" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle">within a neighbourhood</text><line x1="392" y1="188" x2="624" y2="188" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/><text x="508" y="208" fill="#4f5d75" font-size="8" font-weight="400" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.06em">median · min · max</text><text x="508" y="228" fill="#7a8399" font-size="8" font-weight="400" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.04em">sort n values, take position k</text><rect x="672" y="96" width="312" height="152" rx="6" fill="#f5f5f5"/><rect x="672" y="96" width="312" height="152" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/><rect x="688" y="112" width="45" height="12" rx="2" fill="transparent" stroke="#2d3142" stroke-opacity="0.40" stroke-width="0.8"/><text x="710.5" y="121" fill="#2d3142" font-size="7" font-weight="500" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.08em">SORTS</text><text x="828" y="152" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', system-ui, sans-serif" text-anchor="middle">Morphology</text><text x="828" y="172" fill="#7a8399" font-size="9" font-weight="400" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle">within a structuring element</text><line x1="712" y1="188" x2="944" y2="188" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/><text x="828" y="208" fill="#4f5d75" font-size="8" font-weight="400" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.06em">erode · dilate · open · close</text><text x="828" y="228" fill="#7a8399" font-size="8" font-weight="400" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.04em">min and max, with set semantics</text><rect x="32" y="280" width="952" height="40" rx="6" fill="none" stroke="rgba(45,49,66,0.12)" stroke-width="0.8" stroke-dasharray="4,3"/><text x="508" y="304" fill="#4f5d75" font-size="11" font-weight="400" font-family="'Geist', system-ui, sans-serif" text-anchor="middle">none of them is a weighted sum, so none of them has a transfer function</text><line x1="32" y1="344" x2="984" y2="344" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/><text x="32" y="360" fill="#7a8399" font-size="8" font-weight="500" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="start" letter-spacing="0.18em">LEGEND</text><rect x="108" y="352" width="10" height="10" rx="2" fill="#eb6c36" fill-opacity="0.18" stroke="#eb6c36" stroke-width="0.8"/><text x="126" y="361" fill="#4f5d75" font-size="8" font-weight="400" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="start" letter-spacing="0.06em">no free parameter</text><rect x="276.4" y="352" width="10" height="10" rx="2" fill="#2d3142" fill-opacity="0.18" stroke="#2d3142" stroke-width="0.8"/><text x="294.4" y="361" fill="#4f5d75" font-size="8" font-weight="400" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="start" letter-spacing="0.06em">takes a parameter</text>
+</svg>
+<footer>image-processing-by-hand &middot; figure 10 &middot; own redraw, not reproduced from any source</footer>
+</body></html>

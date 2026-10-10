@@ -1,0 +1,26 @@
+flowchart TB
+    IN["<b>token ids</b><br/>3 rows, one per question<br/>[CLS] question [SEP] [MASK] option … [SEP] ticket [SEP]"]
+    ENC["<b>ModernBERT-large encoder</b><br/>28 layers · d = 1,024 · 16 heads · GeGLU<br/>10 global + 18 local attention layers<br/>394,781,696 params"]
+    TYPE["<b>+ question-type embedding</b><br/>choice / score / noul row, added at every position<br/>3,072 params"]
+    HEAD["<b>2 pre-norm Transformer layers</b><br/>16 heads · ReLU feed-forward 4,096 · no final norm<br/>25,192,448 params"]
+    GATHER["<b>gather at the [MASK] positions</b><br/>route 13, 23, 34, 43 · urgency 11, 18, 25, 32, 37 · refund 14, 24<br/>no params"]
+    SCORER["<b>option scorer</b><br/>LayerNorm → 1,024 × 1,024 → GELU → 1,024 × 1<br/>1,052,673 params"]
+    SOFT["<b>mask unused slots, ÷ T, softmax per question</b><br/>T = 1.760 / 1.251 / 1.983 · no params"]
+    OUT["<b>typed answers</b><br/>route: billing 0.847 · urgency: score 3.331 · refund: 0.859<br/>output_tokens = 0"]
+    ACT["<b>act / escalate head</b><br/>[CLS] + 4 features → 256 → GELU → 2<br/>263,938 params"]
+
+    IN -->|"input_ids [3, 141]"| ENC
+    ENC -->|"hidden states [3, 141, 1024]"| TYPE
+    TYPE -->|"[3, 141, 1024]"| HEAD
+    HEAD -->|"[3, 141, 1024]"| GATHER
+    GATHER -->|"marker states [3, 5, 1024]"| SCORER
+    SCORER -->|"logits [3, 5]"| SOFT
+    SOFT -->|"3 distributions"| OUT
+    HEAD -->|"[CLS] row [3, 1024], unnormalised"| ACT
+    SCORER -->|"top-1, margin, entropy, k / 255"| ACT
+    ACT -->|"act_probability, 1.0 on every row"| OUT
+
+    classDef focal fill:#fbeee8,stroke:#eb6c36,stroke-width:1.6px,color:#2d3142
+    classDef warn fill:#ffffff,stroke:#4f5d75,stroke-dasharray:4 3,color:#2d3142
+    class SCORER,SOFT focal
+    class ACT warn

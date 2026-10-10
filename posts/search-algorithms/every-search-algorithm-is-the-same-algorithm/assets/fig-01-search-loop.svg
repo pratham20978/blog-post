@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg viewBox="0 116 1000 324" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <style>@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&amp;family=Geist:wght@400;500;600&amp;family=Geist+Mono:wght@400;500;600&amp;display=swap');</style>
+        <marker id="arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#4f5d75"/></marker>
+        <marker id="arrow-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#eb6c36"/></marker>
+        <marker id="arrow-link" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#2e5aa8"/></marker>
+      </defs>
+
+      <rect width="100%" height="100%" fill="#f5f5f5"/>
+
+      <!-- ===== arrows first (z-order behind boxes) ===== -->
+
+      <!-- Frontier -> Pick -->
+      <line x1="240" y1="184" x2="312" y2="184" stroke="#4f5d75" stroke-width="1" marker-end="url(#arrow)"/>
+
+      <!-- Pick -> Probe -->
+      <line x1="480" y1="184" x2="552" y2="184" stroke="#4f5d75" stroke-width="1" marker-end="url(#arrow)"/>
+
+      <!-- Probe -> Answer (found) -->
+      <line x1="720" y1="184" x2="792" y2="184" stroke="#4f5d75" stroke-width="1" marker-end="url(#arrow)"/>
+      <rect x="738" y="156" width="44" height="12" rx="2" fill="#f5f5f5"/>
+      <text x="760" y="165" fill="#7a8399" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.06em">FOUND</text>
+
+      <!-- Probe -> Eliminate (no match): shares x, straight vertical -->
+      <line x1="640" y1="228" x2="640" y2="292" stroke="#4f5d75" stroke-width="1" marker-end="url(#arrow)"/>
+      <rect x="656" y="248" width="56" height="12" rx="2" fill="#f5f5f5"/>
+      <text x="684" y="257" fill="#7a8399" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.06em">NO MATCH</text>
+
+      <!-- Eliminate -> Frontier: orthogonal elbow, rounded r=8, accent (the focal relationship) -->
+      <path d="M 440 336 H 158 A 8 8 0 0 1 150 328 V 236"
+            fill="none" stroke="#eb6c36" stroke-width="1.2" marker-end="url(#arrow-accent)"/>
+      <rect x="252" y="308" width="56" height="12" rx="2" fill="#f5f5f5"/>
+      <text x="280" y="317" fill="#eb6c36" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.06em">SHRINK</text>
+
+      <!-- ===== boxes ===== -->
+
+      <!-- Frontier (store) -->
+      <rect x="60" y="140" width="180" height="88" rx="6" fill="#f5f5f5"/>
+      <rect x="60" y="140" width="180" height="88" rx="6" fill="rgba(45,49,66,0.05)" stroke="#4f5d75" stroke-width="1"/>
+      <rect x="68" y="148" width="36" height="12" rx="2" fill="transparent" stroke="rgba(79,93,117,0.40)" stroke-width="0.8"/>
+      <text x="86" y="157" fill="rgba(79,93,117,0.85)" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">SET</text>
+      <text x="150" y="190" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Frontier</text>
+      <text x="150" y="210" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">untested candidates</text>
+
+      <!-- Pick -->
+      <rect x="320" y="140" width="160" height="88" rx="6" fill="#f5f5f5"/>
+      <rect x="320" y="140" width="160" height="88" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+      <rect x="328" y="148" width="40" height="12" rx="2" fill="transparent" stroke="rgba(45,49,66,0.40)" stroke-width="0.8"/>
+      <text x="348" y="157" fill="rgba(45,49,66,0.85)" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">STEP</text>
+      <text x="400" y="190" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Pick</text>
+      <text x="400" y="210" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">choose one</text>
+
+      <!-- Probe -->
+      <rect x="560" y="140" width="160" height="88" rx="6" fill="#f5f5f5"/>
+      <rect x="560" y="140" width="160" height="88" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+      <rect x="568" y="148" width="40" height="12" rx="2" fill="transparent" stroke="rgba(45,49,66,0.40)" stroke-width="0.8"/>
+      <text x="588" y="157" fill="rgba(45,49,66,0.85)" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">STEP</text>
+      <text x="640" y="190" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Probe</text>
+      <text x="640" y="210" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">test that candidate</text>
+
+      <!-- Answer (external) -->
+      <rect x="800" y="140" width="140" height="88" rx="6" fill="#f5f5f5"/>
+      <rect x="800" y="140" width="140" height="88" rx="6" fill="rgba(45,49,66,0.03)" stroke="rgba(45,49,66,0.30)" stroke-width="1"/>
+      <text x="870" y="190" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Answer</text>
+      <text x="870" y="210" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">return</text>
+
+      <!-- Eliminate (FOCAL) -->
+      <rect x="440" y="292" width="200" height="88" rx="6" fill="#f5f5f5"/>
+      <rect x="440" y="292" width="200" height="88" rx="6" fill="rgba(235,108,54,0.08)" stroke="#eb6c36" stroke-width="1.2"/>
+      <rect x="448" y="300" width="56" height="12" rx="2" fill="transparent" stroke="rgba(235,108,54,0.40)" stroke-width="0.8"/>
+      <text x="476" y="309" fill="#eb6c36" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">THE GAME</text>
+      <text x="540" y="342" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Eliminate</text>
+      <text x="540" y="362" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">discard what the probe ruled out</text>
+
+      <!-- ===== legend strip ===== -->
+      <line x1="30" y1="404" x2="970" y2="404" stroke="rgba(45,49,66,0.10)" stroke-width="0.8"/>
+      <text x="30" y="424" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace" letter-spacing="0.14em">LEGEND</text>
+      <rect x="120" y="412" width="16" height="12" rx="2" fill="rgba(45,49,66,0.05)" stroke="#4f5d75" stroke-width="0.8"/>
+      <text x="144" y="422" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace">CANDIDATE SET</text>
+      <rect x="292" y="412" width="16" height="12" rx="2" fill="#ffffff" stroke="#2d3142" stroke-width="0.8"/>
+      <text x="316" y="422" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace">STEP</text>
+      <rect x="404" y="412" width="16" height="12" rx="2" fill="rgba(235,108,54,0.08)" stroke="#eb6c36" stroke-width="0.8"/>
+      <text x="428" y="422" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace">WHERE ALGORITHMS DIFFER</text>
+    </svg>

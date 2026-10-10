@@ -1,0 +1,9 @@
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch==2.14.0+cpu ; sys_platform == "linux" or sys_platform == "win32"
+torch==2.14.0 ; sys_platform == "darwin"
+laya==0.3.20
+transformers==5.17.0
+tokenizers==0.23.2
+safetensors==0.8.0
+huggingface-hub==1.33.0
+numpy==2.5.3

@@ -1,0 +1,10 @@
+# Public media URLs, in manifest.md row order.
+# Bucket: media (anonymous download), served read-only via nginx at minio.canery.in.
+https://minio.canery.in/media/cover-image.png
+https://minio.canery.in/media/fig-01-search-loop.png
+https://minio.canery.in/media/fig-02-binary-search-trace.png
+https://minio.canery.in/media/fig-03-elimination-rate.png
+https://minio.canery.in/media/fig-04-kmp-shift.png
+https://minio.canery.in/media/fig-05-dijkstra-vs-astar.png
+https://minio.canery.in/media/fig-06-hnsw-layers.png
+https://minio.canery.in/media/fig-07-price-of-the-skip.png

@@ -1,0 +1,5 @@
+flowchart LR
+    R0[Repair 0: replace the artifact] --> R1[Repair 1: rebuild one extension]
+    R1 --> R2[Repair 2: rebuild PyTorch]
+    R2 --> R3[Repair 3: rebuild TensorRT-LLM]
+    R3 --> R4[Repair 4: pin another product path]

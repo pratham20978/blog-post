@@ -1,0 +1,74 @@
+{
+  "cost_plan_chosen": {
+    "top_node": "Sort",
+    "total_cost": 18285.79
+  },
+  "cost_plan_runner_up": {
+    "top_node": "Sort",
+    "total_cost": 41515.08
+  },
+  "count_amount": 999999,
+  "count_star": 1000000,
+  "customers_relpages": 710,
+  "customers_reltuples": 100000,
+  "dup_amount": 56954,
+  "dup_country": "JP",
+  "dup_rows": 2,
+  "dup_status": "paid",
+  "eq_null_rows": 0,
+  "explain_analyze_default": "                                                                  QUERY PLAN                                                                  \n----------------------------------------------------------------------------------------------------------------------------------------------\n Sort  (cost=18285.78..18285.79 rows=5 width=19) (actual rows=5.00 loops=1)\n   Sort Key: (sum(o.amount_cents)) DESC\n   Sort Method: quicksort  Memory: 25kB\n   Buffers: shared hit=9840\n   ->  Finalize GroupAggregate  (cost=18284.18..18285.72 rows=5 width=19) (actual rows=5.00 loops=1)\n         Group Key: c.country\n         Buffers: shared hit=9837\n         ->  Gather Merge  (cost=18284.18..18285.58 rows=12 width=19) (actual rows=15.00 loops=1)\n               Workers Planned: 2\n               Workers Launched: 2\n               Buffers: shared hit=9837\n               ->  Sort  (cost=17284.16..17284.17 rows=5 width=19) (actual rows=5.00 loops=3)\n                     Sort Key: c.country\n                     Sort Method: quicksort  Memory: 25kB\n                     Buffers: shared hit=9837\n                     Worker 0:  Sort Method: quicksort  Memory: 25kB\n                     Worker 1:  Sort Method: quicksort  Memory: 25kB\n                     ->  Partial HashAggregate  (cost=17284.05..17284.10 rows=5 width=19) (actual rows=5.00 loops=3)\n                           Group Key: c.country\n                           Batches: 1  Memory Usage: 32kB\n                           Buffers: shared hit=9823\n                           Worker 0:  Batches: 1  Memory Usage: 32kB\n                           Worker 1:  Batches: 1  Memory Usage: 32kB\n                           ->  Hash Join  (cost=2960.00..16230.19 rows=140514 width=7) (actual rows=111111.00 loops=3)\n                                 Hash Cond: (o.customer_id = c.id)\n                                 Buffers: shared hit=9823\n                                 ->  Parallel Seq Scan on orders o  (cost=0.00..12901.33 rows=140514 width=8) (actual rows=111111.00 loops=3)\n                                       Filter: (status = 'paid'::text)\n                                       Rows Removed by Filter: 222222\n                                       Buffers: shared hit=7693\n                                 ->  Hash  (cost=1710.00..1710.00 rows=100000 width=7) (actual rows=100000.00 loops=3)\n                                       Buckets: 131072  Batches: 1  Memory Usage: 4931kB\n                                       Buffers: shared hit=2130\n                                       ->  Seq Scan on customers c  (cost=0.00..1710.00 rows=100000 width=7) (actual rows=100000.00 loops=3)\n                                             Buffers: shared hit=2130\n Planning:\n   Buffers: shared hit=212\n(37 rows)",
+  "is_null_rows": 1,
+  "orders_natts": 5,
+  "orders_relpages": 7693,
+  "orders_reltuples": 1000000,
+  "paid_orders_clean": 333333,
+  "pg_class_natts": 34,
+  "pk_index": "orders_pkey",
+  "provenance": {
+    "captured_utc": "2026-10-01T09:50:49+00:00",
+    "cpus": 16,
+    "os": "Linux 7.0.0-31-generic",
+    "python": "3.14.4",
+    "server_version": "PostgreSQL 18.6 on x86_64-pc-linux-gnu, compiled by gcc (Ubuntu 15.2.0-16ubuntu1) 15.2.0, 64-bit",
+    "settings": {
+      "block_size": "8192",
+      "effective_cache_size": "524288",
+      "max_parallel_workers_per_gather": "2",
+      "random_page_cost": "4",
+      "seq_page_cost": "1",
+      "shared_buffers": "16384",
+      "work_mem": "4096"
+    }
+  },
+  "revenue_clean": [
+    [
+      "DE",
+      "3333366716",
+      "66667"
+    ],
+    [
+      "IN",
+      "3333366679",
+      "66667"
+    ],
+    [
+      "JP",
+      "3333366679",
+      "66666"
+    ],
+    [
+      "BR",
+      "3333266642",
+      "66667"
+    ],
+    [
+      "US",
+      "3333166605",
+      "66666"
+    ]
+  ],
+  "revenue_total_clean": 16666533321,
+  "revenue_total_dup": 16666590275,
+  "revenue_total_fixed": 16666533321,
+  "sum_after_null": 49999443046
+}

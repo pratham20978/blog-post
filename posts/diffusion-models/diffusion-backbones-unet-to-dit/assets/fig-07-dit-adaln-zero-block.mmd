@@ -1,0 +1,28 @@
+flowchart TB
+  X["256 IMAGE TOKENS × 1,152 · DiT-XL/2 on a 4 × 32 × 32 latent"]
+  C["CONDITION c · timestep embedding + class embedding · 1,152"]
+  ADA["adaLN-Zero PROJECTION · SiLU · Linear 1,152 → 6,912<br/>six vectors of 1,152: shift 1, scale 1, gate 1, shift 2, scale 2, gate 2<br/>initialised to zero, so every gate starts at 0"]
+  N1["LayerNorm (no learned scale or shift) · × (1 + scale 1) + shift 1"]
+  ATT["SELF-ATTENTION · 16 heads × 72 · 256 × 256 scores per head"]
+  G1["× gate 1 · add to the residual stream"]
+  N2["LayerNorm · × (1 + scale 2) + shift 2"]
+  MLP["MLP · 1,152 → 4,608 → 1,152 · GELU"]
+  G2["× gate 2 · add to the residual stream"]
+  OUT["256 × 1,152 TO THE NEXT BLOCK · 28 blocks in DiT-XL"]
+
+  C -- "1,152" --> ADA
+  X -- "256 × 1,152" --> N1
+  N1 -- "256 × 1,152" --> ATT
+  ATT -- "256 × 1,152" --> G1
+  G1 -- "256 × 1,152" --> N2
+  N2 -- "256 × 1,152" --> MLP
+  MLP -- "256 × 1,152" --> G2
+  G2 -- "256 × 1,152" --> OUT
+  X -. "residual" .-> G1
+  G1 -. "residual" .-> G2
+  ADA -- "scale 1, shift 1" --> N1
+  ADA -- "gate 1" --> G1
+  ADA -- "scale 2, shift 2" --> N2
+  ADA -- "gate 2" --> G2
+
+  style ADA fill:#fdf0ea,stroke:#eb6c36,stroke-width:1.5px

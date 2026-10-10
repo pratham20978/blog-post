@@ -1,0 +1,4 @@
+# Lab for "Diffusion Samplers and Solvers" (diffusion-models, part 6).
+# The captured run used Python 3.12.15 with this exact numpy; it is the only version that was run.
+# No GPU, no torch and no network access are needed.
+numpy==2.5.3

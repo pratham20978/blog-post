@@ -1,0 +1,19 @@
+sequenceDiagram
+    participant B as Backend
+    participant SB as Shared buffers
+    participant W as pg_wal · segment …00F6
+    participant F as Table file 91057
+    participant C as pg_control
+    participant S as Startup process
+    Note over C: checkpoint saved REDO = 3/F6D691A0
+    B->>SB: UPDATE row 4242 on page 7692 (page now dirty)
+    B->>W: LOCK + 2,684 B page image · HOT_UPDATE 72 B · COMMIT 34 B
+    W-->>B: flushed through 3/F6D69D78 · commit returns
+    Note over SB,C: page 7692 in memory: pd_lsn 3/F6D69D50<br/>same page in the file: 3/F6D42F28, one line pointer fewer
+    Note over B,S: pg_ctl stop -m immediate · no process writes anything more
+    S->>C: read state "in production" and REDO 3/F6D691A0
+    S->>F: fsync every file in the data directory
+    S->>W: read records from 3/F6D691A0
+    S->>SB: restore page image, then apply HOT_UPDATE (page LSN lower than record LSN)
+    W-->>S: zero-length record at 3/F6D69D78 · end of WAL
+    Note over SB,C: end-of-recovery checkpoint (the checkpointer)<br/>4 buffers written · page 7692 in the file now 3/F6D69D50

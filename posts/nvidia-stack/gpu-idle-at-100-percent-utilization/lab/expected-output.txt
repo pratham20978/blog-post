@@ -1,0 +1,79 @@
+# Lab transcripts — Why Your GPU Is Idle at 100% Utilization
+#
+# Captured 2026-09-24T08:52:30Z on AMD Ryzen 7 5825U with Radeon Graphics, Python 3.14.4, no NVIDIA GPU.
+
+## Tier A: python3 queue_model.py --trace
+
+Model of one CUDA stream. Inputs are round numbers, not measurements.
+Host cost per kernel launch: 20 us. Unbounded launch queue.
+
+== as written: loss.item() mid-step, 1,000 optimizer launches
+   phase           host timer  CUDA events  kernels ran
+   forward             0.80 ms      4.02 ms      4.00 ms
+   backward            1.60 ms      8.00 ms      8.00 ms
+   loss.item()         9.62 ms      0.00 ms      0.00 ms
+   optimizer          20.00 ms     20.00 ms      3.00 ms
+   one step, cold start : 32.02 ms wall, 15.00 ms of kernels, 17.02 ms GPU idle (53.2% of the step)
+   steady state         : 32.02 ms per step, utilization by nvidia-smi's definition 46.8%
+   20-step loop timed on the host, no final sync: 32.02 ms/step reported, 32.02 ms/step true
+
+   queue depth (kernels issued, not finished) at selected times:
+     t =   0.5 ms  depth 21
+     t =   1.0 ms  depth 41
+     t =   2.4 ms  depth 97
+     t =   4.0 ms  depth 81
+     t =   8.0 ms  depth 41
+     t =  12.0 ms  depth 1
+     t =  12.5 ms  depth 1
+     t =  20.0 ms  depth 1
+     t =  31.9 ms  depth 1
+
+== fix 1: log outside the step (no mid-step sync)
+   phase           host timer  CUDA events  kernels ran
+   forward             0.80 ms      4.02 ms      4.00 ms
+   backward            1.60 ms      8.00 ms      8.00 ms
+   optimizer          20.00 ms     10.38 ms      3.00 ms
+   one step, cold start : 22.40 ms wall, 15.00 ms of kernels, 7.40 ms GPU idle (33.0% of the step)
+   steady state         : 22.40 ms per step, utilization by nvidia-smi's definition 67.0%
+   20-step loop timed on the host, no final sync: 22.40 ms/step reported, 22.40 ms/step true
+
+== fix 2: fix 1 + the optimizer as 10 launches
+   phase           host timer  CUDA events  kernels ran
+   forward             0.80 ms      4.02 ms      4.00 ms
+   backward            1.60 ms      8.00 ms      8.00 ms
+   optimizer           0.20 ms      3.00 ms      3.00 ms
+   one step, cold start : 15.02 ms wall, 15.00 ms of kernels, 0.02 ms GPU idle (0.1% of the step)
+   steady state         : 15.00 ms per step, utilization by nvidia-smi's definition 100.0%
+   20-step loop timed on the host, no final sync: 2.60 ms/step reported, 15.00 ms/step true
+
+== alt 2: fix 1 + the whole step captured as one graph
+   phase           host timer  CUDA events  kernels ran
+   graph replay        0.02 ms     15.02 ms     15.00 ms
+   one step, cold start : 15.02 ms wall, 15.00 ms of kernels, 0.02 ms GPU idle (0.1% of the step)
+   steady state         : 15.00 ms per step, utilization by nvidia-smi's definition 100.0%
+   20-step loop timed on the host, no final sync: 0.02 ms/step reported, 15.00 ms/step true
+
+== exercise 1: loss.item() moved after the optimizer
+   phase           host timer  CUDA events  kernels ran
+   forward             0.80 ms      4.02 ms      4.00 ms
+   backward            1.60 ms      8.00 ms      8.00 ms
+   optimizer          20.00 ms     10.38 ms      3.00 ms
+   loss.item()         0.00 ms      0.00 ms      0.00 ms
+   one step, cold start : 22.40 ms wall, 15.00 ms of kernels, 7.40 ms GPU idle (33.0% of the step)
+   steady state         : 22.40 ms per step, utilization by nvidia-smi's definition 67.0%
+   20-step loop timed on the host, no final sync: 22.40 ms/step reported, 22.40 ms/step true
+
+== exercise 2: as written, but each optimizer kernel takes 25 us
+   phase           host timer  CUDA events  kernels ran
+   forward             0.80 ms      4.02 ms      4.00 ms
+   backward            1.60 ms      8.00 ms      8.00 ms
+   loss.item()         9.62 ms      0.00 ms      0.00 ms
+   optimizer          20.00 ms     25.02 ms     25.00 ms
+   one step, cold start : 37.04 ms wall, 37.00 ms of kernels, 0.04 ms GPU idle (0.1% of the step)
+   steady state         : 37.02 ms per step, utilization by nvidia-smi's definition 99.9%
+   20-step loop timed on the host, no final sync: 36.77 ms/step reported, 37.02 ms/step true
+
+## Tier B: python3 step_timing.py / python3 util_probe.py
+
+Not measured. The authoring machine has no NVIDIA GPU, and no Tier B number is invented.
+results-schema.json defines what a run writes; README.md lists what each script is expected to show.

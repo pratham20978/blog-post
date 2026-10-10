@@ -1,0 +1,42 @@
+flowchart LR
+  classDef learned fill:#fdece5,stroke:#eb6c36,stroke-width:1.5px,color:#eb6c36
+  classDef cond fill:#eef1f6,stroke:#2e5aa8,color:#2d3142
+  classDef fixed fill:#ececec,stroke:#7a8399,color:#2d3142
+
+  SCH["noise schedule<br/>β,  ᾱ,  SNR(t)<br/>configuration, not weights"]:::fixed
+
+  subgraph COND["conditioning interface"]
+    direction TB
+    P["prompt text"] --> TOK["tokenizer<br/>string → token ids"]
+    TOK --> TE["text encoder<br/>CLIP or T5, frozen"]
+    TE --> EMB["token embeddings c<br/>L × d"]:::cond
+  end
+
+  subgraph TRAIN["training · offline, once"]
+    direction TB
+    X0["clean data x₀"] --> E1["encoder E"] --> Z0["latent z₀<br/>4×64×64"]
+    TD["draw t ~ U(1..T)<br/>draw ε ~ N(0, I)"] --> MIX
+    Z0 --> MIX["build zₜ = √ᾱₜ z₀ + √(1−ᾱₜ) ε"]
+    DROP["condition dropout<br/>c → ∅ sometimes"] --> NET
+    LOSS["weighted MSE<br/>w(t)·‖ε − ε̂‖²"] --> UPD["update θ → EMA copy"]
+  end
+
+  NET["denoiser  εθ(zₜ, t, c)<br/>U-Net or DiT backbone<br/>the only learned component"]:::learned
+
+  TEMB["time embedding<br/>t or σ or log-SNR<br/>→ 2C numbers"]:::cond
+
+  subgraph INFER["inference · N times per image"]
+    direction TB
+    ZI["zᵢ ~ N(0, I)"] --> NET
+    CFG["classifier-free guidance<br/>εu + w(εc − εu)"] --> STEP["solver step<br/>σᵢ → σᵢ₊₁"]
+    STEP -- "repeat ×N" --> ZI
+    STEP --> ZF["final latent z₀"] --> D["decoder D"] --> IMG["image<br/>3×512×512"]
+  end
+
+  MIX --> NET
+  NET --> LOSS
+  NET --> CFG
+  EMB --> NET
+  TEMB --> NET
+  SCH --> MIX
+  SCH --> STEP

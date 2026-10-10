@@ -1,0 +1,7 @@
+flowchart LR
+    A[Hugging Face checkpoint] -- LLM serving --> B[TensorRT-LLM 1.2, PyTorch backend]
+    B --> C[LLM API or trtllm-serve]
+    A -- interchange --> D[torch.onnx.export]
+    D --> E[ONNX graph]
+    E --> F[TensorRT]
+    E --> G[ONNX Runtime]

@@ -1,0 +1,23 @@
+flowchart TB
+  rsde["reverse SDE<br/>stochastic: fresh noise every step"]
+  pfode["probability-flow ODE<br/>dx/dσ = (x − D) / σ<br/>same marginals as the SDE"]
+  anc["DDPM ancestral, posterior variance<br/>= DDIM η = 1 = “Euler a”<br/>1 NFE per step"]
+  ddim["DDIM η = 0<br/>= EDM's Euler = DPM-Solver-1<br/>order 1 · 1 NFE per step"]
+  heun["EDM Heun<br/>order 2 · 2 NFE per step"]
+  dpm2["DPM-Solver-2<br/>order 2 · 2 NFE per step"]
+  dpm3["DPM-Solver-3<br/>order 3 · 3 NFE per step"]
+  pp2m["DPM-Solver++(2M)<br/>order 2 · 1 NFE per step"]
+  plms["PNDM / PLMS<br/>linear multistep"]
+  churn["EDM stochastic<br/>Heun + churn noise"]
+  unipc["UniPC<br/>one order up, no extra NFE"]
+
+  rsde -->|"discretise in time"| anc
+  anc -->|"η from 1 to 0"| ddim
+  pfode -->|"Euler in σ"| ddim
+  ddim -->|"+ end-point slope"| heun
+  ddim -->|"+ midpoint call"| dpm2
+  ddim -->|"+ 2 inner calls"| dpm3
+  ddim -->|"+ reuse last D"| pp2m
+  ddim -->|"+ past calls"| plms
+  heun -->|"+ fresh noise"| churn
+  pp2m -->|"+ free corrector"| unipc

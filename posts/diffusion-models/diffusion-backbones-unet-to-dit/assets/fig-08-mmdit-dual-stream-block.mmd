@@ -1,0 +1,38 @@
+flowchart TB
+  XI["4,096 IMAGE TOKENS × 1,536<br/>2 × 2 patches of a 16 × 128 × 128 latent"]
+  C["CONDITION c · 1,536 per image<br/>timestep embedding + pooled CLIP vector"]
+  XT["154 TEXT TOKENS × 1,536<br/>77 CLIP + 77 T5-XXL, projected from 4,096"]
+  subgraph IMG[" "]
+    direction TB
+    AI["IMAGE STREAM · own weights, 42.5M per block<br/>adaLN modulation · LayerNorm"]
+    QI["Q, K, V projections · 1,536 → 3 × 1,536"]
+    OI["output projection · gate · + residual"]
+    FI["adaLN · MLP 1,536 → 6,144 → 1,536 · gate · + residual"]
+  end
+  subgraph TXS[" "]
+    direction TB
+    AT["TEXT STREAM · own weights, 42.5M per block<br/>adaLN modulation · LayerNorm"]
+    QT["Q, K, V projections · 1,536 → 3 × 1,536"]
+    OT["output projection · gate · + residual"]
+    FT["adaLN · MLP 1,536 → 6,144 → 1,536 · gate · + residual"]
+  end
+  J["JOINT ATTENTION · 24 heads × 64<br/>concatenate both sequences → 4,250 tokens<br/>4,250 × 4,250 scores per head · split back"]
+  YI["4,096 × 1,536 TO THE NEXT BLOCK"]
+  YT["154 × 1,536 TO THE NEXT BLOCK<br/>the last of 24 blocks stops after attention"]
+
+  XI -- "4,096 × 1,536" --> AI
+  XT -- "154 × 1,536" --> AT
+  C -- "scale, shift, gate" --> AI
+  C -- "scale, shift, gate" --> AT
+  AI -- "4,096 × 1,536" --> QI
+  AT -- "154 × 1,536" --> QT
+  QI -- "Q, K, V · 4,096 × 1,536 each" --> J
+  QT -- "Q, K, V · 154 × 1,536 each" --> J
+  J -- "image rows · 4,096 × 1,536" --> OI
+  J -- "text rows · 154 × 1,536" --> OT
+  OI -- "4,096 × 1,536" --> FI
+  OT -- "154 × 1,536" --> FT
+  FI -- "4,096 × 1,536" --> YI
+  FT -- "154 × 1,536" --> YT
+
+  style J fill:#fdf0ea,stroke:#eb6c36,stroke-width:1.5px

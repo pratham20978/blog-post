@@ -1,0 +1,42 @@
+---
+config:
+  theme: neutral
+  flowchart:
+    curve: linear
+    nodeSpacing: 46
+    rankSpacing: 54
+    wrappingWidth: 330
+    useMaxWidth: false
+---
+flowchart TD
+    S["A CUDA program fails, or<br/>you are picking a wheel for a fixed host"]
+
+    S --> Q1{"Does anything<br/>run at all?"}
+
+    Q1 -- "no: CUDA will not initialise" --> E3["runtime reports error 3<br/>cudaErrorInitializationError"]
+    E3 --> D1["<b>Number 1 is wrong</b><br/>the KMD is below the family floor"]
+    D1 --> R1["upgrade the driver to 450 / 525 / 580<br/>for CUDA 11.x / 12.x / 13.x"]
+
+    Q1 -- "yes, but one call fails" --> E36["cudaErrorCallRequiresNewerDriver = 36"]
+    E36 --> D2["<b>Number 2 is too low</b><br/>the feature spans toolkit and driver"]
+    D2 --> R2["upgrade the driver,<br/>or stop using that feature"]
+
+    Q1 -- "yes, but nothing launches" --> Q2{"Is the runtime's major version<br/>the same as the driver's?"}
+
+    Q2 -- "no" --> Q3{"Data center GPU, NGC Server Ready<br/>RTX SKU, or Jetson?"}
+    Q3 -- "yes" --> R3["install cuda-compat-&lt;major&gt;-&lt;minor&gt;<br/>and set LD_LIBRARY_PATH yourself"]
+    Q3 -- "no" --> R4["upgrade the driver, or take<br/>an older build of the application"]
+
+    Q2 -- "yes" --> R5["minor version compatibility applies;<br/>look at the three caveats, not the version"]
+
+    S --> Q4{"Do nvcc and nvidia-smi<br/>simply disagree?"}
+    Q4 -- "yes" --> R6["<b>Nothing is wrong.</b><br/>Number 4 never decides anything"]
+
+    S --> R7["read CUDART_VERSION out of the wheel<br/>and compare it to the driver's ceiling"]
+
+    classDef fail fill:#fdece5,stroke:#eb6c36,color:#2d3142
+    classDef calm fill:#eef2f9,stroke:#2e5aa8,color:#2d3142
+    classDef verdict fill:#ffffff,stroke:#2d3142,color:#2d3142
+    class E3,E36,D1,D2 fail
+    class R6,R7,R5 calm
+    class R1,R2,R3,R4 verdict

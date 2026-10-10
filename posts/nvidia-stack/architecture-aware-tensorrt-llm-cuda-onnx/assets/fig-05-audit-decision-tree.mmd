@@ -1,0 +1,11 @@
+flowchart TD
+    A{Intended GPU visible?} -- No --> B[Repair assignment: driver, container, CUDA_VISIBLE_DEVICES]
+    A -- Yes --> C{nvcc lists the target?}
+    C -- No --> D[Select a Toolkit that knows the SM]
+    C -- Yes --> E{PyTorch core op passes?}
+    E -- No --> F[Replace the wheel, else build PyTorch]
+    E -- Yes --> G{Extension passes?}
+    G -- No --> H[Rebuild that extension]
+    G -- Yes --> I{Model class and features listed?}
+    I -- No --> J[Pin a release or change runtime]
+    I -- Yes --> K([Run, then measure])

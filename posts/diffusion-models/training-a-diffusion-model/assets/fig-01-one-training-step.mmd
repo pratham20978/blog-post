@@ -1,0 +1,39 @@
+flowchart TB
+  x0["x₀ · one data example<br/>SD: a 4×64×64 latent"]
+  t["t · timestep<br/>drawn from 1 … 1,000"]
+  eps["ε ~ N(0, I) · fresh noise"]
+  mix["noisy input xₜ = √ᾱₜ · x₀ + √(1 − ᾱₜ) · ε"]
+  net["denoiser fθ(xₜ, t)"]
+  tgt["target · ε, x₀ or v"]
+  loss["loss = w(λₜ) · ‖ fθ − target ‖²"]
+  opt["optimiser step · θ ← θ − η · ∇loss"]
+  ema["EMA · θ̄ ← β · θ̄ + (1 − β) · θ"]
+  smp["sampler · starts from pure noise at t = T<br/>runs with θ̄, never sees training"]
+
+  d1{{"1 · schedule<br/>which λ exist, how often"}}
+  d2{{"2 · endpoint<br/>SNR at t = T"}}
+  d3{{"3 · target<br/>what the output means"}}
+  d4{{"4 · weighting<br/>which λ win"}}
+  d5{{"5 · EMA decay β<br/>a half-life in steps"}}
+
+  x0 -->|"x₀"| mix
+  eps -->|"ε"| mix
+  t -->|"ᾱₜ"| mix
+  mix -->|"xₜ, λₜ"| net
+  net -->|"prediction"| loss
+  x0 -->|"x₀"| tgt
+  eps -->|"ε"| tgt
+  tgt -->|"target"| loss
+  loss -->|"gradient"| opt
+  opt -->|"new θ"| net
+  opt -->|"θ after every step"| ema
+  ema -->|"θ̄"| smp
+  mix ~~~ tgt
+
+  d1 -.->|"sampling density of t"| t
+  d1 -.->|"sets ᾱₜ"| mix
+  d2 -.->|"last training input"| mix
+  d2 -.->|"what the start must match"| smp
+  d3 -.->|"ε, x₀ or v"| tgt
+  d4 -.->|"multiplier per λ"| loss
+  d5 -.->|"β"| ema

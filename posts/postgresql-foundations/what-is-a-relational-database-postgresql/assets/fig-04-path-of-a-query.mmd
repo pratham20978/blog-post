@@ -1,0 +1,24 @@
+%%{init: {"flowchart": {"wrappingWidth": 360, "nodeSpacing": 40, "rankSpacing": 46}} }%%
+flowchart TB
+    sql(["<b>your query</b><br/>select c.country, sum(o.amount_cents) …"])
+    raw["<b>parser · pass 1</b><br/>grammar only, no catalog lookups<br/><i>fails here: syntax error at or near &quot;selec&quot;</i>"]
+    trn["<b>parser · pass 2</b> (transformation)<br/>resolves every table and column name<br/><i>fails here: column c.nosuchcolumn does not exist</i>"]
+    rw["<b>rewriter</b><br/>replaces each view with its definition"]
+    pl["<b>planner</b><br/>possible paths → estimated costs → the cheapest"]
+    ex["<b>executor</b><br/>walks the plan tree and produces rows"]
+    out(["<b>rows</b><br/>5 country totals"])
+    cat[("<b>system catalog</b><br/>pg_class · pg_attribute · view rules")]
+
+    sql -->|query string| raw
+    raw -->|parse tree| trn
+    trn -->|query tree| rw
+    rw -->|rewritten query tree| pl
+    pl -->|plan tree| ex
+    ex -->|result rows| out
+    cat -.->|table and column names| trn
+    cat -.->|view definitions| rw
+
+    classDef focal fill:#fbeee8,stroke:#eb6c36,color:#2d3142
+    classDef store fill:#ececec,stroke:#4f5d75,color:#2d3142
+    class pl focal
+    class cat store

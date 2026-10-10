@@ -1,0 +1,1634 @@
+{
+ "provenance": {
+  "date": "2026-10-03",
+  "os": "Linux-7.0.0-31-generic-x86_64-with-glibc2.43",
+  "cpu": "AMD Ryzen 7 5825U with Radeon Graphics",
+  "python": "3.12.13",
+  "torch": "2.14.0+cpu",
+  "diffusers": "0.40.0",
+  "threads": 8
+ },
+ "patch": {
+  "p4": {
+   "tokens": 1,
+   "token_length": 16,
+   "attention_pairs": 1,
+   "values": [
+    [
+     0.43,
+     1.32,
+     0.03,
+     -1.34,
+     1.15,
+     -0.45,
+     -0.59,
+     -0.3,
+     1.19,
+     0.26,
+     -1.13,
+     -0.67,
+     -0.43,
+     0.38,
+     0.19,
+     -1.46
+    ]
+   ]
+  },
+  "p2": {
+   "tokens": 4,
+   "token_length": 4,
+   "attention_pairs": 16,
+   "values": [
+    [
+     0.43,
+     1.32,
+     1.15,
+     -0.45
+    ],
+    [
+     0.03,
+     -1.34,
+     -0.59,
+     -0.3
+    ],
+    [
+     1.19,
+     0.26,
+     -0.43,
+     0.38
+    ],
+    [
+     -1.13,
+     -0.67,
+     0.19,
+     -1.46
+    ]
+   ]
+  },
+  "p1": {
+   "tokens": 16,
+   "token_length": 1,
+   "attention_pairs": 256,
+   "values": [
+    [
+     0.43
+    ],
+    [
+     1.32
+    ],
+    [
+     0.03
+    ],
+    [
+     -1.34
+    ],
+    [
+     1.15
+    ],
+    [
+     -0.45
+    ],
+    [
+     -0.59
+    ],
+    [
+     -0.3
+    ],
+    [
+     1.19
+    ],
+    [
+     0.26
+    ],
+    [
+     -1.13
+    ],
+    [
+     -0.67
+    ],
+    [
+     -0.43
+    ],
+    [
+     0.38
+    ],
+    [
+     0.19
+    ],
+    [
+     -1.46
+    ]
+   ]
+  },
+  "avgpool2": [
+   [
+    0.6125,
+    -0.55
+   ],
+   [
+    0.35,
+    -0.7675
+   ]
+  ],
+  "latent_64": {
+   "p8": 64,
+   "p4": 256,
+   "p2": 1024,
+   "p1": 4096
+  }
+ },
+ "unet": {
+  "config": "stable-diffusion-v1-5 unet/config.json",
+  "input": [
+   1,
+   4,
+   64,
+   64
+  ],
+  "context": [
+   1,
+   77,
+   768
+  ],
+  "output": [
+   1,
+   4,
+   64,
+   64
+  ],
+  "params": 859520964,
+  "params_groups": {
+   "conv_in": 11840,
+   "time_proj": 0,
+   "time_embedding": 2050560,
+   "down_blocks": 249612480,
+   "up_blocks": 510795840,
+   "mid_block": 97038080,
+   "conv_norm_out": 640,
+   "conv_act": 0,
+   "conv_out": 11524
+  },
+  "flops": 803273441280,
+  "flops_split": {
+   "linear": 233275064320,
+   "conv": 443946106880,
+   "attention_core": 126052270080
+  },
+  "levels": [
+   {
+    "level": 0,
+    "resolution": 64,
+    "tokens": 4096,
+    "params": 29335040,
+    "flops": 307117260800,
+    "flops_split": {
+     "conv": 121844531200,
+     "linear": 75880038400,
+     "attention_core": 109392691200
+    }
+   },
+   {
+    "level": 1,
+    "resolution": 32,
+    "tokens": 1024,
+    "params": 108231680,
+    "flops": 235187404800,
+    "flops_split": {
+     "conv": 144493772800,
+     "linear": 76262604800,
+     "attention_core": 14431027200
+    }
+   },
+   {
+    "level": 2,
+    "resolution": 16,
+    "tokens": 256,
+    "params": 398323200,
+    "flops": 215315251200,
+    "flops_split": {
+     "conv": 136105164800,
+     "linear": 77027737600,
+     "attention_core": 2182348800
+    }
+   },
+   {
+    "level": 3,
+    "resolution": 8,
+    "tokens": 64,
+    "params": 321556480,
+    "flops": 45460684800,
+    "flops_split": {
+     "conv": 41313894400,
+     "linear": 4100587520,
+     "attention_core": 46202880
+    }
+   },
+   {
+    "level": "other",
+    "resolution": null,
+    "tokens": null,
+    "params": 2074564,
+    "flops": 192839680,
+    "flops_split": {
+     "linear": 4096000,
+     "conv": 188743680
+    }
+   }
+  ],
+  "trace": [
+   {
+    "module": "conv_in",
+    "in": [
+     1,
+     4,
+     64,
+     64
+    ],
+    "out": [
+     1,
+     320,
+     64,
+     64
+    ],
+    "params": 11840
+   },
+   {
+    "module": "down_blocks.0.resnets.0",
+    "in": [
+     1,
+     320,
+     64,
+     64
+    ],
+    "out": [
+     1,
+     320,
+     64,
+     64
+    ],
+    "params": 2255040
+   },
+   {
+    "module": "down_blocks.0.attentions.0",
+    "in": [
+     1,
+     320,
+     64,
+     64
+    ],
+    "out": [
+     1,
+     320,
+     64,
+     64
+    ],
+    "params": 2546240
+   },
+   {
+    "module": "down_blocks.0.resnets.1",
+    "in": [
+     1,
+     320,
+     64,
+     64
+    ],
+    "out": [
+     1,
+     320,
+     64,
+     64
+    ],
+    "params": 2255040
+   },
+   {
+    "module": "down_blocks.0.attentions.1",
+    "in": [
+     1,
+     320,
+     64,
+     64
+    ],
+    "out": [
+     1,
+     320,
+     64,
+     64
+    ],
+    "params": 2546240
+   },
+   {
+    "module": "down_blocks.0.downsamplers.0",
+    "in": [
+     1,
+     320,
+     64,
+     64
+    ],
+    "out": [
+     1,
+     320,
+     32,
+     32
+    ],
+    "params": 921920
+   },
+   {
+    "module": "down_blocks.0",
+    "in": [
+     1,
+     320,
+     64,
+     64
+    ],
+    "out": [
+     1,
+     320,
+     32,
+     32
+    ],
+    "params": 10524480,
+    "skips_out": [
+     [
+      1,
+      320,
+      64,
+      64
+     ],
+     [
+      1,
+      320,
+      64,
+      64
+     ],
+     [
+      1,
+      320,
+      32,
+      32
+     ]
+    ]
+   },
+   {
+    "module": "down_blocks.1.resnets.0",
+    "in": [
+     1,
+     320,
+     32,
+     32
+    ],
+    "out": [
+     1,
+     640,
+     32,
+     32
+    ],
+    "params": 6558080
+   },
+   {
+    "module": "down_blocks.1.attentions.0",
+    "in": [
+     1,
+     640,
+     32,
+     32
+    ],
+    "out": [
+     1,
+     640,
+     32,
+     32
+    ],
+    "params": 9188480
+   },
+   {
+    "module": "down_blocks.1.resnets.1",
+    "in": [
+     1,
+     640,
+     32,
+     32
+    ],
+    "out": [
+     1,
+     640,
+     32,
+     32
+    ],
+    "params": 8196480
+   },
+   {
+    "module": "down_blocks.1.attentions.1",
+    "in": [
+     1,
+     640,
+     32,
+     32
+    ],
+    "out": [
+     1,
+     640,
+     32,
+     32
+    ],
+    "params": 9188480
+   },
+   {
+    "module": "down_blocks.1.downsamplers.0",
+    "in": [
+     1,
+     640,
+     32,
+     32
+    ],
+    "out": [
+     1,
+     640,
+     16,
+     16
+    ],
+    "params": 3687040
+   },
+   {
+    "module": "down_blocks.1",
+    "in": [
+     1,
+     320,
+     32,
+     32
+    ],
+    "out": [
+     1,
+     640,
+     16,
+     16
+    ],
+    "params": 36818560,
+    "skips_out": [
+     [
+      1,
+      640,
+      32,
+      32
+     ],
+     [
+      1,
+      640,
+      32,
+      32
+     ],
+     [
+      1,
+      640,
+      16,
+      16
+     ]
+    ]
+   },
+   {
+    "module": "down_blocks.2.resnets.0",
+    "in": [
+     1,
+     640,
+     16,
+     16
+    ],
+    "out": [
+     1,
+     1280,
+     16,
+     16
+    ],
+    "params": 24584960
+   },
+   {
+    "module": "down_blocks.2.attentions.0",
+    "in": [
+     1,
+     1280,
+     16,
+     16
+    ],
+    "out": [
+     1,
+     1280,
+     16,
+     16
+    ],
+    "params": 34760960
+   },
+   {
+    "module": "down_blocks.2.resnets.1",
+    "in": [
+     1,
+     1280,
+     16,
+     16
+    ],
+    "out": [
+     1,
+     1280,
+     16,
+     16
+    ],
+    "params": 31138560
+   },
+   {
+    "module": "down_blocks.2.attentions.1",
+    "in": [
+     1,
+     1280,
+     16,
+     16
+    ],
+    "out": [
+     1,
+     1280,
+     16,
+     16
+    ],
+    "params": 34760960
+   },
+   {
+    "module": "down_blocks.2.downsamplers.0",
+    "in": [
+     1,
+     1280,
+     16,
+     16
+    ],
+    "out": [
+     1,
+     1280,
+     8,
+     8
+    ],
+    "params": 14746880
+   },
+   {
+    "module": "down_blocks.2",
+    "in": [
+     1,
+     640,
+     16,
+     16
+    ],
+    "out": [
+     1,
+     1280,
+     8,
+     8
+    ],
+    "params": 139992320,
+    "skips_out": [
+     [
+      1,
+      1280,
+      16,
+      16
+     ],
+     [
+      1,
+      1280,
+      16,
+      16
+     ],
+     [
+      1,
+      1280,
+      8,
+      8
+     ]
+    ]
+   },
+   {
+    "module": "down_blocks.3.resnets.0",
+    "in": [
+     1,
+     1280,
+     8,
+     8
+    ],
+    "out": [
+     1,
+     1280,
+     8,
+     8
+    ],
+    "params": 31138560
+   },
+   {
+    "module": "down_blocks.3.resnets.1",
+    "in": [
+     1,
+     1280,
+     8,
+     8
+    ],
+    "out": [
+     1,
+     1280,
+     8,
+     8
+    ],
+    "params": 31138560
+   },
+   {
+    "module": "down_blocks.3",
+    "in": [
+     1,
+     1280,
+     8,
+     8
+    ],
+    "out": [
+     1,
+     1280,
+     8,
+     8
+    ],
+    "params": 62277120,
+    "skips_out": [
+     [
+      1,
+      1280,
+      8,
+      8
+     ],
+     [
+      1,
+      1280,
+      8,
+      8
+     ]
+    ]
+   },
+   {
+    "module": "mid_block",
+    "in": [
+     1,
+     1280,
+     8,
+     8
+    ],
+    "out": [
+     1,
+     1280,
+     8,
+     8
+    ],
+    "params": 97038080
+   },
+   {
+    "module": "up_blocks.0.resnets.0",
+    "in": [
+     1,
+     2560,
+     8,
+     8
+    ],
+    "out": [
+     1,
+     1280,
+     8,
+     8
+    ],
+    "params": 49164800
+   },
+   {
+    "module": "up_blocks.0.resnets.1",
+    "in": [
+     1,
+     2560,
+     8,
+     8
+    ],
+    "out": [
+     1,
+     1280,
+     8,
+     8
+    ],
+    "params": 49164800
+   },
+   {
+    "module": "up_blocks.0.resnets.2",
+    "in": [
+     1,
+     2560,
+     8,
+     8
+    ],
+    "out": [
+     1,
+     1280,
+     8,
+     8
+    ],
+    "params": 49164800
+   },
+   {
+    "module": "up_blocks.0.upsamplers.0",
+    "in": [
+     1,
+     1280,
+     8,
+     8
+    ],
+    "out": [
+     1,
+     1280,
+     16,
+     16
+    ],
+    "params": 14746880
+   },
+   {
+    "module": "up_blocks.0",
+    "in": [
+     1,
+     1280,
+     8,
+     8
+    ],
+    "out": [
+     1,
+     1280,
+     16,
+     16
+    ],
+    "params": 162241280,
+    "skips_in": [
+     [
+      1,
+      1280,
+      8,
+      8
+     ],
+     [
+      1,
+      1280,
+      8,
+      8
+     ],
+     [
+      1,
+      1280,
+      8,
+      8
+     ]
+    ]
+   },
+   {
+    "module": "up_blocks.1.resnets.0",
+    "in": [
+     1,
+     2560,
+     16,
+     16
+    ],
+    "out": [
+     1,
+     1280,
+     16,
+     16
+    ],
+    "params": 49164800
+   },
+   {
+    "module": "up_blocks.1.attentions.0",
+    "in": [
+     1,
+     1280,
+     16,
+     16
+    ],
+    "out": [
+     1,
+     1280,
+     16,
+     16
+    ],
+    "params": 34760960
+   },
+   {
+    "module": "up_blocks.1.resnets.1",
+    "in": [
+     1,
+     2560,
+     16,
+     16
+    ],
+    "out": [
+     1,
+     1280,
+     16,
+     16
+    ],
+    "params": 49164800
+   },
+   {
+    "module": "up_blocks.1.attentions.1",
+    "in": [
+     1,
+     1280,
+     16,
+     16
+    ],
+    "out": [
+     1,
+     1280,
+     16,
+     16
+    ],
+    "params": 34760960
+   },
+   {
+    "module": "up_blocks.1.resnets.2",
+    "in": [
+     1,
+     1920,
+     16,
+     16
+    ],
+    "out": [
+     1,
+     1280,
+     16,
+     16
+    ],
+    "params": 40971520
+   },
+   {
+    "module": "up_blocks.1.attentions.2",
+    "in": [
+     1,
+     1280,
+     16,
+     16
+    ],
+    "out": [
+     1,
+     1280,
+     16,
+     16
+    ],
+    "params": 34760960
+   },
+   {
+    "module": "up_blocks.1.upsamplers.0",
+    "in": [
+     1,
+     1280,
+     16,
+     16
+    ],
+    "out": [
+     1,
+     1280,
+     32,
+     32
+    ],
+    "params": 14746880
+   },
+   {
+    "module": "up_blocks.1",
+    "in": [
+     1,
+     1280,
+     16,
+     16
+    ],
+    "out": [
+     1,
+     1280,
+     32,
+     32
+    ],
+    "params": 258330880,
+    "skips_in": [
+     [
+      1,
+      640,
+      16,
+      16
+     ],
+     [
+      1,
+      1280,
+      16,
+      16
+     ],
+     [
+      1,
+      1280,
+      16,
+      16
+     ]
+    ]
+   },
+   {
+    "module": "up_blocks.2.resnets.0",
+    "in": [
+     1,
+     1920,
+     32,
+     32
+    ],
+    "out": [
+     1,
+     640,
+     32,
+     32
+    ],
+    "params": 16801280
+   },
+   {
+    "module": "up_blocks.2.attentions.0",
+    "in": [
+     1,
+     640,
+     32,
+     32
+    ],
+    "out": [
+     1,
+     640,
+     32,
+     32
+    ],
+    "params": 9188480
+   },
+   {
+    "module": "up_blocks.2.resnets.1",
+    "in": [
+     1,
+     1280,
+     32,
+     32
+    ],
+    "out": [
+     1,
+     640,
+     32,
+     32
+    ],
+    "params": 12704000
+   },
+   {
+    "module": "up_blocks.2.attentions.1",
+    "in": [
+     1,
+     640,
+     32,
+     32
+    ],
+    "out": [
+     1,
+     640,
+     32,
+     32
+    ],
+    "params": 9188480
+   },
+   {
+    "module": "up_blocks.2.resnets.2",
+    "in": [
+     1,
+     960,
+     32,
+     32
+    ],
+    "out": [
+     1,
+     640,
+     32,
+     32
+    ],
+    "params": 10655360
+   },
+   {
+    "module": "up_blocks.2.attentions.2",
+    "in": [
+     1,
+     640,
+     32,
+     32
+    ],
+    "out": [
+     1,
+     640,
+     32,
+     32
+    ],
+    "params": 9188480
+   },
+   {
+    "module": "up_blocks.2.upsamplers.0",
+    "in": [
+     1,
+     640,
+     32,
+     32
+    ],
+    "out": [
+     1,
+     640,
+     64,
+     64
+    ],
+    "params": 3687040
+   },
+   {
+    "module": "up_blocks.2",
+    "in": [
+     1,
+     1280,
+     32,
+     32
+    ],
+    "out": [
+     1,
+     640,
+     64,
+     64
+    ],
+    "params": 71413120,
+    "skips_in": [
+     [
+      1,
+      320,
+      32,
+      32
+     ],
+     [
+      1,
+      640,
+      32,
+      32
+     ],
+     [
+      1,
+      640,
+      32,
+      32
+     ]
+    ]
+   },
+   {
+    "module": "up_blocks.3.resnets.0",
+    "in": [
+     1,
+     960,
+     64,
+     64
+    ],
+    "out": [
+     1,
+     320,
+     64,
+     64
+    ],
+    "params": 4407040
+   },
+   {
+    "module": "up_blocks.3.attentions.0",
+    "in": [
+     1,
+     320,
+     64,
+     64
+    ],
+    "out": [
+     1,
+     320,
+     64,
+     64
+    ],
+    "params": 2546240
+   },
+   {
+    "module": "up_blocks.3.resnets.1",
+    "in": [
+     1,
+     640,
+     64,
+     64
+    ],
+    "out": [
+     1,
+     320,
+     64,
+     64
+    ],
+    "params": 3382400
+   },
+   {
+    "module": "up_blocks.3.attentions.1",
+    "in": [
+     1,
+     320,
+     64,
+     64
+    ],
+    "out": [
+     1,
+     320,
+     64,
+     64
+    ],
+    "params": 2546240
+   },
+   {
+    "module": "up_blocks.3.resnets.2",
+    "in": [
+     1,
+     640,
+     64,
+     64
+    ],
+    "out": [
+     1,
+     320,
+     64,
+     64
+    ],
+    "params": 3382400
+   },
+   {
+    "module": "up_blocks.3.attentions.2",
+    "in": [
+     1,
+     320,
+     64,
+     64
+    ],
+    "out": [
+     1,
+     320,
+     64,
+     64
+    ],
+    "params": 2546240
+   },
+   {
+    "module": "up_blocks.3",
+    "in": [
+     1,
+     640,
+     64,
+     64
+    ],
+    "out": [
+     1,
+     320,
+     64,
+     64
+    ],
+    "params": 18810560,
+    "skips_in": [
+     [
+      1,
+      320,
+      64,
+      64
+     ],
+     [
+      1,
+      320,
+      64,
+      64
+     ],
+     [
+      1,
+      320,
+      64,
+      64
+     ]
+    ]
+   },
+   {
+    "module": "conv_out",
+    "in": [
+     1,
+     320,
+     64,
+     64
+    ],
+    "out": [
+     1,
+     4,
+     64,
+     64
+    ],
+    "params": 11524
+   }
+  ],
+  "skips": [
+   [
+    1,
+    320,
+    64,
+    64
+   ],
+   [
+    1,
+    320,
+    64,
+    64
+   ],
+   [
+    1,
+    320,
+    64,
+    64
+   ],
+   [
+    1,
+    320,
+    32,
+    32
+   ],
+   [
+    1,
+    640,
+    32,
+    32
+   ],
+   [
+    1,
+    640,
+    32,
+    32
+   ],
+   [
+    1,
+    640,
+    16,
+    16
+   ],
+   [
+    1,
+    1280,
+    16,
+    16
+   ],
+   [
+    1,
+    1280,
+    16,
+    16
+   ],
+   [
+    1,
+    1280,
+    8,
+    8
+   ],
+   [
+    1,
+    1280,
+    8,
+    8
+   ],
+   [
+    1,
+    1280,
+    8,
+    8
+   ]
+  ],
+  "skip_elements": 6635520,
+  "skip_bytes_fp16": 13271040,
+  "executed": {
+   "output": [
+    1,
+    4,
+    64,
+    64
+   ],
+   "seconds": 4.43
+  }
+ },
+ "dit": [
+  {
+   "name": "DiT-XL/8",
+   "image": 256,
+   "latent": [
+    4,
+    32,
+    32
+   ],
+   "patch": 8,
+   "tokens": 16,
+   "token_width": 1152,
+   "params": 675683072,
+   "flops": 14784823296,
+   "gmac": 7.392411648,
+   "adaln_params": 223147008,
+   "flops_split": {
+    "conv": 9437184,
+    "linear": 14742355968,
+    "attention_core": 33030144
+   },
+   "attention_share": 0.002234057407296591,
+   "output": [
+    1,
+    8,
+    32,
+    32
+   ],
+   "paper_gflops": 7.39,
+   "paper_params_M": 676,
+   "paper_fid50k_400k": 106.41
+  },
+  {
+   "name": "DiT-XL/4",
+   "image": 256,
+   "latent": [
+    4,
+    32,
+    32
+   ],
+   "patch": 4,
+   "tokens": 64,
+   "token_width": 1152,
+   "params": 675074432,
+   "flops": 58087342080,
+   "gmac": 29.04367104,
+   "adaln_params": 223147008,
+   "flops_split": {
+    "conv": 9437184,
+    "linear": 57549422592,
+    "attention_core": 528482304
+   },
+   "attention_share": 0.00909806310765872,
+   "output": [
+    1,
+    8,
+    32,
+    32
+   ],
+   "paper_gflops": 29.05,
+   "paper_params_M": 675,
+   "paper_fid50k_400k": 43.01
+  },
+  {
+   "name": "DiT-XL/2",
+   "image": 256,
+   "latent": [
+    4,
+    32,
+    32
+   ],
+   "patch": 2,
+   "tokens": 256,
+   "token_width": 1152,
+   "params": 675129632,
+   "flops": 237242843136,
+   "gmac": 118.621421568,
+   "adaln_params": 223147008,
+   "flops_split": {
+    "conv": 9437184,
+    "linear": 228777689088,
+    "attention_core": 8455716864
+   },
+   "attention_share": 0.0356416098889556,
+   "output": [
+    1,
+    8,
+    32,
+    32
+   ],
+   "paper_gflops": 118.64,
+   "paper_params_M": 675,
+   "paper_fid50k_400k": 19.47
+  },
+  {
+   "name": "DiT-XL/2",
+   "image": 512,
+   "latent": [
+    4,
+    64,
+    64
+   ],
+   "patch": 2,
+   "tokens": 1024,
+   "token_width": 1152,
+   "params": 676014368,
+   "flops": 1049076596736,
+   "gmac": 524.538298368,
+   "adaln_params": 223147008,
+   "flops_split": {
+    "conv": 37748736,
+    "linear": 913747378176,
+    "attention_core": 135291469824
+   },
+   "attention_share": 0.1289624325286956,
+   "output": [
+    1,
+    8,
+    64,
+    64
+   ],
+   "paper_gflops": 524.6,
+   "paper_params_M": 675,
+   "paper_fid50k_400k": null
+  }
+ ],
+ "mmdit": {
+  "d24": {
+   "params": 2028328000,
+   "params_split": {
+    "outside_blocks": 19476544,
+    "image": 1019768832,
+    "text": 989082624
+   },
+   "width": 1536,
+   "heads": 24
+  },
+  "d38": {
+   "params": 8056617792,
+   "params_split": {
+    "outside_blocks": 39554112,
+    "image": 4046989056,
+    "text": 3970074624
+   },
+   "width": 2432,
+   "heads": 38
+  },
+  "call_1024": {
+   "latent": [
+    1,
+    16,
+    128,
+    128
+   ],
+   "image_tokens": 4096,
+   "text_tokens": 154,
+   "joint_tokens": 4250,
+   "output": [
+    1,
+    16,
+    128,
+    128
+   ],
+   "flops": 8437355053056,
+   "flops_split": {
+    "conv": 805306368,
+    "linear": 5773125746688,
+    "attention_core": 2663424000000
+   },
+   "flops_by_stream": {
+    "outside_blocks": 3574333440,
+    "image": 5566957092864,
+    "text": 203399626752,
+    "joint_attention_core": 2663424000000
+   }
+  }
+ },
+ "attention": {
+  "width": 1152,
+  "heads": 16,
+  "head_dim": 72,
+  "flops": [
+   {
+    "tokens": 64,
+    "attention_core": 18874368,
+    "linear": 2054356992,
+    "share": 0.009103840682788052,
+    "model_share": 0.009174311926605505
+   },
+   {
+    "tokens": 256,
+    "attention_core": 301989888,
+    "linear": 8169652224,
+    "share": 0.03564714892431943,
+    "model_share": 0.03571428571428571
+   },
+   {
+    "tokens": 1024,
+    "attention_core": 4831838208,
+    "linear": 32630833152,
+    "share": 0.12897740691175313,
+    "model_share": 0.12903225806451613
+   },
+   {
+    "tokens": 4096,
+    "attention_core": 77309411328,
+    "linear": 130475556864,
+    "share": 0.37206450495766186,
+    "model_share": 0.37209302325581395
+   },
+   {
+    "tokens": 16384,
+    "attention_core": 1236950581248,
+    "linear": 521854451712,
+    "share": 0.7032903352375907,
+    "model_share": 0.7032967032967034
+   }
+  ],
+  "cpu": [
+   {
+    "tokens": 256,
+    "naive_ms": 7.82,
+    "fused_ms": 0.7,
+    "naive_largest_alloc_MB": 5.37,
+    "fused_largest_alloc_MB": 1.18,
+    "naive_total_alloc_MB": 13.76,
+    "fused_total_alloc_MB": 1.87,
+    "score_matrix_MB_fp32": 4.194304
+   },
+   {
+    "tokens": 1024,
+    "naive_ms": 61.13,
+    "fused_ms": 18.58,
+    "naive_largest_alloc_MB": 71.83,
+    "fused_largest_alloc_MB": 4.87,
+    "naive_total_alloc_MB": 206.05,
+    "fused_total_alloc_MB": 9.58,
+    "score_matrix_MB_fp32": 67.108864
+   },
+   {
+    "tokens": 2048,
+    "naive_ms": 253.28,
+    "fused_ms": 41.53,
+    "naive_largest_alloc_MB": 277.87,
+    "fused_largest_alloc_MB": 9.44,
+    "naive_total_alloc_MB": 814.74,
+    "fused_total_alloc_MB": 14.37,
+    "score_matrix_MB_fp32": 268.435456
+   },
+   {
+    "tokens": 4096,
+    "naive_ms": 864.01,
+    "fused_ms": 169.16,
+    "naive_largest_alloc_MB": 1092.62,
+    "fused_largest_alloc_MB": 18.87,
+    "naive_total_alloc_MB": 3240.1,
+    "fused_total_alloc_MB": 23.94,
+    "score_matrix_MB_fp32": 1073.741824
+   }
+  ],
+  "threads": 8
+ },
+ "memory": [
+  {
+   "model": "SD 1.5 U-Net, 512px",
+   "params": 859520964,
+   "weights_fp32_GB": 3.438083856,
+   "weights_bf16_GB": 1.719041928,
+   "train_state_GB": 13.752335424,
+   "attention_tokens": 4096,
+   "attention_heads": 8,
+   "one_score_matrix_fp16_MB": 268.435456
+  },
+  {
+   "model": "DiT-XL/2, 256px",
+   "params": 675129632,
+   "weights_fp32_GB": 2.700518528,
+   "weights_bf16_GB": 1.350259264,
+   "train_state_GB": 10.802074112,
+   "attention_tokens": 256,
+   "attention_heads": 16,
+   "one_score_matrix_fp16_MB": 2.097152,
+   "train_activations_GB": 0.427556864,
+   "train_activations_no_scores_GB": 0.280756224
+  },
+  {
+   "model": "DiT-XL/2, 512px",
+   "params": 675129632,
+   "weights_fp32_GB": 2.700518528,
+   "weights_bf16_GB": 1.350259264,
+   "train_state_GB": 10.802074112,
+   "attention_tokens": 1024,
+   "attention_heads": 16,
+   "one_score_matrix_fp16_MB": 33.554432,
+   "train_activations_GB": 3.471835136,
+   "train_activations_no_scores_GB": 1.123024896
+  },
+  {
+   "model": "SD3 MM-DiT d=24, 1024px",
+   "params": 2028328000,
+   "weights_fp32_GB": 8.113312,
+   "weights_bf16_GB": 4.056656,
+   "train_state_GB": 32.453248,
+   "attention_tokens": 4250,
+   "attention_heads": 24,
+   "one_score_matrix_fp16_MB": 867.0,
+   "train_activations_GB": 57.346848,
+   "train_activations_no_scores_GB": 5.326848
+  },
+  {
+   "model": "SD3 MM-DiT d=38, 1024px",
+   "params": 8056617792,
+   "weights_fp32_GB": 32.226471168,
+   "weights_bf16_GB": 16.113235584,
+   "train_state_GB": 128.905884672,
+   "attention_tokens": 4250,
+   "attention_heads": 38,
+   "one_score_matrix_fp16_MB": 1372.75,
+   "train_activations_GB": 143.765362,
+   "train_activations_no_scores_GB": 13.354112
+  }
+ ]
+}

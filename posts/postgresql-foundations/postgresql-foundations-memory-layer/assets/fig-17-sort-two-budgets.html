@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<title>The same sort, two budgets</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 40px; background: #f5f5f5; color: #2d3142;
+         font-family: 'Geist', system-ui, sans-serif; }
+  .eyebrow { font-family: 'Geist Mono', ui-monospace, monospace; font-size: 8px; letter-spacing: 0.18em;
+              text-transform: uppercase; color: #7a8399; margin: 0 0 6px; }
+  h1 { font-family: 'Instrument Serif', Georgia, serif; font-weight: 400; font-size: 1.75rem; margin: 0 0 4px; }
+  .sub { font-family: 'Geist', system-ui, sans-serif; font-size: 13px; color: #4f5d75; margin: 0 0 24px;
+          max-width: 62ch; }
+  svg { display: block; max-width: 100%; height: auto; }
+  footer { margin-top: 28px; padding-top: 12px; border-top: 1px solid rgba(45,49,66,0.12);
+            font-family: 'Geist Mono', ui-monospace, monospace; font-size: 9px; color: #7a8399;
+            letter-spacing: 0.06em; }
+</style></head><body>
+<p class="eyebrow">LOCAL MEMORY</p>
+<h1>The same sort, two budgets</h1>
+<p class="sub">PostgreSQL 16.2, parallel query off. From EXPLAIN (ANALYZE, BUFFERS): 40,464 kB of temp files versus 81,868 kB of memory.</p>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1016 320" width="1016" height="320" role="img">
+  <defs>
+    <style>/*<![CDATA[*/@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&display=swap');/*]]>*/</style>
+    <marker id="arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#4f5d75"/>
+    </marker>
+    <marker id="arrow-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#eb6c36"/>
+    </marker>
+    <marker id="arrow-link" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#2e5aa8"/>
+    </marker>
+  </defs>
+  <rect width="100%" height="100%" fill="#f5f5f5"/>
+<text x="32" y="44" fill="#7a8399" font-size="8" font-weight="500" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="start" letter-spacing="0.18em">ONE MILLION ROWS, ORDER BY AMOUNT_CENTS, SINGLE PROCESS — SPACE AND TIME UNDER TWO BUDGETS</text><text x="32" y="110" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', system-ui, sans-serif" text-anchor="start">work_mem = 4 MB</text><text x="32" y="128" fill="#7a8399" font-size="8" font-weight="400" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="start">Sort Method: external merge</text><rect x="200" y="90" width="291.3408" height="30" rx="2" fill="#2d3142" fill-opacity="0.12" stroke="#2d3142" stroke-width="0.8"/><text x="499.3408" y="109" fill="#2d3142" font-size="9" font-weight="600" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="start">40,464 kB in temp files</text><rect x="200" y="130" width="331.1" height="14" rx="2" fill="#4f5d75" fill-opacity="0.18" stroke="#4f5d75" stroke-width="0.8"/><text x="539.1" y="141" fill="#4f5d75" font-size="8" font-weight="400" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="start">662 ms</text><text x="32" y="202" fill="#eb6c36" font-size="12" font-weight="600" font-family="'Geist', system-ui, sans-serif" text-anchor="start">work_mem = 256 MB</text><text x="32" y="220" fill="#7a8399" font-size="8" font-weight="400" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="start">Sort Method: quicksort</text><rect x="200" y="182" width="589.4496" height="30" rx="2" fill="#eb6c36" fill-opacity="0.16" stroke="#eb6c36" stroke-width="0.8"/><text x="797.4496" y="201" fill="#eb6c36" font-size="9" font-weight="600" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="start">81,868 kB in memory</text><rect x="200" y="222" width="246.6" height="14" rx="2" fill="#4f5d75" fill-opacity="0.18" stroke="#4f5d75" stroke-width="0.8"/><text x="454.6" y="233" fill="#4f5d75" font-size="8" font-weight="400" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="start">493 ms</text><text x="32" y="268" fill="#7a8399" font-size="8" font-weight="400" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="start" letter-spacing="0.02em">the in-memory sort needs twenty times the default budget and is 26% faster; the spill is a merge over 10,135 temp blocks, not a catastrophe</text><line x1="32" y1="288" x2="984" y2="288" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/><text x="32" y="304" fill="#7a8399" font-size="8" font-weight="500" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="start" letter-spacing="0.18em">LEGEND</text><rect x="108" y="296" width="10" height="10" rx="2" fill="#2d3142" fill-opacity="0.18" stroke="#2d3142" stroke-width="0.8"/><text x="126" y="305" fill="#4f5d75" font-size="8" font-weight="400" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="start" letter-spacing="0.06em">space used by the sort</text><rect x="312.4" y="296" width="10" height="10" rx="2" fill="#eb6c36" fill-opacity="0.18" stroke="#eb6c36" stroke-width="0.8"/><text x="330.4" y="305" fill="#4f5d75" font-size="8" font-weight="400" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="start" letter-spacing="0.06em">in memory</text><rect x="423.2" y="296" width="10" height="10" rx="2" fill="#4f5d75" fill-opacity="0.18" stroke="#4f5d75" stroke-width="0.8"/><text x="441.2" y="305" fill="#4f5d75" font-size="8" font-weight="400" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="start" letter-spacing="0.06em">execution time</text>
+</svg>
+<footer>postgresql-foundations-memory-layer &middot; figure 17 &middot; own redraw, not reproduced from any source</footer>
+</body></html>

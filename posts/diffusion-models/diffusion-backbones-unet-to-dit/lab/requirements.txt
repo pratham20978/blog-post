@@ -1,0 +1,6 @@
+# CPU-only PyTorch (about 200 MB download) and diffusers, pinned to the versions the
+# captures were made with. Install the first line from PyTorch's CPU index:
+#   pip install --index-url https://download.pytorch.org/whl/cpu torch==2.14.0+cpu
+#   pip install diffusers==0.40.0
+torch==2.14.0+cpu
+diffusers==0.40.0
