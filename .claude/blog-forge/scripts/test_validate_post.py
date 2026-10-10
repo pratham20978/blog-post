@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import unittest
 import struct
 import zipfile
@@ -13,6 +14,7 @@ from .validate_post import (
     check_frontmatter,
     check_lab_downloads,
     check_lab_grade,
+    check_lab_notebook,
     check_linkedin,
     check_public_boundary,
     check_publish,
@@ -20,6 +22,8 @@ from .validate_post import (
     check_routes,
     check_social,
     check_structure,
+    lab_cells_digest,
+    lab_inputs_digest,
 )
 
 CANONICAL = "https://canery.in/blogs/typed-metadata"
@@ -984,6 +988,94 @@ class TestSeriesFrontmatter(unittest.TestCase):
                 any("member should live at posts/postgresql-foundations/<post-slug>/" in item
                     for item in report.warnings)
             )
+
+
+class TestLabNotebook(unittest.TestCase):
+    """The notebook is built, cleared and current, or the gate says which it is not."""
+
+    def lab(self, directory: str, *, readme: bool = True) -> Path:
+        root = Path(directory)
+        (root / "lab").mkdir()
+        if readme:
+            (root / "lab" / "README.md").write_text("# Lab\n\n- **Grade:** G1 · runs anywhere\n", encoding="utf-8")
+        (root / "lab" / "run.py").write_text("print('ok')\n", encoding="utf-8")
+        return root
+
+    def write_notebook(self, root: Path, *, receipt: bool = True, outputs: bool = False,
+                       source: str = "print('ok')\n") -> None:
+        cell = {"cell_type": "code", "execution_count": 1 if outputs else None, "id": "002-run",
+                "metadata": {}, "source": [source],
+                "outputs": [{"output_type": "stream", "name": "stdout", "text": ["ok\n"]}] if outputs else []}
+        metadata = {"kernelspec": {"name": "python3", "display_name": "Python 3", "language": "python"}}
+        if receipt:
+            metadata["blog_forge"] = {
+                "built": "2026-10-10", "python": "3.14.4", "seconds": 1,
+                "lab_sha256": lab_inputs_digest(root), "cells_sha256": lab_cells_digest(root),
+            }
+        notebook = {"cells": [{"cell_type": "markdown", "id": "001-lab", "metadata": {}, "source": ["# Lab"]}, cell],
+                    "metadata": metadata, "nbformat": 4, "nbformat_minor": 5}
+        (root / "lab" / "notebook.ipynb").write_text(json.dumps(notebook), encoding="utf-8")
+
+    def check(self, root: Path) -> Report:
+        report = Report()
+        check_lab_notebook(root, report)
+        return report
+
+    def test_legacy_lab_with_a_readme_only_warns(self) -> None:
+        with TemporaryDirectory() as directory:
+            report = self.check(self.lab(directory))
+            self.assertEqual(report.errors, [])
+            self.assertEqual(len(report.warnings), 1)
+            self.assertIn("no notebook.ipynb", report.warnings[0])
+
+    def test_single_file_lab_without_a_readme_is_not_asked_for_a_notebook(self) -> None:
+        with TemporaryDirectory() as directory:
+            report = self.check(self.lab(directory, readme=False))
+            self.assertEqual((report.errors, report.warnings), ([], []))
+
+    def test_a_built_current_notebook_passes(self) -> None:
+        with TemporaryDirectory() as directory:
+            root = self.lab(directory)
+            (root / "lab-cells.py").write_text("# %% after: Lab\nprint('ok')\n", encoding="utf-8")
+            self.write_notebook(root)
+            report = self.check(root)
+            self.assertEqual((report.errors, report.warnings), ([], []))
+
+    def test_an_edited_lab_file_makes_the_notebook_stale(self) -> None:
+        with TemporaryDirectory() as directory:
+            root = self.lab(directory)
+            self.write_notebook(root)
+            (root / "lab" / "run.py").write_text("print('changed')\n", encoding="utf-8")
+            self.assertTrue(any("stale, lab/ changed" in item for item in self.check(root).errors))
+
+    def test_a_new_missing_or_edited_cells_file_makes_the_notebook_stale(self) -> None:
+        with TemporaryDirectory() as directory:
+            root = self.lab(directory)
+            self.write_notebook(root)
+            cells = root / "lab-cells.py"
+            cells.write_text("# %% after: Lab\npass\n", encoding="utf-8")
+            self.assertTrue(any("lab-cells.py changed" in item for item in self.check(root).errors))
+            self.write_notebook(root)
+            cells.unlink()
+            self.assertTrue(any("lab-cells.py is missing" in item for item in self.check(root).errors))
+
+    def test_outputs_a_missing_receipt_and_home_paths_fail(self) -> None:
+        cases = {
+            "every output cleared": {"outputs": True},
+            "no build receipt": {"receipt": False},
+            "absolute home paths: /home/pratham/": {"source": "open('/home/pratham/lab/x')\n"},
+        }
+        for message, options in cases.items():
+            with self.subTest(message=message), TemporaryDirectory() as directory:
+                root = self.lab(directory)
+                self.write_notebook(root, **options)
+                self.assertTrue(any(message in item for item in self.check(root).errors))
+
+    def test_a_notebook_that_is_not_json_fails(self) -> None:
+        with TemporaryDirectory() as directory:
+            root = self.lab(directory)
+            (root / "lab" / "notebook.ipynb").write_text("{not json", encoding="utf-8")
+            self.assertTrue(any("not valid JSON" in item for item in self.check(root).errors))
 
 
 if __name__ == "__main__":

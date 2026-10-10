@@ -3,7 +3,7 @@ name: blog-authoring
 description: Plan a multi-part technical series with persistent compact context, or write a long-form computer-science education blog post with researched sources, figures, and a pre-publish quality gate. Use whenever the user asks to build a series or write, draft, plan, outline, expand, or review a technical blog post, article, tutorial, explainer, or deep dive.
 license: MIT
 metadata:
-  version: "0.7"
+  version: "0.8"
 ---
 
 # Blog Authoring
@@ -45,7 +45,7 @@ Run these in order. Stop at the checkpoints and wait for the user.
 | 2 Outline | Section skeleton, word budget, figure plan, term map | `outline.md` |
 | **CHECKPOINT B** | User approves before any long prose is written | |
 | 3 Draft | Write section by section against the budget | `blog.md` |
-| 4 Assets | Build figures, an optional runnable lab, and finished social handoff | `assets/`, optional `lab/`, `manifest.md`, `social.md` |
+| 4 Assets | Build figures, an optional runnable lab and its notebook, and finished social handoff | `assets/`, optional `lab/` and `lab-cells.py`, `manifest.md`, `social.md` |
 | 5 Assemble | Frontmatter, figure placeholders, captions | `blog.md` |
 | 6 Gate | Run the checklist and the validator; for a series member, analyse the finished part and update the shared `context.md` | pass/fail report plus current series memory |
 | **CHECKPOINT C** | Hand off for upload and publish | |
@@ -134,6 +134,7 @@ Load only what the current phase needs.
 | `assets/post-template.md` | starting a new post |
 | `assets/series-context-template.md` | creating the compact memory file for a new series |
 | `assets/lab-readme-template.md` | starting any lab's `README.md` |
+| `assets/lab-cells-template.py` | starting any lab's `lab-cells.py`, the code cells of its notebook |
 | `assets/checklist.md` | phase 6 |
 
 ---
@@ -151,6 +152,7 @@ posts/<slug>/
 ├── research/ledger.md   claim → source → URL → access date
 ├── lab/                 optional runnable files uploaded individually to MinIO
 ├── lab-<slug>.zip       optional whole-lab archive, built from lab/
+├── lab-cells.py         private: the code cells that build lab/notebook.ipynb from lab/README.md
 ├── access.md            private: probe snapshot and access requests, when a lab needs one
 └── assets/
     ├── cover-prompt.md
@@ -215,7 +217,7 @@ post preserves established terminology and does not repeat completed work. After
 the gate, update that context from the final artifacts. Keep it compact: no copied prose, outline,
 ledger, or source dump, and no planned claim recorded as already established.
 
-**Keep labs minimal and intentional.** Use one file when one file is genuinely runnable and understandable. Split into multiple files only for distinct responsibilities such as schema, runner, dependencies, input, and expected output. Every lab ships `README.md` from `assets/lab-readme-template.md`: its grade (G0–G3), what was executed, provenance, run order, the exercise ladder its tier requires (E1–E5), and cleanup. Never invent a number: what could not run ships as an unrun harness with an empty schema, and the article calls those numbers documented. Ask the owner for hardware, privileges or services only through an access request, and only when the post's quality depends on it. Never include credentials, `.env`, caches, virtual environments, compiled output, or unrelated files. Read `references/labs.md` before creating or reviewing a lab.
+**Keep labs minimal and intentional.** Use one file when one file is genuinely runnable and understandable. Split into multiple files only for distinct responsibilities such as schema, runner, dependencies, input, and expected output. Every lab ships `README.md` from `assets/lab-readme-template.md`: its grade (G0–G3), what was executed, provenance, run order, the exercise ladder its tier requires (E1–E5), and cleanup. Every lab with a README also ships `notebook.ipynb`, the README with runnable cells, built and executed top to bottom by `scripts/build_lab_notebook.py` and rebuilt after any change to the lab. Never invent a number: what could not run ships as an unrun harness with an empty schema, and the article calls those numbers documented. Ask the owner for hardware, privileges or services only through an access request, and only when the post's quality depends on it. Never include credentials, `.env`, caches, virtual environments, compiled output, or unrelated files. Read `references/labs.md` before creating or reviewing a lab.
 
 **Never use a technical term before introducing it.** At its first meaningful use, give its canonical name (and expand an acronym), say what kind of thing it is, explain the job it does or why it is used here, and state when the reader should use, inspect, or care about it. Add a concrete example or distinguish a nearby concept when confusion is likely. Build a term map in the outline with `term | first section | what | why | when`, then fold those explanations into `blog.md`; never send the reader to the term map.
 
@@ -225,7 +227,7 @@ ledger, or source dump, and no planned claim recorded as already established.
 
 Phase 6 runs two things.
 
-1. `${CLAUDE_PLUGIN_ROOT}/scripts/validate_post.py <post-folder>/` — mechanical checks: frontmatter fields, series plan/context placement, tag count, no body H1, Insights position, heading order, figure references, lab file/manifest/download parity, local links, public MinIO lab URLs, public image URLs at publish time, placeholder resolution, and word count against tier.
+1. `${CLAUDE_PLUGIN_ROOT}/scripts/validate_post.py <post-folder>/` — mechanical checks: frontmatter fields, series plan/context placement, tag count, no body H1, Insights position, heading order, figure references, lab file/manifest/download parity, a lab notebook that is built and current, local links, public MinIO lab URLs, public image URLs at publish time, placeholder resolution, and word count against tier.
 2. `assets/checklist.md` — judgment checks the script cannot make: is the worked example actually concrete, is each technical term correctly introduced where it first matters, does every equation have a plain sentence after it, and does any section restate another.
 
 Report failures plainly and fix them. Do not mark a post ready with a failing gate.

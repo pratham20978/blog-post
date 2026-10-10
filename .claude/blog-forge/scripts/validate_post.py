@@ -14,6 +14,8 @@ Exit codes: 0 pass, 1 failures found, 2 could not read the post.
 
 import argparse
 import datetime as dt
+import hashlib
+import json
 import pathlib
 import re
 import struct
@@ -111,6 +113,10 @@ PRIVATE_FILE_RE = re.compile(
 )
 FENCE_RE = re.compile(r"^```")
 LAB_GRADE_RE = re.compile(r"^\s*[-*]?\s*\*\*Grade:\*\*\s*(?P<value>.*)$", re.M)
+# The notebook is built from lab/README.md and the private lab-cells.py by build_lab_notebook.py.
+NOTEBOOK_FILE = "lab/notebook.ipynb"
+LAB_CELLS_FILE = "lab-cells.py"
+HOME_PATH_RE = re.compile(r"/home/[^/\s\"'`]+/|/Users/[^/\s\"'`]+/|\b[A-Za-z]:\\Users\\[^\\\s\"'`]+")
 LINKEDIN_FRAME_RE = re.compile(r"^##\s+(\d{2})\s+[—-]\s+.+$", re.M)
 SOCIAL_ASSET_HEADING_RE = re.compile(
     r"^###\s+(?P<stem>(?P<kind>feed|story)-(?P<number>\d{2})-[a-z0-9-]+)\s*$",
@@ -540,6 +546,76 @@ def check_lab_grade(root, rep):
         rep.error(f"lab: grade '{value}' must be G1, G2 or G3 (a G0 post has no lab/)")
     elif grade.group(1) == "3" and "needs" not in value:
         rep.error(f"lab: a G3 grade must name the resource it needs: '{value}'")
+
+
+def lab_inputs_digest(root):
+    """Hash every lab file a notebook is built from, so that any edit makes it stale."""
+    digest = hashlib.sha256()
+    for relative in publishable_lab_files(root):
+        if relative == NOTEBOOK_FILE:
+            continue
+        digest.update(relative.encode("utf-8") + b"\0")
+        digest.update((root / relative).read_bytes() + b"\0")
+    return digest.hexdigest()
+
+
+def lab_cells_digest(root):
+    """Hash the private lab-cells.py, or None when the post has none."""
+    cells = root / LAB_CELLS_FILE
+    return hashlib.sha256(cells.read_bytes()).hexdigest() if cells.is_file() else None
+
+
+def check_lab_notebook(root, rep):
+    """Warn on a lab with no notebook; fail one that is not built, cleared and current."""
+    local_files = publishable_lab_files(root)
+    if NOTEBOOK_FILE not in local_files:
+        if any(pathlib.Path(path).name.casefold() == "readme.md" for path in local_files):
+            rep.warn(
+                "lab: no notebook.ipynb (a legacy lab); new labs ship one built by "
+                "build_lab_notebook.py, see references/labs.md"
+            )
+        return
+    try:
+        notebook = json.loads((root / NOTEBOOK_FILE).read_text(encoding="utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+        rep.error(f"lab notebook: {NOTEBOOK_FILE} is not valid JSON ({exc})")
+        return
+    cells = notebook.get("cells") if isinstance(notebook, dict) else None
+    if not isinstance(cells, list) or notebook.get("nbformat") != 4:
+        rep.error(f"lab notebook: {NOTEBOOK_FILE} is not an nbformat 4 notebook")
+        return
+    cells = [cell for cell in cells if isinstance(cell, dict)]
+    if any(
+        cell.get("cell_type") == "code"
+        and (cell.get("outputs") or cell.get("execution_count") is not None)
+        for cell in cells
+    ):
+        rep.error("lab notebook: ship it with every output cleared, as build_lab_notebook.py writes it")
+    sources = "".join(
+        "".join(source) if isinstance(source, list) else str(source)
+        for source in (cell.get("source", "") for cell in cells)
+    )
+    leaks = sorted(set(HOME_PATH_RE.findall(sources)))
+    if leaks:
+        rep.error("lab notebook: absolute home paths: " + ", ".join(leaks))
+    metadata = notebook.get("metadata")
+    receipt = metadata.get("blog_forge") if isinstance(metadata, dict) else None
+    if not isinstance(receipt, dict):
+        rep.error("lab notebook: no build receipt; build it with build_lab_notebook.py, never by hand")
+        return
+    stale = []
+    if receipt.get("lab_sha256") != lab_inputs_digest(root):
+        stale.append("lab/ changed")
+    cells_digest = lab_cells_digest(root)
+    if cells_digest is None and receipt.get("cells_sha256") is not None:
+        stale.append(f"{LAB_CELLS_FILE} is missing")
+    elif receipt.get("cells_sha256") != cells_digest:
+        stale.append(f"{LAB_CELLS_FILE} changed")
+    if stale:
+        rep.error(
+            "lab notebook: stale, " + " and ".join(stale)
+            + " since it was executed; rebuild it with build_lab_notebook.py, then the zip"
+        )
 
 
 def word_count(text):
@@ -1359,6 +1435,7 @@ def main():
     check_public_boundary(body, rep)
     check_lab_downloads(body, manifest_text, root, rep)
     check_lab_grade(root, rep)
+    check_lab_notebook(root, rep)
     check_length(body, tier, rep)
     if social_text is not None:
         check_social(fm, root, social_text, linkedin_prompts_text, rep)

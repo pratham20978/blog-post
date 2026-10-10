@@ -21,6 +21,7 @@ and what it writes. Say whether the article's numbers come from this run, from a
 |---|---|---|---|
 | `README.md` | — | — | this file: grade, setup, run order, exercises, cleanup |
 | `<run.py>` | G<n> | yes | the entry point |
+| `notebook.ipynb` | G<n> | yes | this README with a runnable cell under each step and exercise; built from it, never edited |
 | `<expected-output.txt>` | — | — | the run the article quotes, to compare with yours |
 | `<results-schema.json>` | — | — | (if a G3 file was not run) what a run writes; empty on purpose |
 

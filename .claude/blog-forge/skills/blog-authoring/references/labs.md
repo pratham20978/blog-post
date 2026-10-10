@@ -255,7 +255,7 @@ and the key observation.
   captured, every required rung needs a path at G2 or below, and a G3-only rung is an extra.
 
 **Format.** Put the ladder in `lab/README.md` under `## Exercises`, or in `## Try it yourself` for a
-G0 post:
+G0 post. The notebook carries it as written, because it is built from the README:
 
 ```markdown
 ### E3 — Predict: <what changes>
@@ -308,8 +308,63 @@ Use multiple files for combinations such as:
 - `requirements.txt`, `pyproject.toml`, or package manifest — dependencies
 - a small input fixture — only when the experiment needs it
 - `expected-output.txt`, `.json`, or `.md` — stable captured output worth comparing
+- `notebook.ipynb` — the README with runnable cells, built by `scripts/build_lab_notebook.py` and never edited by hand; see [The notebook](#the-notebook)
 
 A multi-file lab requires `README.md`, and every graded lab carries one, because the grade and the ladder live there. Keep the directory shallow unless the language or build tool requires nesting.
+
+## The notebook
+
+Every new lab with a README also ships `lab/notebook.ipynb`. It is the README itself, verbatim and
+split at its headings, with a runnable cell under the text that describes each command, snippet and
+exercise. It adds no prose and simplifies nothing: the reader runs each step where the README
+discusses it, instead of pasting code into an unnamed place. The README stays the single source, so
+the ladder cannot drift between the two. Never edit the notebook; rebuild it.
+
+Its code cells come from two places:
+
+- **`<post>/lab-cells.py`**, a private build file beside `blog.md` that is never uploaded. Each cell
+  starts with `# %% after: <README heading>` and lands at the end of that section, before the
+  section's first `<details>` answer. An anchor is the heading's text or a prefix of it that ends at
+  a word (`E3` names `E3 — Predict: …`), and it must match exactly one heading. Start the file from
+  `assets/lab-cells-template.py`.
+- **Every `python` fence in the README outside an answer**, which becomes a cell as it stands. A
+  `bash` or `sql` fence stays text, and a cell after it does the same work in Python.
+
+Rules for the cells:
+
+- Run an entry point with `subprocess.run([sys.executable, "-u", "<script>.py", ...], check=True)`,
+  never `!python` or a `%` magic. `sys.executable` is the kernel's own interpreter, `-u` makes a
+  long stage print its progress as it runs, and `check=True` fails the cell on a non-zero exit. The
+  build rejects shell and magic syntax.
+- Never overwrite a shipped capture. Pass `--out mine.json` or the lab's equivalent, so the reader
+  can still compare their run with the author's.
+- End a marker with `[skip-build]` only when the cell needs the reader's own work (an E4 repair, an
+  E5 build) or a G3 resource. The build syntax-checks and ships it but does not run it.
+- G2: the cell that starts a service keeps its data in a scratch directory inside the lab folder and
+  registers the stop with `atexit`, so a failed run or a restarted kernel never leaves it running.
+  The cleanup cell stops it, deletes the scratch directory, and raises if anything is still running.
+
+Build it once the lab's captures are final, on an idle machine, since the build records timings:
+
+```bash
+uv run --no-project --with nbclient==0.11.0 --with nbformat==5.11.1 --with ipykernel==7.4.0 \
+  --with-requirements posts/<series-slug>/<slug>/lab/requirements.txt \
+  python .claude/blog-forge/scripts/build_lab_notebook.py posts/<series-slug>/<slug>/
+```
+
+Drop `--with-requirements` for a lab with no requirements file. The build copies the lab's
+publishable files into a fresh temporary directory and runs every cell top to bottom in a fresh
+kernel. Only when all of them pass does it write `lab/notebook.ipynb`, with outputs cleared (an
+output under an exercise would be its answer, and the README already says what to expect),
+deterministic cell ids, and a receipt that hashes the lab and `lab-cells.py`. It writes nothing and
+exits 1 when a cell fails, when the kernel is not running in the build environment, or when an
+output prints a path in the home directory. `--convert-only --out <file>` shows the structure
+without running anything, and never writes into `lab/`.
+
+The validator fails a notebook whose receipt no longer matches the lab, so **rebuild the notebook
+after any change to `lab/` or `lab-cells.py`, then rebuild the zip.** It also fails a notebook that
+was shipped with outputs, has no receipt, or contains an absolute home path. A legacy lab with a
+README and no notebook gets a warning, never a failure.
 
 ## Quality rules
 
@@ -335,7 +390,7 @@ Every publishable file receives its own manifest row and download link:
 
 Use versioned object keys when changing an already published file. Upload to the public MinIO `media` bucket, producing URLs under `https://minio.canery.in/media/`.
 
-Set an accurate `Content-Type`. When the upload workflow supports object metadata, set `Content-Disposition: attachment; filename="<name>"` so clicking the article link downloads the file instead of rendering it in the browser.
+Set an accurate `Content-Type` (`application/x-ipynb+json` for `notebook.ipynb`). When the upload workflow supports object metadata, set `Content-Disposition: attachment; filename="<name>"` so clicking the article link downloads the file instead of rendering it in the browser.
 
 ### The whole-lab archive
 

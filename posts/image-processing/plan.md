@@ -1,6 +1,6 @@
 # Series plan — Image Processing by Hand
 
-**Slug:** image-processing · **Shape:** hybrid (hub and spokes) · **Parts:** 14 (2 published, 12 planned)
+**Slug:** image-processing · **Shape:** hybrid (hub and spokes) · **Parts:** 14 (2 published, 4 built, 8 planned)
 
 ## Why this is a series and not one post
 
@@ -134,6 +134,10 @@ Part 2 rather than Part 1.
   Woods on frequency-domain filter design.
 - **Search intent:** "2D FFT of an image", "what does phase contain in an image", "frequency
   domain filtering", "remove periodic noise from image", "fftshift explained"
+- **Status:** **built** 2026-10-10 — 9,923 words, 13 figures, 8 feed + 4 Story cards, gate and
+  `--social` PASS; not yet published (canonical
+  https://canery.in/blogs/the-2d-dft-spectra-phase-filtering once live). Also covers Part 3's
+  handoff, resizing through the spectrum.
 
 ### Part 6 — Wavelets and Multiresolution
 
@@ -150,6 +154,9 @@ Part 2 rather than Part 1.
   5/3 and 9/7 filters.
 - **Search intent:** "wavelet transform image", "Haar wavelet explained", "JPEG2000 vs JPEG",
   "wavelet denoising", "what is multiresolution analysis"
+- **Status:** **built** 2026-10-11 — 7,491 words, 11 figures, 8 feed + 4 Story cards, gate and
+  `--social` PASS; not yet published. Title *Wavelets and Multiresolution: Haar, Lifting, JPEG
+  2000* (54 chars) (canonical https://canery.in/blogs/wavelets-and-multiresolution once live)
 
 ### Part 7 — Edge-Preserving Smoothing: Bilateral, Non-Local Means, Anisotropic Diffusion
 

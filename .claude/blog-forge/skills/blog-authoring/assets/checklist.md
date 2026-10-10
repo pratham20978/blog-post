@@ -51,6 +51,8 @@ Run after `validate_post.py` passes. The script checks structure; this checks ju
 - [ ] Does the lab ship the exercise ladder its tier requires (L1 E1–E2, L2 E1–E3, L3 E1–E4, L4 E1–E5), each exercise with a self-check and a hidden answer from the author's own run?
 - [ ] Was any access request raised only because quality needed it, answered, and recorded in `access.md`, and did a declined request build exactly the promised fallback?
 - [ ] If `lab-<slug>.zip` is linked, was it rebuilt after the last change to `lab/`?
+- [ ] Was `lab/notebook.ipynb` rebuilt with `build_lab_notebook.py` after the last change to `lab/` or `lab-cells.py`, and the zip after it?
+- [ ] Is every `[skip-build]` cell there only because it needs the reader's own work or a G3 resource?
 
 ## Terminology
 
