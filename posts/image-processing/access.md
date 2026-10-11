@@ -24,7 +24,9 @@ zlib.h=yes readline/readline.h=yes openssl/ssl.h=yes zstd.h=yes lz4.h=no event.h
 
 ## Requests
 
-None. G0 needs no hardware, privilege or service. Part 6 (2026-10-11) is G0 as well and raised none.
+None. G0 needs no hardware, privilege or service. Parts 6 and 7 (2026-10-11) are G0 as well and
+raised none. Part 7 re-ran the probe on 2026-10-11, after its build; it matches the 2026-10-10
+snapshot above.
 
 ## Self-provisioned
 

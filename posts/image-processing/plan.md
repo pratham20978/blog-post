@@ -1,6 +1,6 @@
 # Series plan — Image Processing by Hand
 
-**Slug:** image-processing · **Shape:** hybrid (hub and spokes) · **Parts:** 14 (2 published, 4 built, 8 planned)
+**Slug:** image-processing · **Shape:** hybrid (hub and spokes) · **Parts:** 14 (2 published, 5 built, 7 planned)
 
 ## Why this is a series and not one post
 
@@ -21,29 +21,29 @@ Part 2 rather than Part 1.
 
 ## Reader objectives
 
-| # | After this the reader can ... | Part |
-|---|---|---|
-| 1 | name which of four stages produced a given number, and therefore which stage holds the bug | 1 |
-| 2 | evaluate a linear filter as one weighted sum over a neighbourhood, on real integers | 1 |
-| 3 | say what a set of weights does to the signal, from its transfer function rather than its name | 1 |
-| 4 | say where the arithmetic stops being linear, and what that costs | 1 |
-| 5 | derive every use of the Laplacian from one identity — it is what blur removes per unit of scale | 2 |
-| 6 | predict what changes when a library's Laplacian aperture changes, before running it | 2 |
-| 7 | choose a resampling kernel from what it does to the spectrum, not from its name | 3 |
-| 8 | say why a downscale needs a filter and an upscale needs a different one | 3 |
-| 9 | choose or design a derivative kernel, and say what "optimal" means for one | 4 |
-| 10 | read a 2-D spectrum, and say what survives in phase when magnitude is destroyed | 5 |
-| 11 | design a frequency-domain filter and say when the spatial equivalent is cheaper | 5 |
-| 12 | say where Fourier stops being the right basis, and what replaces it | 6 |
-| 13 | smooth an image without moving its edges, and price the three ways of doing it | 7 |
-| 14 | set Canny's two thresholds from the gradient statistics rather than by search | 8 |
-| 15 | read the structure tensor's eigenvalues and say what the neighbourhood contains | 9 |
-| 16 | say why optical flow and corner detection are the same matrix | 9 |
-| 17 | treat σ as a search dimension, and say why the Gaussian is the only legal kernel for it | 10 |
-| 18 | pick a thresholding or segmentation method from the histogram's shape | 11 |
-| 19 | use erosion and dilation as an algebra with laws, not as a pair of tricks | 12 |
-| 20 | say when a pixel value is a physical quantity and when it is an encoding | 13 |
-| 21 | edit an image by its gradients and say why the pixels can be discarded | 14 |
+| #  | After this the reader can ...                                                                    | Part |
+| -- | ------------------------------------------------------------------------------------------------ | ---- |
+| 1  | name which of four stages produced a given number, and therefore which stage holds the bug       | 1    |
+| 2  | evaluate a linear filter as one weighted sum over a neighbourhood, on real integers              | 1    |
+| 3  | say what a set of weights does to the signal, from its transfer function rather than its name    | 1    |
+| 4  | say where the arithmetic stops being linear, and what that costs                                 | 1    |
+| 5  | derive every use of the Laplacian from one identity — it is what blur removes per unit of scale | 2    |
+| 6  | predict what changes when a library's Laplacian aperture changes, before running it              | 2    |
+| 7  | choose a resampling kernel from what it does to the spectrum, not from its name                  | 3    |
+| 8  | say why a downscale needs a filter and an upscale needs a different one                          | 3    |
+| 9  | choose or design a derivative kernel, and say what "optimal" means for one                       | 4    |
+| 10 | read a 2-D spectrum, and say what survives in phase when magnitude is destroyed                  | 5    |
+| 11 | design a frequency-domain filter and say when the spatial equivalent is cheaper                  | 5    |
+| 12 | say where Fourier stops being the right basis, and what replaces it                              | 6    |
+| 13 | smooth an image without moving its edges, and price the three ways of doing it                   | 7    |
+| 14 | set Canny's two thresholds from the gradient statistics rather than by search                    | 8    |
+| 15 | read the structure tensor's eigenvalues and say what the neighbourhood contains                  | 9    |
+| 16 | say why optical flow and corner detection are the same matrix                                    | 9    |
+| 17 | treat σ as a search dimension, and say why the Gaussian is the only legal kernel for it         | 10   |
+| 18 | pick a thresholding or segmentation method from the histogram's shape                            | 11   |
+| 19 | use erosion and dilation as an algebra with laws, not as a pair of tricks                        | 12   |
+| 20 | say when a pixel value is a physical quantity and when it is an encoding                         | 13   |
+| 21 | edit an image by its gradients and say why the pixels can be discarded                           | 14   |
 
 ## Parts
 
@@ -174,6 +174,12 @@ Part 2 rather than Part 1.
   Durand & Dorsey 2002 for the fast approximation.
 - **Search intent:** "bilateral filter explained", "non-local means denoising", "anisotropic
   diffusion", "blur without losing edges", "cv2.bilateralFilter parameters"
+- **Status:** **built** 2026-10-11 — 6,608 words, 11 figures, 8 feed + 4 Story cards, gate and
+  `--social` PASS; not yet published. Title *Edge-Preserving Smoothing: Bilateral, NL-Means,
+  Diffusion* (57 chars) (canonical https://canery.in/blogs/edge-preserving-smoothing once live).
+  The planned worked example's premise did not hold: the bilateral's range weights protect the
+  impulse (215) more than the step (160), so the post is built on that, and on NL-means separating
+  them by repetition under IPOL's self-weight rule.
 
 ### Part 8 — Canny, Line by Line
 
