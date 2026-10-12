@@ -20,3 +20,6 @@ seed/
 reports/seo/
 # Tunnel private keys, written by scripts/tunnel-setup.sh.
 deploy/cloudflared/creds/
+
+
+posts/

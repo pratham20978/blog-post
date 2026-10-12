@@ -26,7 +26,8 @@ zlib.h=yes readline/readline.h=yes openssl/ssl.h=yes zstd.h=yes lz4.h=no event.h
 
 None. G0 needs no hardware, privilege or service. Parts 6 and 7 (2026-10-11) are G0 as well and
 raised none. Part 7 re-ran the probe on 2026-10-11, after its build; it matches the 2026-10-10
-snapshot above.
+snapshot above. Part 8 (2026-10-12) is G0 and raised none; its probe matches the snapshot except
+`ram_available=3G` (5G before), a transient reading that no G0 part depends on.
 
 ## Self-provisioned
 

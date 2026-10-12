@@ -1,6 +1,6 @@
 # Series plan — Image Processing by Hand
 
-**Slug:** image-processing · **Shape:** hybrid (hub and spokes) · **Parts:** 14 (2 published, 5 built, 7 planned)
+**Slug:** image-processing · **Shape:** hybrid (hub and spokes) · **Parts:** 14 (2 published, 6 built, 6 planned)
 
 ## Why this is a series and not one post
 
@@ -198,6 +198,13 @@ Part 2 rather than Part 1.
   quantised direction.
 - **Search intent:** "Canny edge detection explained", "how to choose Canny thresholds",
   "non-maximum suppression", "hysteresis thresholding", "Canny aperture size"
+- **Status:** **built** 2026-10-12 — 7,105 words, 11 figures, 8 feed + 4 Story cards, gate and
+  `--social` PASS; not yet published. Title *Canny Edge Detection, Line by Line: Setting the
+  Thresholds* (58 chars) (canonical https://canery.in/blogs/canny-line-by-line once live). The
+  planned comparison held only after smoothing: on the raw patch interpolated and quantised
+  suppression read the same neighbours and differ only by tie rule, so the post works the tie rules
+  on the raw patch and the interpolation on the smoothed one. Without smoothing, OpenCV's default L1
+  deletes two rows of the step and no Canny ratio separates the impulse's ring from it.
 
 ### Part 9 — The Structure Tensor: Harris, Shi–Tomasi, and Optical Flow
 
