@@ -1,6 +1,6 @@
 # Series plan — Image Processing by Hand
 
-**Slug:** image-processing · **Shape:** hybrid (hub and spokes) · **Parts:** 14 (2 published, 6 built, 6 planned)
+**Slug:** image-processing · **Shape:** hybrid (hub and spokes) · **Parts:** 14 (2 published, 7 built, 5 planned)
 
 ## Why this is a series and not one post
 
@@ -222,6 +222,13 @@ Part 2 rather than Part 1.
 - **Key sources:** Harris & Stephens 1988; Shi & Tomasi 1994; Lucas & Kanade 1981; Förstner 1987.
 - **Search intent:** "Harris corner detector explained", "structure tensor", "Lucas-Kanade optical
   flow", "Shi-Tomasi vs Harris", "aperture problem"
+- **Status:** **built** 2026-10-12 — 7,971 words, 12 figures, 8 feed + 4 Story cards, gate and
+  `--social` PASS; not yet published. Title as planned, *The Structure Tensor: Harris, Shi–Tomasi,
+  and Optical Flow* (58 chars) (canonical https://canery.in/blogs/the-structure-tensor once live).
+  The planned "flat" position does not exist on the patch: a 3×3 derivative in a 3×3 window reads
+  5×5, so every window holds the step or the impulse; the post states the flat case as the zero
+  matrix and works row r2 instead (diagonal by symmetry), where k = 0.04 and 0.06 disagree at
+  (r2, c3) and `goodFeaturesToTrack` returns (2, 2), not the impulse.
 
 ### Part 10 — Scale Space and SIFT: Why σ Is a Search Dimension
 
@@ -239,6 +246,12 @@ Part 2 rather than Part 1.
   scale selection); Lowe 2004 (SIFT); Mikolajczyk & Schmid 2004.
 - **Search intent:** "SIFT explained", "scale space", "why Gaussian scale space", "difference of
   Gaussians", "SIFT octaves and intervals"
+- **Status:** **built** 2026-10-13 — 8,553 words (validator count, references included), 13
+  figures, 8 feed cards and no Story frames (owner's choice), gate PASS except the six Story checks;
+  not yet published. Title as planned, *Scale Space and SIFT: Why σ Is a Search Dimension* (49
+  chars) (canonical https://canery.in/blogs/scale-space-and-sift once live). The patch is enlarged
+  seven times, not five: at ×5 the square peaks at the octave's lower edge, where OpenCV finds it
+  only in the doubled octave. Parts 1, 2, 3, 7 and 9 are named in plain text (manifest lists them).
 
 ### Part 11 — Thresholding and Segmentation
 
