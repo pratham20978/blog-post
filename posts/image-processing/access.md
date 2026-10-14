@@ -29,7 +29,12 @@ raised none. Part 7 re-ran the probe on 2026-10-11, after its build; it matches 
 snapshot above. Part 8 (2026-10-12) is G0 and raised none; its probe matches the snapshot except
 `ram_available=3G` (5G before), a transient reading that no G0 part depends on. Part 9 (2026-10-12) is G0
 and raised none; its probe matches the snapshot exactly. Part 10 (2026-10-13) is G0 and raised none;
-it ran no probe and executed only the plain-Python arithmetic of its build scripts.
+it ran no probe and executed only the plain-Python arithmetic of its build scripts. Part 11
+(2026-10-14) is G0 and raised none; its probe matches the snapshot except `ram_available=7.7G` and
+`disk_free=218G`, transient readings, and it executed only the plain-Python arithmetic of its build
+scripts. Part 12 (2026-10-14) is G0 and raised none; its probe matches the snapshot except
+`ram_available=7G` and `disk_free=217G`, transient readings, and it executed only the plain-Python
+arithmetic of its build scripts.
 
 ## Self-provisioned
 

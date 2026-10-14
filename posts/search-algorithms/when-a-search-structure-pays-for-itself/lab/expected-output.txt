@@ -1,0 +1,51 @@
+Captured 2026-10-14 13:16 UTC on AMD Ryzen 7 5825U with Radeon Graphics, Linux 7.0.0-38-generic, CPython 3.14.4
+worked: scan hit avg 8.5 (miss 16); binary hit avg 3.375 max 5, miss avg 4.118 max 5; 61 probes [47, 74, 61]
+worked: merge sort worst 49 (order [3, 53, 28, 79, 14, 68, 42, 91, 9, 61, 35, 85, 21, 74, 47, 97]), exact mean 45.6889, sample mean 45.700 [37..49] over 20000; floor ceil(log2 16!) = 45 (log2 16! = 44.250)
+worked: break-even hits_worst_sort             q* = 9.561 -> ahead from lookup 10
+worked: break-even hits_mean_sort              q* = 8.915 -> ahead from lookup 9
+worked: break-even hits_best_possible_sort_46  q* = 8.976 -> ahead from lookup 9
+worked: break-even misses_worst_sort           q* = 4.124 -> ahead from lookup 5
+worked: break-even misses_mean_sort            q* = 3.845 -> ahead from lookup 4
+worked: sorted array insert 50 -> slot 8, 4 comparisons, 8 shifts [53, 61, 68, 74, 79, 85, 91, 97]; mean shifts over gaps 8.0, mean lower_bound 4.118
+worked: TreeMap ascending build 60 comparisons, 10 rotations, 9 flips; height 6; find 61 4; hit avg 3.6875 max 6; miss avg 4.412 max 6
+worked: TreeMap insert 50 -> 5 comparisons, 0 rotations, 0 flips, 0 shifts, height after 6; floor(60) = 53 in 5; subMap[40,70] [42, 47, 53, 61, 68] in 11 comparisons
+worked: plain BST ascending build 120 comparisons, height 16, find 61 10
+worked: range [40, 70] -> [42, 47, 53, 61, 68] with 8 comparisons + 5 reads; scan visits 16 (26 comparisons); integer probes 31
+worked: largest <= 60 is 53 in 4 comparisons; integer probes 8; nearest to 60 61
+scale: n=      16 sort worst        49 (random       48) binary hit  3.375 miss  4.118 q* hits   9.56 misses  4.12 (2 lg n - 2 = 6)
+scale: n=      32 sort worst       129 (random      124) binary hit  4.219 miss  5.061 q* hits  10.50 misses  4.79 (2 lg n - 2 = 8)
+scale: n=      64 sort worst       321 (random      309) binary hit  5.125 miss  6.031 q* hits  11.73 misses  5.54 (2 lg n - 2 = 10)
+scale: n=     128 sort worst       769 (random      732) binary hit  6.070 miss  7.016 q* hits  13.16 misses  6.36 (2 lg n - 2 = 12)
+scale: n=     256 sort worst      1793 (random     1741) binary hit  7.039 miss  8.008 q* hits  14.76 misses  7.23 (2 lg n - 2 = 14)
+scale: n=     512 sort worst      4097 (random     3972) binary hit  8.021 miss  9.004 q* hits  16.49 misses  8.15 (2 lg n - 2 = 16)
+scale: n=    1024 sort worst      9217 (random     8983) binary hit  9.012 miss 10.002 q* hits  18.31 misses  9.09 (2 lg n - 2 = 18)
+scale: n=    2048 sort worst     20481 (random    19956) binary hit 10.006 miss 11.001 q* hits  20.19 misses 10.05 (2 lg n - 2 = 20)
+scale: n=    4096 sort worst     45057 (random    43948) binary hit 11.003 miss 12.000 q* hits  22.11 misses 11.03 (2 lg n - 2 = 22)
+scale: n=    8192 sort worst     98305 (random    96088) binary hit 12.002 miss 13.000 q* hits  24.07 misses 12.02 (2 lg n - 2 = 24)
+scale: n=   16384 sort worst    212993 (random   208746) binary hit 13.001 miss 14.000 q* hits  26.04 misses 13.01 (2 lg n - 2 = 26)
+scale: n=   32768 sort worst    458753 (random   450039) binary hit 14.001 miss 15.000 q* hits  28.02 misses 14.01 (2 lg n - 2 = 28)
+scale: n=   65536 sort worst    983041 (random   965724) binary hit 15.000 miss 16.000 q* hits  30.01 misses 15.00 (2 lg n - 2 = 30)
+scale: n=  131072 sort worst   2097153 (random        -) binary hit 16.000 miss 17.000 q* hits  32.01 misses 16.00 (2 lg n - 2 = 32)
+scale: n=  262144 sort worst   4456449 (random        -) binary hit 17.000 miss 18.000 q* hits  34.00 misses 17.00 (2 lg n - 2 = 34)
+scale: n=  524288 sort worst   9437185 (random        -) binary hit 18.000 miss 19.000 q* hits  36.00 misses 18.00 (2 lg n - 2 = 36)
+scale: n= 1048576 sort worst  19922945 (random        -) binary hit 19.000 miss 20.000 q* hits  38.00 misses 19.00 (2 lg n - 2 = 38)
+writes: n=    16 write price 1.0: array insert 13.1, lookup 3.38 -> wins below 29.7% writes (0.42 per read); TreeMap insert 6.60 (0.62 rot, 0.56 flips), lookup 3.69 -> wins below 46.22% writes (0.9 per read); scan 8.5
+writes: n=    16 write price 0.1: array insert 5.0, lookup 3.38 -> wins below 51.0% writes (1.04 per read); TreeMap insert 4.63 (0.62 rot, 0.56 flips), lookup 3.69 -> wins below 51.51% writes (1.1 per read); scan 8.5
+writes: n=    64 write price 1.0: array insert 39.0, lookup 5.12 -> wins below 41.9% writes (0.72 per read); TreeMap insert 9.18 (0.84 rot, 0.83 flips), lookup 5.61 -> wins below 76.68% writes (3.3 per read); scan 32.5
+writes: n=    64 write price 0.1: array insert 9.3, lookup 5.12 -> wins below 74.8% writes (2.97 per read); TreeMap insert 6.77 (0.84 rot, 0.83 flips), lookup 5.61 -> wins below 80.11% writes (4.0 per read); scan 32.5
+writes: n=   256 write price 1.0: array insert 137.0, lookup 7.04 -> wins below 47.2% writes (0.89 per read); TreeMap insert 11.40 (0.95 rot, 0.94 flips), lookup 7.54 -> wins below 92.09% writes (11.6 per read); scan 128.5
+writes: n=   256 write price 0.1: array insert 20.9, lookup 7.04 -> wins below 85.4% writes (5.84 per read); TreeMap insert 8.80 (0.95 rot, 0.94 flips), lookup 7.54 -> wins below 93.29% writes (13.9 per read); scan 128.5
+writes: n=  1024 write price 1.0: array insert 523.0, lookup 9.01 -> wins below 49.1% writes (0.96 per read); TreeMap insert 13.47 (0.98 rot, 0.98 flips), lookup 9.51 -> wins below 97.58% writes (40.3 per read); scan 512.5
+writes: n=  1024 write price 0.1: array insert 61.3, lookup 9.01 -> wins below 89.2% writes (8.23 per read); TreeMap insert 10.80 (0.98 rot, 0.98 flips), lookup 9.51 -> wins below 97.92% writes (47.0 per read); scan 512.5
+writes: n=  4096 write price 1.0: array insert 2061.0, lookup 11.00 -> wins below 49.7% writes (0.99 per read); TreeMap insert 15.49 (0.99 rot, 0.99 flips), lookup 11.50 -> wins below 99.29% writes (140.6 per read); scan 2048.5
+writes: n=  4096 write price 0.1: array insert 216.9, lookup 11.00 -> wins below 90.4% writes (9.40 per read); TreeMap insert 12.80 (0.99 rot, 0.99 flips), lookup 11.50 -> wins below 99.38% writes (160.4 per read); scan 2048.5
+writes: n= 16384 write price 1.0: array insert 8207.0, lookup 13.00 -> wins below 49.9% writes (1.00 per read); TreeMap insert 17.50 (1.00 rot, 1.00 flips), lookup 13.50 -> wins below 99.80% writes (495.8 per read); scan 8192.5
+writes: n= 16384 write price 0.1: array insert 833.3, lookup 13.00 -> wins below 90.8% writes (9.82 per read); TreeMap insert 14.80 (1.00 rot, 1.00 flips), lookup 13.50 -> wins below 99.82% writes (556.4 per read); scan 8192.5
+writes: n= 65536 write price 1.0: array insert 32785.0, lookup 15.00 -> wins below 50.0% writes (1.00 per read); TreeMap insert 19.50 (1.00 rot, 1.00 flips), lookup 15.50 -> wins below 99.94% writes (1770.5 per read); scan 32768.5
+writes: n= 65536 write price 0.1: array insert 3292.9, lookup 15.00 -> wins below 90.9% writes (9.95 per read); TreeMap insert 16.80 (1.00 rot, 1.00 flips), lookup 15.50 -> wins below 99.95% writes (1961.2 per read); scan 32768.5
+flood: colliding insert __eq__ calls [0, 1, 2, 4, 5, 6, 7, 8, 9, 10, 11, 11, 12, 13, 14, 15] total 128; lookup 61 10, 97 16, absent 16
+flood: spread    insert __eq__ calls [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] total 0; lookup 61 1, 97 1, absent 0
+flood: extra over the one-list model [0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0]; probe replay matches CPython: True
+flood: growth n=16 128 (n(n-1)/2 120), n=64 2069 (n(n-1)/2 2016), n=256 32885 (n(n-1)/2 32640), n=1024 524600 (n(n-1)/2 523776)
+flood: hash(61) = 61; str/bytes hash = siphash13
+wrote captures.json

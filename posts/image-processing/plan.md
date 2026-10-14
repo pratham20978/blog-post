@@ -1,6 +1,6 @@
 # Series plan — Image Processing by Hand
 
-**Slug:** image-processing · **Shape:** hybrid (hub and spokes) · **Parts:** 14 (2 published, 7 built, 5 planned)
+**Slug:** image-processing · **Shape:** hybrid (hub and spokes) · **Parts:** 14 (2 published, 10 built, 2 planned)
 
 ## Why this is a series and not one post
 
@@ -269,6 +269,14 @@ Part 2 rather than Part 1.
   local-threshold family.
 - **Search intent:** "Otsu threshold explained", "adaptive thresholding", "watershed segmentation",
   "why is my watershed over-segmenting", "binarise an image"
+- **Status:** **built** 2026-10-14 — 7,454 words (validator count, references included), 10
+  figures, 8 feed + 4 Story cards, gate and `--social` PASS; not yet published. Title *Thresholding
+  and Segmentation: Otsu, Sauvola, Watershed* (55 chars) (canonical
+  https://canery.in/blogs/thresholding-and-segmentation once live). Otsu on the raw patch returns 40,
+  the top of the dark spike, so the worked example also smooths it first (OpenCV's fixed-point blur:
+  Otsu 105). Local thresholds use the patch tiled beside a copy at a fifth of the light, at window 7.
+  The watershed relief is Part 8's Sobel table; the impulse makes four regions, two markers make two.
+  Parts 1, 7 and 8 are named in plain text (manifest lists them); Part 12 by title.
 
 ### Part 12 — Mathematical Morphology as Lattice Algebra
 
@@ -287,6 +295,15 @@ Part 2 rather than Part 1.
   Soille's handbook for the grey-level extension.
 - **Search intent:** "erosion and dilation", "opening vs closing", "morphological gradient",
   "top-hat transform", "structuring element"
+- **Status:** **built** 2026-10-14 — 6,685 words (validator count, references included), 11 figures,
+  8 feed + 4 Story cards, gate and `--social` PASS; not yet published. Title as planned, *Mathematical
+  Morphology as Lattice Algebra* (42 chars) (canonical https://canery.in/blogs/mathematical-morphology
+  once live). The plan's books (Serra 1982, Matheron 1975, Soille) have no open copy; their results are
+  cited through Heijmans–Ronse 1990, Heijmans' 1995 survey and Serra–Vincent 1992. The granulometry over
+  four sizes has two steps (areas 11, 10, 0, 0), and the bar's size is a border artefact, so the post
+  also opens the patch tiled beside a copy. The adjunction is checked on the post's own sets and under
+  two border rules; the library section adds OpenCV's unreflected `dilate` (a 2×2 closing that loses
+  five pixels, issue #23605). Parts 1, 8 and 11 are named in plain text (manifest lists them).
 
 ### Part 13 — Colour and Gamma: Luma, Luminance, and the Spaces in Between
 
