@@ -1,6 +1,6 @@
 # Series plan — Image Processing by Hand
 
-**Slug:** image-processing · **Shape:** hybrid (hub and spokes) · **Parts:** 14 (2 published, 10 built, 2 planned)
+**Slug:** image-processing · **Shape:** hybrid (hub and spokes) · **Parts:** 14 (2 published, 12 built)
 
 ## Why this is a series and not one post
 
@@ -322,6 +322,14 @@ Part 2 rather than Part 1.
   standard observer.
 - **Search intent:** "luma vs luminance", "gamma correction explained", "sRGB to linear",
   "BGR2GRAY weights", "why does resizing in sRGB look wrong"
+- **Status:** **built** 2026-10-15 — 6,731 words (validator count, references included), 9 figures,
+  8 feed + 4 Story cards, gate and `--social` PASS; not yet published. Title *Colour and Gamma: Luma,
+  Luminance and the Spaces in Between* (59 chars; the serial comma dropped for the 60-char limit)
+  (canonical https://canery.in/blogs/colour-and-gamma once live). The patch is read as colour: its three
+  levels make the azure (40, 200, 255), and the blur reads its 40 and 200 as sRGB codes. The plan's
+  luminance row (0.2127) is OpenCV's documented 0.212671 rounded; the standards print 0.2126, which the
+  post uses. Luma turned out to err two ways, the curve and BT.601's 1953 weights, so it is not always
+  darker (+5.9 at a pale pink). Parts 1 and 3 are named in plain text (manifest lists them).
 
 ### Part 14 — Gradient-Domain Editing: Poisson Cloning, HDR Compression, Seamless Tiling
 
@@ -339,6 +347,18 @@ Part 2 rather than Part 1.
   HDR compression); Agarwala 2007 for the large-scale solve.
 - **Search intent:** "Poisson image editing", "seamless cloning OpenCV", "gradient domain image
   processing", "how does seamlessClone work"
+- **Status:** **built** 2026-10-15 — 7,044 words (validator count, references included), 10 figures,
+  8 feed + 4 Story cards, gate and `--social` PASS with 0 warnings; not yet published. Title
+  *Gradient-Domain Editing: Poisson Cloning, HDR and Tiling* (56 chars; the planned title is 75)
+  (canonical https://canery.in/blogs/gradient-domain-editing once live). The planned system has no
+  edit in it until a guidance field is chosen: with the patch's own differences it returns the patch
+  exactly, so the worked example is that round trip, and the edits follow (a clone into Part 11's
+  fifth-light copy goes to −40 in codes and is exact in log). Three Gauss–Seidel sweeps leave 31.1;
+  one V-cycle, with the Galerkin coarse coefficient 3/4, leaves 15.4. Agarwala 2007 is cited for
+  reducing unknowns, not for the solve itself. OpenCV's `seamlessClone`, read from source, solves the
+  mask's bounding box by a sine transform, erodes the mask 3 px, compares abs(gx − gy) in
+  `MIXED_CLONE`, and from 4.11.0 edits a 1-channel mask in place. Parts 2 and 11 are named in plain
+  text (manifest lists them).
 
 ## Publication order and cadence
 

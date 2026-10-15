@@ -42,16 +42,17 @@
 | 10 | scale-space-and-sift | gate PASS 2026-10-13 bar Story checks (feed only, owner's choice), **not published** | σ searched, one DoG octave ×7, SIFT replayed | learned descriptors out |
 | 11 | thresholding-and-segmentation | gate PASS 2026-10-14, **not published** | Otsu as 2-means, local windows, three watersheds | markers' operators, Part 12 |
 | 12 | mathematical-morphology | gate PASS 2026-10-14, **not published** | the adjunction and its laws, grey by thresholds, sieves, reconstruction, library conventions | markers' use, back to Part 11 |
+| 13 | colour-and-gamma | gate PASS 2026-10-15, **not published** | the sRGB curve, luma against luminance, weights from primaries, Lab's white, linear-light operations | a leaf |
+| 14 | gradient-domain-editing | gate PASS 2026-10-15, **not published** | the Poisson system and its solvers, cloning's membrane, Fattal's attenuation, Pérez's tiling, `seamlessClone` from source | a leaf; closes the series |
 
-Parts 13–14 are `planned`; slugs and scope live in `plan.md`. Add a row when a part passes its gate.
+All fourteen parts are built.
 
 ## Knowledge established
 
 ### Parts 1–2 (published)
 
-- **Part 1:** stages 1 and 4 are irreversible, 2 and 3 are not (restate in one sentence at most).
-  Three answers on the impulse: box 64, median 40, σ = 0.8 Gaussian 98.6 (sigma-0 default 93.75).
-  The impulse moves Sobel at (r2, c2) 640 → 210 (67%). `BGR2GRAY` returns luma; Part 13 owns it.
+- **Part 1:** stages 1 and 4 are irreversible, 2 and 3 are not. The impulse: box 64, median 40, σ = 0.8
+  Gaussian 98.6 (sigma-0 default 93.75); it moves Sobel at (r2, c2) 640 → 210.
 - **Part 2:** a unit-sum kernel of 1-D variance *v* changes each pixel by (v/2)∇²f; the limit is the
   heat equation (`#the-heat-equation-and-the-sharpening-identity`). Zero-crossings own the
   coarse-to-fine argument; scale selection is `#scale-selection-the-laplacian-as-a-ruler`.
@@ -66,29 +67,41 @@ Parts 13–14 are `planned`; slugs and scope live in `plan.md`. Add a row when a
   area ≥ 130 (SSE3) or ≥ 50, never `sepFilter2D`.
 - **Part 6:** lifting keeps N numbers and inverts in integers (5/3); one Haar level puts the impulse in
   four coefficients of 107.5.
-- **Part 7:** every method is ŷ = W·y with W from the data. The bilateral at σr = 80 keeps impulse
-  and step; NL-means removes the impulse only under IPOL's self-weight rule; Perona–Malik ends at 112.6.
+- **Part 7:** every method is ŷ = W·y with W from the data; the bilateral at σr = 80 keeps impulse and
+  step; NL-means removes the impulse only under IPOL's self-weight rule.
 
-### Parts 8–12 (built, not published)
+### Parts 8–13 (built, not published)
 
-- **Part 8:** `cv2.Canny` has no smoothing and pads by replicate. Raw Sobel L2: 640 on c2 and c3; the
-  impulse's ring 304.1, 430, 476.3, 210. L1 (the default) deletes rows r1 and r3. One-threaded IPP
-  builds hand `Canny` to IPP.
+- **Part 8:** `cv2.Canny` has no smoothing and pads by replicate. Raw Sobel L2: 640 on c2 and c3. L1
+  (the default) deletes rows r1 and r3. One-threaded IPP builds hand `Canny` to IPP.
 - **Part 9:** OpenCV's corner pipeline reads a 5×5 footprint, so no window is flat. **Harris's sign
   is a ratio test** (boundary 0.0436 at k = 0.04). `goodFeaturesToTrack` returns (2, 2).
 - **Part 10:** the patch ×7 puts a square of 255 at columns 7–13, rows 14–20. **SIFT's edge test is
   Harris's sign test with k = 10/121.** OpenCV's SIFT reports ×7 at (10.23, 17.25), +0.25 px.
-- **Part 11:** histogram 40 ×14, 200 ×10, 255 ×1; raw Otsu 40, smoothed 105. **Otsu is 2-means**,
-  right only for two humps of like size and spread. Watershed on Part 8's Sobel table: four minima;
-  passes 430 (4-conn) or 304.1 (8-conn), the step 640. `cv2.watershed` sets the frame to −1.
-- **Part 12:** the mask X = patch > 40 (bar c3–c4 + speck) is the threshold set for t 41–200 and the
-  patch's regional maxima. By the cross, outside ignored: ε 5 px (c4), δ 19, opening 10 (the bar),
-  closing 14 (c2 filled in r1–r3); adjunction holds on all pairs (with outside = 0 it fails, 616 of
-  20,000). Grey: opening = patch without impulse; gradient 160 at the step, 215 round the impulse;
-  white top-hat 215 at (r2, c1). Granulometry 11, 10, 0, 0; the bar's size 1 is a border artefact
-  (tiled, the inner bar goes at n = 1). Dynamics: bar 160, impulse 215. **OpenCV's `dilate` is
-  unreflected:** a 2×2 `MORPH_CLOSE` loses 5 of 11 (issue #23605); `anchor=(0, 0)` fixes it. SciPy's
-  binary border 0 makes closing lose 7. OpenCV's IPP morphology is compiled out (802cf95, 4.10–4.12).
+- **Part 11:** histogram 40 ×14, 200 ×10, 255 ×1; raw Otsu 40, smoothed 105. **Otsu is 2-means.**
+  Watershed on Part 8's Sobel table: four minima. `cv2.watershed` sets the frame to −1.
+- **Part 12:** mask X = patch > 40. By the cross, outside ignored: ε 5 px, δ 19, opening 10, closing 14;
+  the adjunction holds (outside = 0: it fails). **OpenCV's `dilate` is unreflected:** a 2×2
+  `MORPH_CLOSE` loses 5 of 11 (#23605).
+- **Part 13:** the patch as colour: the azure (40, 200, 255); luma 158 against the luminance grey 186;
+  the step blurred at c2 is 78.2 on codes, 109.4 on light. **Luma errs twice:** the curve (Jensen) and
+  BT.601's 1953 weights (−70.2 at green, +5.9 at (255, 172, 255)). `BGR2XYZ` does not decode,
+  `BGR2Lab` does, undocumented. sRGB's 0.03928 is the tangent 0.055/1.4 truncated.
+
+### Part 14 (built, not published)
+
+- **The system:** Ω = r1–r3 × c1–c3, b = ring sums − Laplacian (−135, −120, 560, 900, −375, …); the
+  patch is the unique solution, exact only because the guidance is the stencil's own differences.
+  Gauss–Seidel from zero: 255, 89.7, 62.1, 31.1, then halving (cos²(π/4)). V(1,1) with Galerkin
+  RAP = 3/4 (re-discretised 1): 15.4, then 0.82. 244,633 sweeps per digit at N = 1,023, SOR 375.
+- **Edits:** cloning keeps differences: into Part 11's fifth-light copy codes give −40 at (r2, c2), log
+  is exact (8, 40, 51); the membrane alone 58.6/90/161.4. Fattal on the step row: 25α, φ 0.617, 5:1 →
+  2.70:1; the impulse leaves one square's loop at −0.337; central differences read 0 at a spike, φ
+  unbounded. Pérez's tiling: 120 80 40 160 120; on the 3×3 the spike reaches 289.3.
+- **OpenCV `seamlessClone`:** DST over the mask's bounding box; mask eroded 3 px (one 7×7; #17450), so
+  a 5×5 source clones nothing; `MIXED_CLONE` compares abs(gx − gy), so a spike's own (−215, −215)
+  loses (15×15 replay: 147, 1, 78); truncates; `p` is the box centre unless `_WIDE`. From 4.11.0 a
+  1-channel mask is eroded and inverted in place (PR #26511 undid 860ae77ec9). No Fattal operator.
 
 ## Decisions to preserve
 
@@ -99,18 +112,19 @@ Parts 13–14 are `planned`; slugs and scope live in `plan.md`. Add a row when a
   a **tooling map** figure plus tables.
 - Figures come from a per-post copy of the toolchain (`_build.py`, `_figs.py`, `_cover.py`,
   `_social.py`, `_overlap.py`, `_data.py`); never import across posts; resolve paths from `HERE`.
-  **Start from Part 12's** (Part 10's base: local font cache when rasterising, `legend2` kinds,
-  clipped plots; Part 12 adds `bgrid`/`vgrid`/`elem` cells and `legend4`). `_data.py` asserts every
-  article number; it has caught slips in Parts 7, 8, 10 and 12.
+  **Start from Part 14's** (Part 12's base with Part 13's sRGB-pinned `_build.py`; `framed5`/`grid3`
+  cells, `legend5`, and a plain-Python OpenCV replay in `_data.py`). `_data.py` asserts every article
+  number; it has caught slips in Parts 7, 8, 10, 12 and 14.
 - **Eyebrows uppercase ASCII**, so notation goes in `mono()`/`title()`. **No labels over plotted
   lines**; draw reference lines behind bars. Open every PNG after its last render; legends drift
   from their marks.
 - Every asset file carries the slug suffix. Pixel cells are **high value = bright**; masks are white
-  in the set, dark out, added pixels tinted, removed ones crossed (Part 12). The blog cover is
+  in the set, dark out, added pixels tinted, removed ones crossed (Part 12). Part 13 paints true sRGB
+  swatches (Chrome pinned to sRGB in `rasterize`): tangerine for work on codes, blue for light. The blog cover is
   unbranded; social cards carry the canery.in lockup.
 - Earlier parts are named by title in plain text and listed in the manifest's *Series links to
   add*; later spokes may be named by title because Part 1 published them.
-- Parts 1–2 predate blog-forge 0.4 and warn by design; Parts 3–12 pass with 0 warnings (Part 10
+- Parts 1–2 predate blog-forge 0.4 and warn by design; Parts 3–14 pass with 0 warnings (Part 10
   bar its Story checks).
 - Titles stay under 60 characters. Write `\lt`/`\gt` in math: the validator strips `<…>` as tags.
 - Compute every number a figure prints from the data. SVG collapses spaces: draw matrices as
@@ -125,29 +139,23 @@ Parts 13–14 are `planned`; slugs and scope live in `plan.md`. Add a row when a
   Part 1's Figure 17 lacks the Laplacian branch. All reopen published posts.
 - **Owner checks before publishing:** Part 7's `denoise_bilateral` offset; Part 8's three `cv2.Canny`
   predictions (and 8-bit rounding with the fixed-point blur); Part 9's five; Part 10's four SIFT;
-  Part 11's six; Part 12's six (the 2×2 closing is load-bearing). All in the manifests.
-- **Parts 3–12 are built but not published:** upload COVER and FIG_ PNGs, `urls.txt`,
-  `fill_urls.py`, `--publish`.
+  Part 11's six; Part 12's six (the 2×2 closing is load-bearing); Part 13's six (`BGR2GRAY` = 158 is
+  load-bearing); Part 14's five (the `MIXED_CLONE` spike is load-bearing). All in the manifests.
+- **Parts 3–14 are built but not published:** upload COVER and FIG_ PNGs, `urls.txt`,
+  `fill_urls.py`, `--publish`. Part 2's closing line names Part 14; linking it edits a live post.
 - Not reported upstream: OpenCV's Canny tutorial's Gaussian step; `cornerEigenValsAndVecs`'s
   unsorted eigenvalues; `goodFeaturesToTrack`'s "maxDistance"; scikit-image's SIFT +0.25 px;
-  `cv::watershed`'s −1 frame; a second reproduction of OpenCV #23605.
+  `cv::watershed`'s −1 frame; a second reproduction of OpenCV #23605; OpenCV's Lab docs omitting
+  the sRGB decode; scikit-image calling `rgb2gray` luminance; `seamlessClone`'s in-place mask from
+  4.11.0 (a regression of #12053); `MIXED_CLONE`'s abs(gx − gy); the `p` and `_WIDE` docs.
 - Part 5 cites Oppenheim & Lim by abstract only; Part 3's `dsize` rounding at 8.5 is unsettled.
-- Part 14 must read as a sibling, not "Part 2, continued". No labs: a spoke wanting one changes an
-  invariant and must say so.
+- No labs: a part wanting one changes an invariant and must say so.
 
 ## Next part brief
 
-- **Part:** Part 13 (colour and gamma: luma, luminance and the spaces in between), L3,
-  **intermediate**, the most standalone spoke: it assumes only Part 1's framing and owns the
-  `BGR2GRAY`-returns-luma limitation Part 1 states in one paragraph.
-- **Worked example:** one sRGB triple through the transfer function to linear light, XYZ and Lab;
-  the luma and luminance greys side by side on a saturated colour (the plan quotes both weight
-  sets; verify them against the standards, the plan's luminance row has not been checked). For "one blur in both encodings", read the patch's 40 and 200 as sRGB codes and blur the
-  step in codes and in linear light: the midpoints differ. Say so in the IMPORTANT block; it is the
-  patch read as colour, not a second patch.
-- **Can assume** *Knowledge established*; **must not repeat** the four stages beyond one sentence or
-  Part 3's resampling. Name earlier parts by title in plain text. L3 counts include references.
-- **Evidence:** the standards (IEC 61966-2-1, ITU-R BT.601/709, CIE) may be paywalled: cite the
-  constants from open sources that state them and say so. OpenAlex, Crossref, Semantic Scholar and
-  Google Scholar answer; author pages and Wayback copies served Parts 11–12. Pin OpenCV and
-  scikit-image at a commit and check one release tag; check `cvtColor`'s 8-bit path for HAL/IPP.
+- **The series is complete:** all fourteen parts are built; Parts 1–2 are live. Next is publication,
+  not a part: run each manifest's owner checks (Parts 7–14), fix whatever they contradict, then upload
+  and `--publish` Parts 3–14 in the plan's order.
+- **Before any new part:** it would change the published promise (Part 1's eleven spokes and Part 2's
+  twelfth), so it needs Checkpoint S and a plan edit first. The Part 1 and 2 corrections under *Open
+  threads* are edits to live posts, the owner's call.

@@ -34,7 +34,13 @@ it ran no probe and executed only the plain-Python arithmetic of its build scrip
 `disk_free=218G`, transient readings, and it executed only the plain-Python arithmetic of its build
 scripts. Part 12 (2026-10-14) is G0 and raised none; its probe matches the snapshot except
 `ram_available=7G` and `disk_free=217G`, transient readings, and it executed only the plain-Python
-arithmetic of its build scripts.
+arithmetic of its build scripts. Part 13 (2026-10-15) is G0 and raised none; its probe matches the
+snapshot except `ram_available=6G` and `disk_free=217G`, transient readings, and it executed only the
+plain-Python arithmetic of its build scripts, including one sweep over all 2^24 8-bit colours. Part 14 (2026-10-15)
+is G0 and raised none; its probe matches the snapshot except `ram_available=8G` and `disk_free=216G`,
+transient readings, and it executed only the plain-Python arithmetic of its build scripts, including a
+line-by-line replay of OpenCV's `seamlessClone` that no image passed through. With Part 14 the series
+is complete and has raised no access request.
 
 ## Self-provisioned
 
