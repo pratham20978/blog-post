@@ -119,7 +119,7 @@ blogs" and the production-write rule reserve for you.
 |---|---|---|
 | `databases` | DB-1 postgresql-foundations *(live)* · DB-2 database-engines *(planned)* · DB-3 Relational Data Modeling: ERD to Normal Forms · DB-4 Data Modeling Patterns & Beyond Relational · DB-5 Advanced SQL Patterns · DB-6 Transactions, Isolation & Concurrency Control · DB-7 Build a Database From Scratch | 7 |
 | `data-engineering` | DE-1 data-at-scale *(planned, hub)* · DE-2 Apache Spark in Depth · DE-3 Streaming Systems in Depth · DE-4 Data Warehousing & Dimensional Modeling · DE-5 The Lakehouse in Depth · DE-6 Pipelines, Orchestration & DataOps · DE-7 Data Quality, Observability & Governance | 7 |
-| `data-science` | DS-1 Statistics for Data Scientists · DS-2 Experimentation & A/B Testing · DS-3 Causal Inference · DS-4 Time Series & Forecasting · DS-5 Data Wrangling at Expert Level · DS-6 Visualization & Communicating Results · DS-7 Product Analytics & Metrics | 7 |
+| `data-science` | DS-1 Statistics for Data Scientists *(built)* · DS-2 Experimentation & A/B Testing · DS-3 Causal Inference · DS-4 Time Series & Forecasting · DS-5 Data Wrangling at Expert Level · DS-6 Visualization & Communicating Results · DS-7 Product Analytics & Metrics | 7 |
 | `machine-learning` | ML-1 nvidia-stack *(live)* · ML-2 Classical ML Algorithms · ML-3 Learning Theory · ML-4 Probabilistic ML · ML-5 RL Foundations · ML-6 Deep RL · ML-7 Recommender Systems & Ranking · ML-8 ML Systems & MLOps | 8 |
 | `deep-learning` | DL-1 Deep Learning Foundations · DL-2 foundational-architectures *(planned)* · DL-3 frontier-models *(built)* · DL-4 Optimization for DL · DL-5 Generative Models · DL-6 Self-Supervised Learning · DL-7 Training & Scaling · DL-8 Efficient DL · DL-9 LLM Engineering · DL-10 Graph Neural Networks · DL-11 Interpretability | 11 |
 | `computer-vision` | CV-1 image-processing *(live)* · CV-2 diffusion-models *(live)* · CV-3 Object Detection · CV-4 Segmentation · CV-5 Multiple View Geometry · CV-6 3D Vision & Neural Rendering · CV-7 Visual SLAM · CV-8 Video Understanding · CV-9 OCR & Document AI · CV-10 Human-Centric Vision | 10 |
@@ -389,7 +389,7 @@ Data (DE-1, DE-2, DE-3) and Data Warehousing (DE-4) live here, tagged `big-data`
 Turning data into decisions: statistics, experiments, causality, forecasting, analysis and
 communication. The algorithms of ML live in `machine-learning`; neural networks in `deep-learning`.
 
-### DS-1 · Statistics for Data Scientists — `statistics-for-data-scientists` · ~16 · G1 · mapped
+### DS-1 · Statistics for Data Scientists — `statistics-for-data-scientists` · 18 parts · G1 · **1 built**
 - **Covers:** distributions as generative stories; estimation, the bias and variance of estimators,
   MLE; sampling distributions and the CLT by simulation; confidence intervals and the bootstrap
   (percentile, BCa); hypothesis testing done right (power, effect size, what a p-value is not);

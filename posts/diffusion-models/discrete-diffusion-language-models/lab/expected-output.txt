@@ -1,0 +1,43 @@
+Captured 2026-10-22T16:44:54Z on Linux 7.0.0-38-generic x86_64, AMD Ryzen 7 5825U with Radeon Graphics, 16 logical CPUs; Python 3.12.15, numpy 2.5.3; tokens.py 0be0dfe2a2af
+  patch as tokens: [[3, 3, 1, 0], [3, 2, 0, 0], [3, 2, 0, 0], [2, 1, 0, 0]]; masked at abar 0.64 where eps > 0.3585: 7 of 16 (expected 5.76); uniform keeps each token with probability 0.73
+  four-turn world: turns consistent with the unmasked tokens [0]; the two corners at once belong to a turn 0.5 of the time (both darkest 0.25); all 16 at once valid with probability 3.81e-06; two at once 0.6750; sequential costs [1.386294, 1.386294, 1.386294, 1.386294] nats (ln 4 = 1.3863), decided after [1, 2, 2, 1] tokens
+  (worked: 0 s)
+  72 images of 64 tokens over 28 grey levels; entropy 4.0968 nats; brightness sd 0.2777
+  every reveal order gives -log p(image) to 8.9e-16 nats (64 orders x 72 images); a random order decides the image after 4 tokens (median), 8 (90th percentile), 20 at most
+  (world: 16 s)
+  one token per step, random  : valid 1.0, calls 64.0, images_found 72, tv_to_world 0.0492, entropy 4.0839, strong 0.5085, brightness_sd 0.276
+  one token per step, position: valid 1.0, calls 64.0, images_found 72, tv_to_world 0.0479, entropy 4.1001, strong 0.4978, brightness_sd 0.2814
+  one token per step, drawn   : valid 1.0, calls 64.0, images_found 8, tv_to_world 0.7958, entropy 2.0768, strong 0.4675, brightness_sd 0.0
+  greedy, random           : valid 1.0, calls 64.0, images_found 23, tv_to_world 0.644, entropy 2.4156, strong 0.2305, brightness_sd 0.075
+  greedy, drawn            : valid 1.0, calls 64.0, images_found 4, tv_to_world 0.8979, entropy 1.3862, strong 0.0, brightness_sd 0.0
+   2 per step, random    : valid 0.1787, calls 32.0, images_found 68, tv_to_world 0.1571, entropy 3.9299, strong 0.4454, brightness_sd 0.2491
+   2 per step, drawn     : valid 0.4414, calls 32.0, images_found 15, tv_to_world 0.7898, entropy 2.1063, strong 0.4358, brightness_sd 0.0117
+   4 per step, random    : valid 0.0034, calls 16.0, images_found 12, tv_to_world 0.739, entropy 2.441, strong 0.5, brightness_sd 0.1677
+   4 per step, drawn     : valid 0.0708, calls 16.0, images_found 8, tv_to_world 0.7958, entropy 2.0736, strong 0.5276, brightness_sd 0.0
+   8 per step, random    : valid 0.0, calls 8.0
+   8 per step, drawn     : valid 0.0042, calls 8.0, images_found 6, tv_to_world 0.8469, entropy 1.5119, strong 0.8824, brightness_sd 0.0
+  16 per step, random    : valid 0.0, calls 4.0
+  16 per step, drawn     : valid 0.0, calls 4.0
+  64 per step, random    : valid 0.0, calls 1.0
+  64 per step, drawn     : valid 0.0, calls 1.0
+  MDLM ancestral,   64 steps: valid 0.519, calls 40.9155, images_found 72, tv_to_world 0.0678, entropy 4.0499, strong 0.4868, brightness_sd 0.2681, revealed_alongside_another 0.6308
+  MDLM ancestral,  256 steps: valid 0.8616, calls 57.4651, images_found 72, tv_to_world 0.0609, entropy 4.077, strong 0.4965, brightness_sd 0.2748, revealed_alongside_another 0.2198
+  MDLM ancestral, 1024 steps: valid 0.9583, calls 63.0049, images_found 72, tv_to_world 0.0503, entropy 4.082, strong 0.5136, brightness_sd 0.2756, revealed_alongside_another 0.0597
+  certainty threshold 0.9    : valid 0.9956, calls 7.2339, images_found 72, tv_to_world 0.0555, entropy 4.0638, strong 0.499, brightness_sd 0.2705
+  certainty threshold certain: valid 1.0, calls 7.2415, images_found 72, tv_to_world 0.0501, entropy 4.1047, strong 0.5085, brightness_sd 0.2832
+  (decode: 102 s)
+  token weight c / [MASK] weight -> share of its fair chance (float32, float64, closed form):
+    c = 1e-09: 0.0000  0.9983  0.0000
+    c = 3e-09: 0.0000  0.9985  0.0000
+    c = 1e-08: 0.0149  1.0045  0.0154
+    c = 2e-08: 0.1576  1.0008  0.1594
+    c = 3e-08: 0.3164  0.9998  0.3158
+    c = 5e-08: 0.5221  0.9891  0.5197
+    c = 1e-07: 0.7316  0.9983  0.7314
+    c = 2e-07: 0.8612  0.9968  0.8584
+    c = 5e-07: 0.9405  1.0035  0.9416
+    c = 1e-06: 0.9771  0.9988  0.9705
+    c = 1e-05: 0.9917  1.0046  0.9970
+  float32 halves a token's chance below c = 4.74e-08; at the first step of an N-step MDLM run that is p below {'1000': 4.74e-05, '2048': 9.71e-05, '10000': 0.000474, '50000': 0.00237}
+  (precision: 1 s)
+wrote captures.json in 118 s

@@ -1,0 +1,28 @@
+Captured 2026-10-21T09:04:20Z on Linux 7.0.0-38-generic x86_64, AMD Ryzen 7 5825U with Radeon Graphics, 16 logical CPUs; Python 3.12.15, numpy 2.5.3; evaluate.py 03f15086ec25
+  worked: real contrasts [0.45, 0.5, 0.5, 0.55, 0.95, 1.0, 1.0, 1.05]: mean 0.7500, spread 0.2525
+  worked:    strong only: mean 1.0000, spread 0.0354; FD = 0.0625 + 0.0471 = 0.1096 (general code 0.1096); 8/8 within 0.05 of a real value
+  worked:  all too faint: mean 0.6500, spread 0.2525; FD = 0.0100 + 0.0000 = 0.0100 (general code 0.0100); 6/8 within 0.05 of a real value
+  worked: moment matched: mean 0.7500, spread 0.2525; FD = 0.0000 + 0.0000 = 0.0000 (general code 0.0000); 4/8 within 0.05 of a real value
+  worked: k-NN metrics (k = 2),      strong only: precision 1.000, recall 0.500, density 1.500, coverage 0.500
+  worked: k-NN metrics (k = 2), strong + one stray: precision 0.833, recall 1.000, density 1.250, coverage 0.500
+  (worked: 0 s)
+  failures: training set 32,768, 4,096 images per set; grain tuned to 0.3319
+  failures:     perfect: FD 0.0143 (detector 0.0106), KID -0.00074, precision 0.807, recall 0.826, density 0.967, coverage 0.971 | faint 0.502, blends 0.001, off-contrast 0.003, detail sd 0.100
+  failures:      copier: FD 0.0133 (detector 0.0122), KID -0.00077, precision 0.841, recall 0.842, density 1.028, coverage 0.980 | faint 0.509, blends 0.001, off-contrast 0.002, detail sd 0.100
+  failures: drops faint: FD 3.6221 (detector 5.4698), KID 0.19254, precision 0.817, recall 0.394, density 1.018, coverage 0.504 | faint 0.000, blends 0.002, off-contrast 0.003, detail sd 0.100
+  failures:      grainy: FD 3.6221 (detector 0.0145), KID 0.00095, precision 0.000, recall 1.000, density 0.000, coverage 0.000 | faint 0.504, blends 0.009, off-contrast 0.020, detail sd 0.347
+  failures:    gaussian: FD 0.0158 (detector 0.0133), KID 0.00359, precision 0.006, recall 0.950, density 0.004, coverage 0.018 | faint 0.679, blends 0.210, off-contrast 0.254, detail sd 0.100
+  (failures: 11 s)
+  bias:  perfect: FD at N = 1,000: 0.0736, 2,000: 0.0299, 4,000: 0.0174, 8,000: 0.0082, 16,000: 0.0046, 32,000: 0.0022, 64,000: 0.0011; fit FD = 0.0007 + 59.9/N
+  bias:   grainy: FD at N = 1,000: 0.0923, 2,000: 0.0606, 4,000: 0.0457, 8,000: 0.0373, 16,000: 0.0328, 32,000: 0.0310, 64,000: 0.0300; fit FD = 0.0291 + 63.7/N
+  (bias: 10 s)
+  guidance data: FD 0.0038, KID -0.00006, precision 0.732, recall 0.737 (faint 0.731, strong 0.743), density 0.957, coverage 0.964 (faint 0.970) | faint 0.500, over 0.0002; fake radius median 0.995, p99 1.231; 1775 fakes hold faint reals (median contrast 0.501, radius 0.996, over-saturated 0.00)
+  guidance  1.0: FD 0.0298, KID 0.00386, precision 0.809, recall 0.666 (faint 0.676, strong 0.657), density 1.293, coverage 0.984 (faint 0.985) | faint 0.529, over 0.0000; fake radius median 0.966, p99 1.192; 1713 fakes hold faint reals (median contrast 0.499, radius 0.972, over-saturated 0.00)
+  guidance  1.5: FD 0.3378, KID 0.04548, precision 0.816, recall 0.613 (faint 0.615, strong 0.611), density 1.329, coverage 0.973 (faint 0.954) | faint 0.364, over 0.0005; fake radius median 0.961, p99 1.193; 1255 fakes hold faint reals (median contrast 0.516, radius 0.975, over-saturated 0.00)
+  guidance  2.0: FD 1.2409, KID 0.18074, precision 0.815, recall 0.605 (faint 0.602, strong 0.608), density 1.312, coverage 0.919 (faint 0.841) | faint 0.241, over 0.0007; fake radius median 0.955, p99 1.168; 869 fakes hold faint reals (median contrast 0.530, radius 0.986, over-saturated 0.00)
+  guidance  3.0: FD 3.5344, KID 0.50990, precision 0.807, recall 0.564 (faint 0.566, strong 0.563), density 1.241, coverage 0.741 (faint 0.486) | faint 0.095, over 0.0037; fake radius median 0.944, p99 1.162; 365 fakes hold faint reals (median contrast 0.548, radius 1.018, over-saturated 0.00)
+  guidance  4.0: FD 5.5511, KID 0.79128, precision 0.795, recall 0.545 (faint 0.583, strong 0.508), density 1.135, coverage 0.581 (faint 0.214) | faint 0.034, over 0.0085; fake radius median 0.935, p99 1.162; 137 fakes hold faint reals (median contrast 0.560, radius 1.060, over-saturated 0.00)
+  guidance  5.0: FD 6.9732, KID 1.00679, precision 0.771, recall 0.544 (faint 0.619, strong 0.470), density 1.003, coverage 0.467 (faint 0.078) | faint 0.013, over 0.0176; fake radius median 0.931, p99 1.183; 52 fakes hold faint reals (median contrast 0.558, radius 1.145, over-saturated 0.00)
+  guidance  7.5: FD 9.1318, KID 1.42053, precision 0.671, recall 0.725 (faint 0.996, strong 0.460), density 0.659, coverage 0.266 (faint 0.003) | faint 0.001, over 0.0720; fake radius median 0.925, p99 1.126; 4 fakes hold faint reals (median contrast 0.562, radius 2.921, over-saturated 0.00)
+  (guidance: 24 s)
+wrote captures.json in 45 s

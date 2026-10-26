@@ -58,7 +58,7 @@ One per post. Keep this list short and stable, because it is the site's top-leve
 
 ```
 algorithms · data-structures · networking · operating-systems · databases ·
-distributed-systems · machine-learning · computer-architecture · compilers ·
+distributed-systems · machine-learning · data-science · computer-architecture · compilers ·
 security · theory · software-engineering
 ```
 

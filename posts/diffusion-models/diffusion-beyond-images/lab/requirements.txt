@@ -1,0 +1,2 @@
+# the lab's only dependency; the capture was made with this version
+numpy==2.5.3

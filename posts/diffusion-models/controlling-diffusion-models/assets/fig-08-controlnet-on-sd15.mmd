@@ -1,0 +1,47 @@
+---
+config:
+  flowchart:
+    curve: linear
+---
+flowchart TB
+  zt["noisy latent z_t<br/>64×64×4"]
+  prompt["prompt c<br/>CLIP text tokens 77×768"]
+  cond["condition image<br/>512×512×3 · edges, depth or pose"]
+  enc["condition encoder · trained<br/>4 convolutions → 64×64×320"]
+  e1["frozen encoder, 64×64<br/>input conv + 2 blocks · 320 channels"]
+  e2["frozen encoder, 32×32<br/>3 blocks · 320 → 640 channels"]
+  e3["frozen encoder, 16×16<br/>3 blocks · 640 → 1280 channels"]
+  e4["frozen encoder, 8×8<br/>3 blocks · 1280 channels"]
+  mid["frozen middle block<br/>8×8×1280"]
+  dec["frozen decoder<br/>12 blocks · reads 12 skips<br/>U-Net total: 859.5M parameters, all frozen"]
+  out["predicted noise<br/>64×64×4"]
+  c1["trainable copy, 64×64<br/>same 3 blocks · reads the same z_t<br/>starts as a clone of the frozen blocks"]
+  c2["trainable copy, 32×32"]
+  c3["trainable copy, 16×16"]
+  c4["trainable copy, 8×8"]
+  cm["trainable copy of the middle block<br/>ControlNet total: 361.3M parameters"]
+
+  zt -->|"64×64×4"| e1
+  e1 -->|"downsample"| e2
+  e2 -->|"downsample"| e3
+  e3 -->|"downsample"| e4
+  e4 -->|"8×8×1280"| mid
+  mid -->|"8×8×1280"| dec
+  dec -->|"64×64×4"| out
+  e1 -->|"3 skips, 64×64"| dec
+  e2 -->|"3 skips, 32×32"| dec
+  e3 -->|"3 skips, 16×16"| dec
+  e4 -->|"3 skips, 8×8"| dec
+  cond -->|"512×512×3"| enc
+  enc -->|"added to the copy's input features"| c1
+  c1 -->|"downsample"| c2
+  c2 -->|"downsample"| c3
+  c3 -->|"downsample"| c4
+  c4 -->|"8×8×1280"| cm
+  c1 -->|"zero conv 1×1 ×3, added to the skips"| dec
+  c2 -->|"zero conv 1×1 ×3"| dec
+  c3 -->|"zero conv 1×1 ×3"| dec
+  c4 -->|"zero conv 1×1 ×3"| dec
+  cm -->|"zero conv 1×1, added to the middle output"| dec
+  prompt -->|"cross-attention at 64, 32, 16 and the middle"| e1
+  prompt -->|"the same cross-attention"| c1

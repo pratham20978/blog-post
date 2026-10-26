@@ -1,0 +1,61 @@
+Captured 2026-10-18T11:45:08Z on Linux 7.0.0-38-generic x86_64, AMD Ryzen 7 5825U with Radeon Graphics, 16 logical CPUs; Python 3.12.15, numpy 2.5.3, torch 2.14.0+cpu; control.py 94017d06c9e7
+  worked: x=40, sigma=80: D_uncond 0.203, D_cond 5.419, guided (w=3) 15.849; one DDIM step to 17.53: 8.92 / 13.00 / 21.14
+  worked: faint share of class +1 by weight: w=1.0 0.527 (eps* +0.0675)  w=1.5 0.381 (eps* -0.3038)  w=2.0 0.231 (eps* -0.7363)  w=3.0 0.032 (eps* -1.8568)  w=5.0 0.000 (eps* -5.4962)  w=7.5 0.000 (eps* -11.4438)
+  exact data: faint 0.500, blends 0.0012, over 0.0002, precision 0.732, recall 0.737, distance 0.0141 (two real sets)
+  exact cfg w= 1.0: faint 0.529, over 0.0000, strong contrast 0.994, brightness sd 0.293, precision 0.809, recall 0.666, distance 0.0243
+  exact cfg w= 1.5: faint 0.364, over 0.0005, strong contrast 1.003, brightness sd 0.293, precision 0.816, recall 0.613, distance 0.0765
+  exact cfg w= 2.0: faint 0.241, over 0.0007, strong contrast 1.014, brightness sd 0.293, precision 0.815, recall 0.605, distance 0.1417
+  exact cfg w= 3.0: faint 0.095, over 0.0037, strong contrast 1.035, brightness sd 0.293, precision 0.807, recall 0.564, distance 0.2252
+  exact cfg w= 4.0: faint 0.034, over 0.0085, strong contrast 1.056, brightness sd 0.293, precision 0.795, recall 0.545, distance 0.2708
+  exact cfg w= 5.0: faint 0.013, over 0.0176, strong contrast 1.076, brightness sd 0.293, precision 0.771, recall 0.544, distance 0.2972
+  exact cfg w= 7.5: faint 0.001, over 0.0720, strong contrast 1.116, brightness sd 0.293, precision 0.671, recall 0.725, distance 0.3359
+  exact guidance only above sigma: 40.0:0.50 20.0:0.44 10.0:0.33 5.0:0.19 3.0:0.11 2.0:0.10 1.4:0.10 1.0:0.10 0.7:0.10 0.5:0.10 0.3:0.10 0.2:0.10 0.1:0.10 0.05:0.10   (faint share)
+  exact guidance only below sigma: 40.0:0.11 20.0:0.13 10.0:0.18 5.0:0.29 3.0:0.42 2.0:0.50 1.4:0.53 1.0:0.53 0.7:0.53 0.5:0.53 0.3:0.53 0.2:0.53 0.1:0.53 0.05:0.53   (faint share)
+  trained weak network seed 2: 5000 steps (67 s)
+  trained weak network seed 1: 5000 steps (67 s)
+  trained model network seed 2: 20000 steps (244 s)
+  trained model network seed 1: 20000 steps (244 s)
+  model network seed 1 cfg   w=1: 0.52/0.072/0.000  w=1.5: 0.36/0.079/0.000  w=2: 0.26/0.060/0.001  w=3: 0.13/0.042/0.004  w=4: 0.06/0.016/0.018  w=5: 0.03/0.008/0.077   (faint / blends / over)
+  weak  network seed 1 cfg   w=1: 0.54/0.157/0.016  w=1.5: 0.40/0.166/0.033  w=2: 0.31/0.136/0.065  w=3: 0.22/0.108/0.160  w=4: 0.17/0.084/0.281  w=5: 0.14/0.067/0.403   (faint / blends / over)
+  model network seed 1 other auto w=1.5: 0.51/0.052/0.020  auto w=2: 0.50/0.040/0.019  auto w=2.5: 0.49/0.026/0.031  auto w=3: 0.48/0.021/0.056  interval w=3 (0,1]: 0.55/0.079/0.041  interval w=3 (0,2]: 0.52/0.082/0.034  interval w=3 (0.5,3]: 0.44/0.087/0.042  interval w=3 (1,5]: 0.31/0.068/0.098  interval w=3 (2,80]: 0.11/0.041/0.218  rescale w=3: 0.40/0.076/0.058  rescale w=5: 0.31/0.062/0.102  apg w=3: 0.52/0.066/0.057  apg w=5: 0.53/0.064/0.070   (faint / blends / distance)
+  model network seed 2 cfg   w=1: 0.52/0.098/0.000  w=1.5: 0.38/0.092/0.000  w=2: 0.28/0.068/0.002  w=3: 0.17/0.040/0.005  w=4: 0.09/0.018/0.020  w=5: 0.05/0.010/0.057   (faint / blends / over)
+  weak  network seed 2 cfg   w=1: 0.54/0.169/0.018  w=1.5: 0.39/0.182/0.046  w=2: 0.30/0.155/0.083  w=3: 0.20/0.117/0.199  w=4: 0.16/0.077/0.339  w=5: 0.14/0.054/0.455   (faint / blends / over)
+  model network seed 2 other auto w=1.5: 0.51/0.071/0.026  auto w=2: 0.51/0.054/0.024  auto w=2.5: 0.51/0.042/0.026  auto w=3: 0.51/0.031/0.035  interval w=3 (0,1]: 0.57/0.071/0.049  interval w=3 (0,2]: 0.54/0.075/0.039  interval w=3 (0.5,3]: 0.44/0.083/0.039  interval w=3 (1,5]: 0.31/0.086/0.102  interval w=3 (2,80]: 0.11/0.056/0.218  rescale w=3: 0.43/0.083/0.048  rescale w=5: 0.34/0.062/0.090  apg w=3: 0.54/0.084/0.054  apg w=5: 0.56/0.078/0.060   (faint / blends / distance)
+  controlnet zero     seed 1: 0:0.472/0.050 25:0.470/0.047 50:0.472/0.050 100:0.449/0.056 200:0.196/0.044 400:0.096/0.025 800:0.074/0.022 1600:0.068/0.020 3200:0.066/0.020   (step: control error / distance; step-0 change 0.0e+00)
+  controlnet zero     seed 2: 0:0.472/0.047 25:0.476/0.060 50:0.472/0.046 100:0.462/0.046 200:0.415/0.055 400:0.119/0.029 800:0.073/0.021 1600:0.068/0.020 3200:0.066/0.021   (step: control error / distance; step-0 change 0.0e+00)
+  controlnet gaussian seed 1: 0:0.576/0.257 25:0.534/0.168 50:0.490/0.112 100:0.455/0.067 200:0.375/0.050 400:0.178/0.043 800:0.117/0.029 1600:0.080/0.022 3200:0.066/0.021   (step: control error / distance; step-0 change 5.3e+00)
+  controlnet gaussian seed 2: 0:0.541/0.204 25:0.528/0.161 50:0.491/0.103 100:0.462/0.062 200:0.364/0.059 400:0.163/0.040 800:0.107/0.027 1600:0.077/0.023 3200:0.066/0.022   (step: control error / distance; step-0 change 3.3e+00)
+  controlnet: base model's control error 0.472; branch trains 239808 parameters
+  personal ti       seed 1:     32 trained; after 2000 steps subject 0.013 (distance 0.567), drift 0.000, crescent-0 distance 0.029, other classes 0.030
+  personal ti       seed 2:     32 trained; after 2000 steps subject 0.009 (distance 0.525), drift 0.000, crescent-0 distance 0.031, other classes 0.029
+  personal lora     seed 1:   6912 trained; after 2000 steps subject 1.000 (distance 0.184), drift 1.000, crescent-0 distance 0.357, other classes 0.367
+  personal lora     seed 2:   6912 trained; after 2000 steps subject 1.000 (distance 0.156), drift 1.000, crescent-0 distance 0.420, other classes 0.268
+  personal lora+ppl seed 1:   6912 trained; after 2000 steps subject 1.000 (distance 0.200), drift 0.000, crescent-0 distance 0.062, other classes 0.267
+  personal lora+ppl seed 2:   6912 trained; after 2000 steps subject 1.000 (distance 0.134), drift 0.000, crescent-0 distance 0.071, other classes 0.288
+  personal full     seed 1: 181056 trained; after 2000 steps subject 1.000 (distance 0.193), drift 1.000, crescent-0 distance 0.366, other classes 0.191
+  personal full     seed 2: 181056 trained; after 2000 steps subject 1.000 (distance 0.153), drift 1.000, crescent-0 distance 0.469, other classes 0.217
+  personal full+ppl seed 1: 181056 trained; after 2000 steps subject 1.000 (distance 0.181), drift 0.002, crescent-0 distance 0.053, other classes 0.087
+  personal full+ppl seed 2: 181056 trained; after 2000 steps subject 1.000 (distance 0.138), drift 0.000, crescent-0 distance 0.066, other classes 0.269
+  personal base     seed 1: drift 0.000, crescent-0 distance 0.029, other classes 0.030; two real subject sets 0.014
+  personal base     seed 2: drift 0.000, crescent-0 distance 0.031, other classes 0.029; two real subject sets 0.014
+  inpaint exact posterior : coherent 1.000, median rms from the posterior mean 0.102  (0 denoiser calls)
+  inpaint replacement     : coherent 0.646, median rms from the posterior mean 0.205  (64 denoiser calls)
+  inpaint resample 2      : coherent 0.816, median rms from the posterior mean 0.121  (128 denoiser calls)
+  inpaint resample 5      : coherent 0.916, median rms from the posterior mean 0.102  (320 denoiser calls)
+  inpaint resample 10     : coherent 0.985, median rms from the posterior mean 0.098  (640 denoiser calls)
+  inpaint inpainting network seed 1: coherent 0.991, median rms from the posterior mean 0.119
+  inpaint inpainting network seed 2: coherent 0.989, median rms from the posterior mean 0.120
+  edit sdedit sigma0=  0.1: success 0.000, ghost +0.702, contrast kept 0.502, brightness error 0.010, detail corr 0.708
+  edit sdedit sigma0= 0.25: success 0.186, ghost +0.367, contrast kept 0.502, brightness error 0.025, detail corr 0.375
+  edit sdedit sigma0=  0.5: success 1.000, ghost +0.194, contrast kept 0.502, brightness error 0.049, detail corr 0.202
+  edit sdedit sigma0=  1.0: success 1.000, ghost +0.098, contrast kept 0.508, brightness error 0.093, detail corr 0.106
+  edit sdedit sigma0=  2.0: success 1.000, ghost +0.049, contrast kept 0.549, brightness error 0.160, detail corr 0.056
+  edit sdedit sigma0=  4.0: success 1.000, ghost +0.025, contrast kept 0.586, brightness error 0.230, detail corr 0.032
+  edit sdedit sigma0=  8.0: success 1.000, ghost +0.012, contrast kept 0.555, brightness error 0.276, detail corr 0.019
+  edit sdedit sigma0= 16.0: success 1.000, ghost +0.006, contrast kept 0.533, brightness error 0.301, detail corr 0.013
+  edit sdedit sigma0= 80.0: success 1.000, ghost +0.001, contrast kept 0.511, brightness error 0.321, detail corr 0.008
+  edit inversion: success 1.000, ghost +0.001, contrast kept 0.606, brightness error 0.0021, detail corr 1.000; reconstruction rms 0.00324, guided: w=1.5 0.134, w=2.0 0.203, w=3.0 0.282
+wrote captures.final.json in 635 s
+Captured 2026-10-18T11:55:45Z on Linux 7.0.0-38-generic x86_64, AMD Ryzen 7 5825U with Radeon Graphics, 16 logical CPUs; Python 3.12.15, numpy 2.5.3, torch 2.14.0+cpu; control.py 94017d06c9e7
+  census SD 1.5: U-Net 859,520,964; ControlNet 361,279,120 (42.0%); LoRA r=4 on 128 attention projections 797,184; cross-attention K,V 19,169,280; one token embedding 768
+wrote captures.final.json in 1 s

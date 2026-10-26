@@ -1,0 +1,32 @@
+---
+config:
+  flowchart:
+    curve: linear
+---
+flowchart LR
+  root["a trained text-to-image denoiser D(x; σ, c)<br/>a new condition y needs σ² · ∇ log p(y | x) added"]
+  sampler["1 · the sampler's arithmetic<br/>no training · an approximation at every step"]
+  inputs["2 · new inputs to a frozen network<br/>a side path that starts at zero"]
+  weights["3 · changed weights<br/>the model's distribution itself moves"]
+  cfg["classifier-free guidance<br/>D_u + w (D_c − D_u)<br/>costs coverage and contrast"]
+  repl["inpainting by replacement, RePaint<br/>known half re-noised at every step<br/>costs coherence, or 10× the calls"]
+  edit["SDEdit, DDIM inversion<br/>start from the image, not from noise<br/>costs a ghost, or the inverse path"]
+  cn["ControlNet<br/>trainable encoder copy + zero convolutions<br/>361M parameters on SD 1.5"]
+  adapt["T2I-Adapter · IP-Adapter · GLIGEN<br/>77M · 22M · a gate at tanh(0)<br/>smaller side paths into a frozen U-Net"]
+  chan["inpainting and editing channels<br/>new input weights at zero<br/>SD inpainting, InstructPix2Pix"]
+  ti["textual inversion<br/>one token embedding · 768 numbers<br/>cannot add what the model cannot draw"]
+  lora["LoRA · Custom Diffusion<br/>W₀ + BA with B = 0 · cross-attention K, V<br/>0.8M · 19.2M parameters"]
+  db["DreamBooth<br/>every weight + prior preservation<br/>costs drift, forgetting, memorised photos"]
+
+  root -->|"estimate it while sampling"| sampler
+  root -->|"learn it from paired data"| inputs
+  root -->|"absorb it into the weights"| weights
+  sampler -->|"guidance weight w"| cfg
+  sampler -->|"the known pixels"| repl
+  sampler -->|"the image to edit"| edit
+  inputs -->|"edge, depth or pose map"| cn
+  inputs -->|"image prompt, boxes"| adapt
+  inputs -->|"mask, masked or input image"| chan
+  weights -->|"a new word"| ti
+  weights -->|"a low-rank update"| lora
+  weights -->|"3–5 photos of a subject"| db

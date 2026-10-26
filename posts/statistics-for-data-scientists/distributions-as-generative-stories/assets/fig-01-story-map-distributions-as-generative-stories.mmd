@@ -1,0 +1,32 @@
+---
+config:
+  flowchart:
+    curve: basis
+---
+flowchart TB
+  bern["Bernoulli trial<br/>one yes-or-no event with chance p"]
+  binom["Binomial(n, p)<br/>successes in n independent trials<br/>mean np · variance np(1 − p)"]
+  pois["Poisson(λ)<br/>count of many rare independent chances<br/>variance = mean = λ<br/>checked: Clarke's 576 squares, Bortkiewicz's corps"]
+  expo["Exponential(λ)<br/>gap between events at a constant rate<br/>memoryless · CV = 1<br/>checked: coal explosions, 1851–1889"]
+  gam["Gamma(k, λ)<br/>wait for the k-th event<br/>mean k/λ · CV = 1/√k"]
+  nb["Negative binomial(μ, k)<br/>Poisson counts whose rate varies by person<br/>variance μ + μ²/k<br/>checked: Greenwood and Yule's 647 women"]
+  eff["many small independent effects"]
+  norm["Normal(μ, σ²)<br/>the effects add<br/>symmetric · thin tails"]
+  logn["Lognormal<br/>the effects multiply<br/>log X is normal · every moment finite"]
+  st["Student t(ν)<br/>a normal whose variance varies<br/>variance ν/(ν − 2) · heavy tails"]
+  pl["Power law (Pareto)<br/>multiplicative growth with a floor<br/>P(X ≥ x) = (m/x)^α"]
+
+  bern -->|"count successes in n trials"| binom
+  binom -->|"n → ∞, p → 0, np = λ fixed"| pois
+  pois -->|"time between events"| expo
+  expo -->|"add k independent gaps"| gam
+  pois ==>|"rate drawn from a gamma"| nb
+  gam -.->|"the spread of rates"| nb
+  eff -->|"add them"| norm
+  eff -->|"multiply them"| logn
+  norm ==>|"variance from an inverse gamma"| st
+  logn ==>|"add a lower barrier"| pl
+
+  classDef mix fill:#fdf1eb,stroke:#eb6c36,color:#2d3142
+  class nb,st,pl mix
+  linkStyle 4,8,9 stroke:#eb6c36,stroke-width:2px

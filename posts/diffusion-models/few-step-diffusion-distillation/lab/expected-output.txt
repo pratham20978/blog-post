@@ -1,0 +1,35 @@
+Captured 2026-10-16T04:45:46Z on AMD Ryzen 7 5825U with Radeon Graphics (16 cores), Linux-7.0.0-38-generic-x86_64-with-glibc2.43, Python 3.12.15, numpy 2.5.3, torch 2.14.0+cpu
+  worked: a=5.1788; at x=40 (eps 0.5) D(x;80)=0.1676, DDIM 1/2/4 steps 0.1676/4.2485/5.0207, exact 5.1489
+  worked: halving 4->2 at x=40: teacher 8.8948 -> 1.9367; student target 0.7012 against D 0.1676; cliff +4.8632 / -4.8632
+  worked: flow-map check D-bar by jump 3.26999, by path average 3.26999; 1-D student ramp -0.0104..+0.0148, between crescents 0.0099
+  [worked took 25 s]
+  reference: RK4 self-check rms 2.99e-10; data-to-data sample distance 0.0336; exact endpoints 0.0453
+  reference ddim     1:0.714/0.707/1.00 2:0.334/0.243/0.76 4:0.172/0.128/0.23 8:0.120/0.083/0.02 16:0.084/0.059/0.00 32:0.057/0.051/0.00 128:0.020/0.046/0.00   (calls: error / sample distance / blends)
+  reference dpmpp2m  1:0.714/0.707/1.00 2:0.334/0.243/0.76 4:0.130/0.055/0.15 8:0.115/0.063/0.00 16:0.068/0.046/0.00 32:0.037/0.045/0.00 128:0.000/0.045/0.00   (calls: error / sample distance / blends)
+  [reference took 6 s]
+  teacher network: 20000 steps; error against the exact denoiser at sigma 1 / 2 / 80: 0.0409 / 0.0468 / 0.0111; its DDIM at 128 calls: error 0.1219, flips 0.0178
+  [teacher took 248 s]
+  student progressive distillation       seed 1: 1 call: flips 0.0376, blends 0.1658, error 0.1564, sample distance 0.0462, cover [0.2537, 0.2468, 0.2415, 0.2581] (767 s)
+  student progressive distillation       seed 2: 1 call: flips 0.0366, blends 0.1621, error 0.1557, sample distance 0.0467, cover [0.2542, 0.2454, 0.2424, 0.2581] (766 s)
+  student shortcut model                 seed 1: 1 call: flips 0.0430, blends 0.4082, error 0.2047, sample distance 0.0778, cover [0.2498, 0.2483, 0.2534, 0.2485] (933 s)
+  student shortcut model                 seed 2: 1 call: flips 0.0508, blends 0.4016, error 0.2081, sample distance 0.0750, cover [0.2532, 0.2498, 0.24, 0.2571] (908 s)
+  student consistency distillation       seed 1: 1 call: flips 0.0310, blends 0.2341, error 0.1600, sample distance 0.0493, cover [0.2515, 0.2461, 0.2441, 0.2583] (254 s)
+  student consistency distillation       seed 2: 1 call: flips 0.0327, blends 0.2297, error 0.1598, sample distance 0.0495, cover [0.2517, 0.2451, 0.2437, 0.2595] (259 s)
+  student DMD, 5:1 updates (DMD2's rule) seed 1: 1 call: flips 0.1575, blends 0.3838, error 0.3918, sample distance 0.0777, cover [0.2156, 0.2896, 0.2273, 0.2676] (573 s)
+  student DMD, 5:1 updates (DMD2's rule) seed 2: 1 call: flips 0.1565, blends 0.3638, error 0.3896, sample distance 0.0898, cover [0.2029, 0.2659, 0.2395, 0.2917] (572 s)
+  student direct regression              seed 1: 1 call: flips 0.0308, blends 0.1189, error 0.1472, sample distance 0.0436, cover [0.2498, 0.2441, 0.2434, 0.2627] (158 s)
+  student direct regression              seed 2: 1 call: flips 0.0293, blends 0.1123, error 0.1469, sample distance 0.0441, cover [0.2498, 0.2441, 0.2439, 0.2622] (158 s)
+  student DMD, 1:1 updates               seed 1: 1 call: flips 0.1487, blends 0.2666, error 0.3937, sample distance 0.0775, cover [0.2559, 0.2439, 0.2571, 0.2432] (222 s)
+  student DMD, 1:1 updates               seed 2: 1 call: flips 0.1506, blends 0.3662, error 0.3730, sample distance 0.0724, cover [0.2454, 0.2561, 0.2285, 0.27] (221 s)
+  student DMD + regression loss          seed 1: 1 call: flips 0.0984, blends 0.3171, error 0.2648, sample distance 0.0556, cover [0.251, 0.2495, 0.2515, 0.248] (227 s)
+  student DMD + regression loss          seed 2: 1 call: flips 0.0967, blends 0.3105, error 0.2647, sample distance 0.0553, cover [0.2415, 0.252, 0.2502, 0.2563] (227 s)
+  student progressive distillation       seed 1: 1:0.038/0.046 2:0.030/0.042 4:0.029/0.040 8:0.026/0.039 16:0.020/0.041 32:0.018/0.042   (calls: flips / sample distance)
+  student progressive distillation       seed 2: 1:0.037/0.047 2:0.028/0.043 4:0.028/0.040 8:0.026/0.040 16:0.023/0.041 32:0.019/0.043   (calls: flips / sample distance)
+  student consistency distillation       seed 1: 1:0.031/0.049 2:0.163/0.042 3:0.575/0.057 4:0.667/0.053 8:0.747/0.045   (calls: flips / sample distance)
+  student consistency distillation       seed 2: 1:0.033/0.050 2:0.167/0.048 3:0.588/0.069 4:0.666/0.060 8:0.747/0.038   (calls: flips / sample distance)
+  student shortcut model                 seed 1: 1:0.043/0.078 2:0.037/0.053 4:0.039/0.052 8:0.034/0.041 16:0.031/0.039 32:0.029/0.041 64:0.028/0.043 128:0.029/0.044   (calls: flips / sample distance)
+  student shortcut model                 seed 2: 1:0.051/0.075 2:0.044/0.051 4:0.045/0.044 8:0.038/0.038 16:0.034/0.043 32:0.031/0.047 64:0.030/0.048 128:0.031/0.048   (calls: flips / sample distance)
+  [students took 933 s]
+  samples: noises [904, 2148, 3241, 2, 7, 10] with margins [0.0012, 0.0018, 0.0019, 1.3159, 1.3302, 1.022]
+  [samples took 0 s]
+wrote captures.new.json in 1213 s

@@ -1,0 +1,8 @@
+# Lab for "Few-Step Diffusion and Distillation" (diffusion-models, part 7).
+# The captured run used Python 3.12.15 with exactly these versions; they are the only ones that were run.
+# CPU-only PyTorch (about 200 MB download); no GPU and no network access after installation.
+# Install torch from PyTorch's CPU index:
+#   pip install numpy==2.5.3
+#   pip install --index-url https://download.pytorch.org/whl/cpu torch==2.14.0+cpu
+numpy==2.5.3
+torch==2.14.0+cpu

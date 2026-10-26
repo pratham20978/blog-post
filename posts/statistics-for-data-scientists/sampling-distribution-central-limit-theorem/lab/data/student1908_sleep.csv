@@ -1,0 +1,18 @@
+# Additional hours of sleep gained by ten patients on each of two soporifics.
+# Source: Student, "The probable error of a mean", Biometrika 6(1): 1-25, 1908, Illustration I (public domain),
+# which took the figures from a table in A. R. Cushny and A. R. Peebles, "The action of optical isomers: II. Hyoscines",
+# Journal of Physiology 32: 501-510, 1905. https://doi.org/10.1093/biomet/6.1.1
+# Student labelled the columns "1 (Dextro-)" and "2 (Laevo-)" hyoscyamine hydrobromide; Senn and Richardson (1994,
+# Statistics in Medicine 13: 785-803) show that Student misquoted parts of the trial's description. The numbers
+# agree cell for cell with R's datasets::sleep (extra by group and ID), checked with R 4.5.2.
+patient,drug_1,drug_2
+1,0.7,1.9
+2,-1.6,0.8
+3,-0.2,1.1
+4,-1.2,0.1
+5,-0.1,-0.1
+6,3.4,4.4
+7,3.7,5.5
+8,0.8,1.6
+9,0.0,4.6
+10,2.0,3.4

@@ -1,0 +1,63 @@
+Captured 2026-10-21T16:41:50Z on Linux 7.0.0-38-generic x86_64, AMD Ryzen 7 5825U with Radeon Graphics, 16 logical CPUs; Python 3.12.15, numpy 2.5.3; beyond.py 970b6b049450
+  forward step: x_t[0,0] = 0.8 x 0.95 + 0.6 x -0.55 = 0.43; frame-to-frame change clean 0.1833, noisy 0.8050 (4.39x); noise centroid [0.15, -0.0125], shifts the cloud by [0.09, -0.0075]
+  one-pixel video, rho -1.00: frames agree 0.0000 (formula 0.0000)
+  one-pixel video, rho +0.00: frames agree 0.4990 (formula 0.5000)
+  one-pixel video, rho +0.50: frames agree 0.6665 (formula 0.6667)
+  one-pixel video, rho +0.90: frames agree 0.8550 (formula 0.8564)
+  one-pixel video, rho +0.99: frames agree 0.9550 (formula 0.9549)
+  one-pixel video, rho +1.00: frames agree 1.0000 (formula 1.0000)
+  (worked: 22 s)
+  video        data: frames valid 0.9976 | turns: frozen 0.000, quarter 1.000, half 0.000 | contrast flips 0.000, flicker 0.000 | clips: frozen 0.0000, moving 1.0000, coherent 0.9946
+  video independent: frames valid 0.9969 | turns: frozen 0.247, quarter 0.500, half 0.254 | contrast flips 0.491, flicker 0.816 | clips: frozen 0.0171, moving 0.0281, coherent 0.0000
+  video  mixed 0.25: frames valid 0.9967 | turns: frozen 0.338, quarter 0.471, half 0.191 | contrast flips 0.449, flicker 0.780 | clips: frozen 0.0618, moving 0.0125, coherent 0.0000
+  video   mixed 0.5: frames valid 0.9969 | turns: frozen 0.445, quarter 0.420, half 0.135 | contrast flips 0.382, flicker 0.734 | clips: frozen 0.1575, moving 0.0051, coherent 0.0000
+  video  mixed 0.75: frames valid 0.9954 | turns: frozen 0.599, quarter 0.326, half 0.075 | contrast flips 0.282, flicker 0.632 | clips: frozen 0.3433, moving 0.0024, coherent 0.0000
+  video   mixed 0.9: frames valid 0.9954 | turns: frozen 0.741, quarter 0.219, half 0.040 | contrast flips 0.198, flicker 0.449 | clips: frozen 0.5540, moving 0.0010, coherent 0.0000
+  video  mixed 0.95: frames valid 0.9958 | turns: frozen 0.813, quarter 0.162, half 0.025 | contrast flips 0.147, flicker 0.286 | clips: frozen 0.6748, moving 0.0000, coherent 0.0000
+  video  mixed 0.99: frames valid 0.9956 | turns: frozen 0.913, quarter 0.078, half 0.009 | contrast flips 0.069, flicker 0.014 | clips: frozen 0.8450, moving 0.0000, coherent 0.0000
+  video      shared: frames valid 0.9956 | turns: frozen 1.000, quarter 0.000, half 0.000 | contrast flips 0.000, flicker 0.000 | clips: frozen 1.0000, moving 0.0000, coherent 0.0000
+  video      warped: frames valid 0.9956 | turns: frozen 0.000, quarter 1.000, half 0.000 | contrast flips 0.000, flicker 0.000 | clips: frozen 0.0000, moving 1.0000, coherent 0.9956
+  video       joint: frames valid 0.9962 | turns: frozen 0.000, quarter 1.000, half 0.000 | contrast flips 0.000, flicker 0.000 | clips: frozen 0.0000, moving 1.0000, coherent 0.9939
+  warp in use: max |D(warp x) - warp D(x)| at sigma 2 = 2.89e-15; it repeats every 4 frames
+  (video: 19 s)
+  forecast from 1 frame, replacement: coherent 0.1738 (motion continues 0.7092, contrast kept 0.6685, brightness kept 0.3721; frames valid 0.9142)
+  forecast from 1 frame,       exact: coherent 0.9934 (motion continues 1.0000, contrast kept 1.0000, brightness kept 1.0000; frames valid 0.9974)
+  forecast from 2 frames, replacement: coherent 0.6333 (motion continues 0.9883, contrast kept 0.9258, brightness kept 0.7378; frames valid 0.9317)
+  forecast from 2 frames,       exact: coherent 0.9944 (motion continues 1.0000, contrast kept 1.0000, brightness kept 1.0000; frames valid 0.9972)
+  forecast from 3 frames, replacement: coherent 0.9597 (motion continues 0.9980, contrast kept 0.9968, brightness kept 0.9849; frames valid 0.9926)
+  forecast from 3 frames,       exact: coherent 0.9949 (motion continues 1.0000, contrast kept 1.0000, brightness kept 1.0000; frames valid 0.9977)
+  (forecast: 7 s)
+  real class-0 frames: {'right_class': 1.0, 'faint': 0.499267578125, 'blend': 0.0029296875, 'strong': 0.49609375, 'over': 0.001220703125, 'weak': 0.00048828125, 'contrast_mean': 0.7505166647031203, 'contrast_sd': 0.2585457210242389, 'contrast_faint_mean': 0.500309804589512, 'contrast_strong_mean': 1.0024397894132941, 'brightness_sd': 0.30571966423234004, 'detail_sd': 0.09949111885151049, 'distinct': 423, 'nearest_other_median': 0.9459889786708071}
+  sds w   1.0: contrast 0.733 (sd 0.097; faint 0.531 blend 0.113 strong 0.355 over 0.000), brightness sd 0.0119, detail 0.0005, distinct 11 | ancestral: contrast 0.736 (faint 0.517 over 0.000), brightness sd 0.300, detail 0.096
+  sds w   2.0: contrast 0.961 (sd 0.005; faint 0.000 blend 0.000 strong 1.000 over 0.000), brightness sd 0.0119, detail 0.0005, distinct 3 | ancestral: contrast 0.904 (faint 0.227 over 0.001), brightness sd 0.300, detail 0.096
+  sds w   3.0: contrast 1.022 (sd 0.005; faint 0.000 blend 0.000 strong 1.000 over 0.000), brightness sd 0.0119, detail 0.0005, distinct 6 | ancestral: contrast 0.987 (faint 0.104 over 0.004), brightness sd 0.300, detail 0.096
+  sds w   5.0: contrast 1.110 (sd 0.007; faint 0.000 blend 0.000 strong 1.000 over 0.000), brightness sd 0.0119, detail 0.0005, distinct 4 | ancestral: contrast 1.068 (faint 0.020 over 0.017), brightness sd 0.300, detail 0.096
+  sds w   7.5: contrast 1.195 (sd 0.011; faint 0.000 blend 0.000 strong 0.184 over 0.816), brightness sd 0.0119, detail 0.0005, distinct 5 | ancestral: contrast 1.116 (faint 0.000 over 0.075), brightness sd 0.300, detail 0.096
+  sds w  15.0: contrast 1.381 (sd 0.019; faint 0.000 blend 0.000 strong 0.000 over 1.000), brightness sd 0.0119, detail 0.0005, distinct 6 | ancestral: contrast 1.195 (faint 0.000 over 0.599), brightness sd 0.300, detail 0.096
+  sds w  30.0: contrast 1.638 (sd 0.032; faint 0.000 blend 0.000 strong 0.000 over 1.000), brightness sd 0.0119, detail 0.0005, distinct 8 | ancestral: contrast 1.292 (faint 0.000 over 0.992), brightness sd 0.300, detail 0.096
+  sds w 101.0: contrast 2.350 (sd 0.074; faint 0.000 blend 0.000 strong 0.000 over 1.000), brightness sd 0.0119, detail 0.0005, distinct 15 | ancestral: contrast 1.533 (faint 0.000 over 1.000), brightness sd 0.300, detail 0.096
+  (sds: 14 s)
+           261     raw  QM9 molecule, EDM (29 atoms x 3 coordinates + 5 atom types + 1 charge)
+           132     raw  GEOM-DRUGS molecule, average (44 atoms x 3 coordinates)
+           7.9 reduced  GEOM-DRUGS molecule, average torsion angles
+         6,144     raw  PVD point cloud (2,048 points x 3)
+        24,576     raw  Point-E point cloud (4,096 points x xyz + RGB)
+        16,000     raw  1 s of speech at 16 kHz (DiffWave)
+       160,000     raw  10 s of audio at 16 kHz (AudioLDM waveform)
+        64,000 reduced  same 10 s as a 64-band mel spectrogram (hop 160)
+        32,000  latent  same 10 s as AudioLDM's latent (r = 4, C = 8)
+     8,388,608     raw  95.1 s of 44.1 kHz stereo (Stable Audio window)
+       262,144  latent  same window as Stable Audio's latent (1/1024 in time, 64 channels)
+       196,608     raw  16 frames of 64 x 64 RGB (Video Diffusion Models)
+    24,772,608     raw  14 frames of 576 x 1024 RGB (Stable Video Diffusion)
+       516,096  latent  same 14 frames as SVD's latent (1/8 per side, 4 channels)
+       196,608     raw  one 256 x 256 RGB image, for scale
+  compression: Stable Audio 32x, AudioLDM vs waveform 5x, SVD 48x; DiffWave receptive field 6139 samples = 0.384 s
+  wrapped normal, sigma 0.01 pi: max/min inf, max/uniform 79.7885, line Gaussian keeps 1.0000 of its mass in one turn
+  wrapped normal, sigma 0.1 pi: max/min 2592352764293536022528.0000, max/uniform 7.9788, line Gaussian keeps 1.0000 of its mass in one turn
+  wrapped normal, sigma 0.25 pi: max/min 1490.4790, max/uniform 3.1915, line Gaussian keeps 0.9999 of its mass in one turn
+  wrapped normal, sigma 0.5 pi: max/min 3.6970, max/uniform 1.5968, line Gaussian keeps 0.9545 of its mass in one turn
+  wrapped normal, sigma 0.75 pi: max/min 1.2846, max/uniform 1.1246, line Gaussian keeps 0.8176 of its mass in one turn
+  wrapped normal, sigma 1.0 pi: max/min 1.0292, max/uniform 1.0144, line Gaussian keeps 0.6827 of its mass in one turn
+  (census: 0 s)
+wrote captures.json in 63 s

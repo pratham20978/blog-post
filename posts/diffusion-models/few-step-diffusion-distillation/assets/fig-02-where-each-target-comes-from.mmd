@@ -1,0 +1,32 @@
+---
+config:
+  flowchart:
+    curve: linear
+---
+flowchart LR
+  teacher["pretrained diffusion model<br/>learns D(x; σ), the slope of every path"]
+  data["training images"]
+  dmd["DMD · 2024<br/>difference of two denoisers · matches the set"]
+  reg["direct regression · 2021<br/>noise → its endpoint · follows the path"]
+  pd["progressive distillation · 2022<br/>halves the steps per round · follows the path"]
+  cd["consistency distillation · 2023<br/>any point → its path's end · follows the path"]
+  ctm["consistency trajectory model · 2024<br/>any σ → any lower σ′ · follows the path"]
+  solver["sampler (part 6) · no training<br/>integrates the slope at run time, 10–30 calls"]
+  add["ADD, LADD (SDXL-Turbo, FLUX.1 schnell)<br/>GAN + score distillation · matches the set"]
+  dmd2["DMD2 · 2024<br/>GAN on real images · matches the set"]
+  ct["consistency training · iCT · sCT<br/>no teacher · follows the path"]
+  sc["shortcut model · 2025<br/>no teacher, any step count · follows the path"]
+  mf["MeanFlow · 2025<br/>no teacher, average velocity · follows the path"]
+
+  teacher -->|"real score + regression pairs"| dmd
+  dmd -->|"no pairs · 5:1 critic · GAN"| dmd2
+  teacher -->|"endpoint per noise"| reg
+  teacher -->|"two DDIM steps per target"| pd
+  teacher -->|"one Heun step per target"| cd
+  teacher -->|"teacher steps + its own jump"| ctm
+  teacher -->|"D at every step"| solver
+  teacher -->|"score distillation"| add
+  data -->|"real images for the GAN"| add
+  data -->|"same noise at two levels"| ct
+  data -->|"denoising + its own half jumps"| sc
+  data -->|"flow matching + an identity"| mf

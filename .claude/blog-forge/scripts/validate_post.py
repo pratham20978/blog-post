@@ -52,7 +52,7 @@ REQUIRED_SECTIONS = ["Insights", "Why this matters", "The problem",
 
 CATEGORIES = {
     "algorithms", "data-structures", "networking", "operating-systems",
-    "databases", "distributed-systems", "machine-learning",
+    "databases", "distributed-systems", "machine-learning", "data-science",
     "computer-architecture", "compilers", "security", "theory",
     "software-engineering",
 }
