@@ -1,0 +1,27 @@
+# Batting records of 18 major-league players in the 1970 season: hits in their first 45 official at-bats,
+# and their batting average over the rest of the season.
+# Source: B. Efron and C. Morris, "Data analysis using Stein's estimator and its generalizations", Journal of the
+# American Statistical Association 70(350): 311-319, 1975, Table 1, columns (1) to (3). https://doi.org/10.1080/01621459.1975.10479864
+# The players are every one the New York Times of 26 April or 3 May 1970 reported with exactly 45 at-bats (Section 2).
+# Transcribed from the 1975 table; every value equals the independent transcription in Rdatasets' pscl::EfronMorris
+# (checked 2026-10-28). Labels are as the 1975 table prints them; the 1977 Scientific American article gives full names.
+# hits_first_45 = 45 x the table's first-45 average (column 1); rest_average and rest_at_bats are columns (2) and (3).
+player,team,league,hits_first_45,rest_at_bats,rest_average
+Clemente,Pitts,NL,18,367,0.346
+F. Robinson,Balt,AL,17,426,0.298
+F. Howard,Wash,AL,16,521,0.276
+Johnstone,Cal,AL,15,275,0.222
+Berry,Chi,AL,14,418,0.273
+Spencer,Cal,AL,14,466,0.270
+Kessinger,Chi,NL,13,586,0.263
+L. Alvarado,Bos,AL,12,138,0.210
+Santo,Chi,NL,11,510,0.269
+Swoboda,NY,NL,11,200,0.230
+Unser,Wash,AL,10,277,0.264
+Williams,Chi,AL,10,270,0.256
+Scott,Bos,AL,10,435,0.303
+Petrocelli,Bos,AL,10,538,0.264
+E. Rodriguez,KC,AL,10,186,0.226
+Campaneris,Oak,AL,9,558,0.285
+Munson,NY,AL,8,408,0.316
+Alvis,Mil,NL,7,70,0.200

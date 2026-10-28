@@ -1,0 +1,83 @@
+Captured 2026-10-28T10:13:57Z on Linux 7.0.0-38-generic x86_64, AMD Ryzen 7 5825U with Radeon Graphics; Python 3.12.15, NumPy 2.5.4, SciPy 1.18.1; estimators.py 453f0b844e69; budget full, seed 20261028.
+
+tanks: N = 342 tanks with serial numbers 1..342, k = 5 captured without replacement, R = 1,000,000
+  one capture: serials [58, 171, 272, 273, 303], max 303, mean 215.4; gaps [58, 113, 101, 1, 30]
+    estimates: mle 303.0, mvue 362.6, minmse 352.5, mom 429.8, first 543.0, spread 366.5
+  serial numbers drawn ran from 1 to 342
+  estimator                                  bias sim    exact    SD sim   exact               MSE sim     exact  RMSE
+  MLE  m                               -56.22 +- 0.05   -56.17     47.91   47.89            5,456 +- 9    5448.2  73.8
+  MVUE m(1 + 1/k) - 1                   -0.07 +- 0.06     0.00     57.49   57.47            3,305 +- 6    3302.6  57.5
+  m(k + 2)/(k + 1) - 1                  -9.59 +- 0.06    -9.53     55.89   55.87            3,216 +- 6    3212.4  56.7
+  2 x mean - 1                          -0.05 +- 0.09     0.00     87.77   87.78           7,703 +- 10    7706.1  87.8
+  2 x first - 1                          0.11 +- 0.20     0.00    197.33  197.45          38,938 +- 35   38987.7  197.5
+  (max - min)(1 + 2/(k - 1)) - 1        -0.03 +- 0.09     0.00     90.77   90.87           8,240 +- 11    8256.5  90.9
+  MSE ratio MLE / MVUE: 1.6508 +- 0.0013 (exact 1.6497); m(k+2)/(k+1) - 1 / MVUE: 0.9731 +- 0.0003 (exact 0.9727)
+  best multiplier a in a m - 1 for this N: 1.1672; (k + 2)/(k + 1) = 1.1667
+  the MVUE is closer to N than the MLE in 62.06% +- 0.05 of captures; m(k+2)/(k+1) - 1 is closer than the MVUE in 57.12% +- 0.05; the MLE equals N in 1.47% +- 0.01 (exact k/N = 1.46%)
+  Rao-Blackwell: Var(2 x mean - 1) / Var(MVUE) = 2.3305 +- 0.0035 (exact 2.3333, (k + 2)/3 = 2.3333)
+    the mean of 2 x mean - 1 among captures with the same maximum m, over the 166 values of m with 1,000+ captures, lies on a line with slope 1.2004 +- 0.0014 and intercept -1.10 +- 0.40; m(1 + 1/k) - 1 has slope 1.2000 and intercept -1
+  June 1940    intelligence 1,000 (8.20 x records), serial numbers  169 (+47, +38.5%), German records 122
+  June 1941    intelligence 1,550 (5.72 x records), serial numbers  244 (-27, -10.0%), German records 271
+  August 1942  intelligence 1,550 (4.53 x records), serial numbers  327 (-15, -4.4%), German records 342
+
+consistency: N = 342; exact RMSE in tanks (simulated, R = 200,000, where shown)
+     k               mle              mvue            minmse               mom             first            spread
+     1    197.0             197.5             171.1             197.5             197.5                          -
+     2    139.0 ( 139.0)    120.7 ( 120.9)    113.9 ( 114.0)    139.4 ( 139.6)    197.5 ( 197.5)    241.5 ( 241.3)
+     5     73.8 (  74.0)     57.5 (  57.8)     56.7 (  57.0)     87.8 (  88.0)    197.5 ( 197.5)     90.9 (  91.1)
+    10     41.2 (  41.3)     30.8 (  30.9)     30.7 (  30.8)     61.6 (  61.6)    197.5 ( 197.6)     45.9 (  45.9)
+    20     21.5 (  21.5)     15.8 (  15.9)     15.8 (  15.8)     42.9 (  42.9)    197.5 ( 197.6)     23.0 (  23.1)
+    50      8.4 (   8.4)      6.2 (   6.2)      6.2 (   6.2)     25.8 (  25.8)    197.5 ( 197.8)      8.9 (   8.9)
+   100      3.7 (   3.7)      2.9 (   2.8)      2.9 (   2.8)     16.6 (  16.6)    197.5 ( 197.3)      4.1 (   4.0)
+  k 10 -> 100: MVUE RMSE / 10.8, 2 x mean - 1 / 3.7, 2 x first - 1 / 1.0; MLE bias at k = 100: -2.40
+
+divisors: sum of squares / d as an estimate of sigma^2 = 1, samples of n = 10, R = 1,000,000 per population
+  normal      excess kurtosis +0.0: mean of s^2 (divisor n - 1) = 0.9992
+    d =  9.00 (n-1 ): bias -0.0008 +- 0.0005, MSE 0.2219 +- 0.0004 (exact 0.2222)
+    d = 10.00 (n   ): bias -0.1007 +- 0.0004, MSE 0.1899 +- 0.0003 (exact 0.1900)
+    d = 11.00 (n+1 ): bias -0.1825 +- 0.0004, MSE 0.1818 +- 0.0002 (exact 0.1818)
+    d = 11.00 (best): bias -0.1825 +- 0.0004, MSE 0.1818 +- 0.0002 (exact 0.1818)
+    best divisor: n + 1 + (n - 1) kappa / n = 11.00; simulated 10.99 +- 0.01; MSE(n - 1) / MSE(n + 1) = 1.2203 (exact 1.2222); MSE(best) / MSE(n - 1) = 0.8182
+  uniform     excess kurtosis -1.2: mean of s^2 (divisor n - 1) = 0.9998
+    d =  9.00 (n-1 ): bias -0.0002 +- 0.0003, MSE 0.1024 +- 0.0001 (exact 0.1022)
+    d = 10.00 (n   ): bias -0.1001 +- 0.0003, MSE 0.0929 +- 0.0001 (exact 0.0928)
+    d = 11.00 (n+1 ): bias -0.1820 +- 0.0003, MSE 0.1016 +- 0.0001 (exact 0.1015)
+    d =  9.92 (best): bias -0.0929 +- 0.0003, MSE 0.0929 +- 0.0001 (exact 0.0927)
+    best divisor: n + 1 + (n - 1) kappa / n = 9.92; simulated 9.92 +- 0.00; MSE(n - 1) / MSE(n + 1) = 1.0072 (exact 1.0072); MSE(best) / MSE(n - 1) = 0.9073
+  exponential excess kurtosis +6.0: mean of s^2 (divisor n - 1) = 1.0000
+    d =  9.00 (n-1 ): bias -0.0000 +- 0.0009, MSE 0.8228 +- 0.0039 (exact 0.8222)
+    d = 10.00 (n   ): bias -0.1000 +- 0.0008, MSE 0.6765 +- 0.0031 (exact 0.6760)
+    d = 11.00 (n+1 ): bias -0.1818 +- 0.0007, MSE 0.5839 +- 0.0025 (exact 0.5835)
+    d = 16.40 (best): bias -0.4512 +- 0.0005, MSE 0.4514 +- 0.0010 (exact 0.4512)
+    best divisor: n + 1 + (n - 1) kappa / n = 16.40; simulated 16.41 +- 0.04; MSE(n - 1) / MSE(n + 1) = 1.4092 (exact 1.4092); MSE(best) / MSE(n - 1) = 0.5488
+  normal data, E[s] / sigma with divisor n - 1 (exact c4) and the exact MSE ratio of divisors n - 1 and n + 1:
+    n = 2: 0.7993 +- 0.0014 (0.7979), ratio 3.000; n = 3: 0.8853 +- 0.0012 (0.8862), ratio 2.000; n = 5: 0.9388 +- 0.0006 (0.9400), ratio 1.500; n = 10: 0.9725 +- 0.0005 (0.9727), ratio 1.222; n = 30: 0.9912 +- 0.0003 (0.9914), ratio 1.069; n = 100: 0.9975 +- 0.0002 (0.9975), ratio 1.020
+
+baseball: Efron and Morris's 18 batters, 1970; the first 45 at-bats predict the rest of the season
+  raw scale (1977): grand average 0.2654, sigma^2 0.004333, shrinking factor c = 0.2117 (printed 0.265 and 0.212)
+    Clemente 0.400 -> 0.2939; Munson 0.178 -> 0.2469
+    total squared error: averages 0.0753, James-Stein 0.0213, ratio 3.535 (printed 0.077, 0.022 and 3.5); James-Stein closer for 16 of 18, not for Swoboda, E. Rodriguez
+    against full-season averages instead: 0.0591 and 0.0179
+  arcsine scale (1975): mean of the transformed averages -3.3166 (printed -3.275), (k - 3)/V = 0.7910 (printed 0.791), intercept -2.623 (printed -2.59)
+    total squared error: averages 17.571, Stein 4.999, efficiency 3.515 (printed 17.56, 5.01 and 3.50); closer for 15 of 18, not for Clemente, Swoboda, E. Rodriguez
+    back-transformed: 0.290, 0.286, 0.281, 0.277, 0.273, 0.273, 0.268, 0.264, 0.259, 0.259, 0.254, 0.254, 0.254, 0.254, 0.254, 0.249, 0.244, 0.239
+  regression of rest-of-season on first-45 averages across the 18: slope 0.1903, intercept 0.2145; the best constant c with hindsight 0.1903 gives total squared error 0.0213
+  1970 replayed, R = 200,000 seasons of 45 at-bats per player from the rest-of-season averages:
+    mean total squared error: averages 0.0774, James-Stein 0.0291; efficiency 2.658 +- 0.002 (positive part 2.827 +- 0.002; arcsine scale 2.655 +- 0.002)
+    James-Stein has the smaller total in 96.25% +- 0.04 of seasons; c < 0 in 14.84%; the ratio of totals has median 3.05 (5% to 95%: 1.15 to 4.17); 25.1% of seasons reach the observed 3.53
+    players whose own MSE James-Stein raises: none
+
+stein: k = 18 normal means with unit variance; total squared error of the separate observations (risk 18) against James-Stein toward the grand mean; R = 100,000 per point
+  spread    0.000: separate 18.010 +- 0.016, James-Stein 3.008 +- 0.012 (exact 3.000), positive part 2.198 +- 0.007; efficiency 6.00
+  spread    0.500: separate 18.000 +- 0.019, James-Stein 3.436 +- 0.014 (exact 3.430), positive part 2.647 +- 0.009; efficiency 5.25
+  spread    1.000: separate 17.998 +- 0.015, James-Stein 3.849 +- 0.008 (exact 3.838), positive part 3.091 +- 0.005; efficiency 4.69
+  spread    2.000: separate 17.998 +- 0.021, James-Stein 4.582 +- 0.012 (exact 4.595), positive part 3.912 +- 0.008; efficiency 3.92
+  spread    4.000: separate 17.994 +- 0.019, James-Stein 5.894 +- 0.008 (exact 5.907), positive part 5.368 +- 0.007; efficiency 3.05
+  spread    8.000: separate 17.991 +- 0.012, James-Stein 7.918 +- 0.007 (exact 7.922), positive part 7.646 +- 0.007; efficiency 2.27
+  spread   16.000: separate 17.981 +- 0.016, James-Stein 10.489 +- 0.008 (exact 10.492), positive part 10.438 +- 0.008; efficiency 1.72
+  spread   32.000: separate 17.993 +- 0.016, James-Stein 13.060 +- 0.013 (exact 13.068), positive part 13.060 +- 0.013; efficiency 1.38
+  spread   64.000: separate 17.966 +- 0.018, James-Stein 15.058 +- 0.016 (exact 15.091), positive part 15.058 +- 0.016; efficiency 1.19
+  spread  128.000: separate 18.004 +- 0.015, James-Stein 16.411 +- 0.017 (exact 16.406), positive part 16.411 +- 0.017; efficiency 1.10
+  spread  256.000: separate 17.989 +- 0.020, James-Stein 17.151 +- 0.020 (exact 17.164), positive part 17.151 +- 0.020; efficiency 1.05
+  spread    5.631: separate 17.947 +- 0.017, James-Stein 6.811 +- 0.010 (exact 6.812), positive part 6.390 +- 0.007; efficiency 2.64  <- the 18 batters' true spread (arcsine scale)
+

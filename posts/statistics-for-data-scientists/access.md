@@ -64,6 +64,18 @@ Part 2's lab, measured with `/usr/bin/time -v` on the frozen `sampling.py` (f73e
 run peaked at 0.28 GB in 212 s, `--quick` at 0.27 GB in 98 s, and the E4 fault run at 0.46 GB in
 10 s. The exact Berry–Esseen stage takes 76 to 79 s of the first two, whatever the budget.
 
+## Probe — 2026-10-28 (Part 3)
+
+```
+ram_total=14G ram_available=2G
+disk_free=319G on /
+everything else as on 2026-10-23
+```
+
+Part 3's lab, measured with `/usr/bin/time -v` on the frozen `estimators.py` (453f0b844e69): the full run
+peaked at 0.13 GB in 12.4 s, `--quick` at 0.10 GB in 2.7 s, and the E4 fault run at 0.10 GB in 1.4 s.
+Available RAM was the lowest yet, so later labs should keep checking it before long runs.
+
 ## Requests
 
 None. Every part is **G1 — runs anywhere**, self-provisioned. No hardware, privilege, credential or
@@ -81,7 +93,9 @@ Created as each part's build needs it. On 2026-10-24, Part 1 created
 cross-check used the system R's MASS, so nothing was installed into R. On 2026-10-26, Part 2 reused
 the venv unchanged; its notebook ran the same way (nbclient 0.11.0, nbformat 5.11.1, ipykernel
 7.4.0), its R cross-check used base R only, and the 23.7 MB UCI archive behind its spend CSV was
-downloaded to the session scratchpad, not the repository.
+downloaded to the session scratchpad, not the repository. On 2026-10-28, Part 3 reused the venv
+unchanged; its notebook ran the same way, its private R check used base R only (`choose`, `dpois`,
+`lm`), and the papers it read were downloaded to the session scratchpad.
 
 | What | Where | For | Undo |
 |---|---|---|---|

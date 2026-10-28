@@ -1,0 +1,10 @@
+# German monthly tank production: Allied intelligence estimates, serial-number estimates and German records.
+# Source: R. Ruggles and H. Brodie, "An empirical approach to economic intelligence in World War II", Journal of the
+# American Statistical Association 42(237): 72-91, 1947. https://doi.org/10.1080/01621459.1947.10501915
+# Not read in the original. The numbers are as reproduced, identically, in C. M. Simon, "A Bayesian treatment of the
+# German tank problem", The Mathematical Intelligencer 46(2): 117-127, 2024, Table 1 (https://doi.org/10.1007/s00283-023-10274-6),
+# and in S. J. Miller, K. Sharma and A. Yang, The PUMP Journal of Undergraduate Research 7: 231-257, 2024, Figure 1.
+month,intelligence_estimate,serial_number_estimate,german_records
+June 1940,1000,169,122
+June 1941,1550,244,271
+August 1942,1550,327,342
