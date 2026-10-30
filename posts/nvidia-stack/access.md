@@ -15,6 +15,20 @@ docker=unusable (not in the docker group)
 gcc=yes make=yes uv=yes; cmake/java/go/rustc=no
 ```
 
+## Probe — the GB10 host, 2026-10-30
+
+```text
+Dell Pro Max with GB10 (FCM1253) · Ubuntu 24.04.4 LTS · kernel 6.17.0-1021-nvidia · aarch64
+cpu: Cortex-X925 + Cortex-A725, 20 cores · memory: 121.63 GiB, shared by CPU and GPU
+gpu: NVIDIA GB10 (sm_121, 48 SMs, integrated) · KMD 595.71.05 · CUDA UMD 13.2
+nvidia-smi Memory-Usage: Not Supported (unified memory); NVML per-process memory: yes
+python3.12 (3.12.3) from the system; uv 0.12.5 is the owner's own; sudo: not used
+a live desktop: Xorg, gnome-shell, Firefox, nautilus and VS Code hold 792 MiB of graphics memory
+```
+
+The machine is the owner's workstation: never fill its memory (Part 4 emulated a 24 GiB card
+instead), keep every file under one folder in the home directory, and delete it after the capture.
+
 ## Requests
 
 **Access request AR-01: one NVIDIA GPU** (parts 3, 4, 5, 6, 8, 9, 10)
@@ -37,7 +51,11 @@ gcc=yes make=yes uv=yes; cmake/java/go/rustc=no
 - **If declined:** each part ships a G1 labelled model for its worked example, plus its G3 harness
   syntax-checked and unrun with an empty `results-schema.json`. Measured claims become documented
   ones, and the README says `**Executed:** partly`.
-- **Answer:** `grant`, `decline` or `later`
+- **Answer:** `grant`, 2026-10-30, as a machine rather than a rented instance: an NVIDIA GB10
+  workstation (Dell Pro Max with GB10) on the owner's network, reached over SSH from this machine.
+  The owner gives the address and password in chat; neither is stored in any file. A first host
+  offered on 2026-10-26 refused SSH from here, and Part 4 waited for this one. Whether the GB10 has
+  the TMA Part 8 needs is still to be checked at that part's research time.
 
 **Access request AR-02: a multi-GPU node, and several GPU generations** (parts 7, 12, 14, 15)
 
@@ -56,18 +74,19 @@ gcc=yes make=yes uv=yes; cmake/java/go/rustc=no
 
 | ID | Need | Parts | Raised | Answer | Answered | Grade as built |
 |---|---|---|---|---|---|---|
-| AR-01 | one NVIDIA GPU (TMA-capable for Part 8) | 3, 4, 5, 6, 8, 9, 10 | before Part 4, 2026-09-29 | pending | | — |
+| AR-01 | one NVIDIA GPU (TMA-capable for Part 8) | 3, 4, 5, 6, 8, 9, 10 | before Part 4, 2026-09-29 | grant: a GB10 on the owner's network | 2026-10-30 | Part 4: G3 |
 | AR-02 | a multi-GPU node, and three GPU generations | 7, 12, 14, 15 | before Part 4, 2026-09-29 | pending | | — |
 
 ## Self-provisioned
 
 | What | Where | For | Undo |
 |---|---|---|---|
-| none yet; a toolkit-only CUDA install (no driver, no root) is self-providable if a part needs `nvcc` | under `~/.cache/` | Tier A compilation | delete the directory |
+| not yet needed: a toolkit-only CUDA install (no driver, no root) is self-providable if a part needs `nvcc` | under `~/.cache/` | Tier A compilation | delete the directory |
+| a uv virtualenv (torch 2.15.0+cu132, numpy 2.3.4), its own uv cache, the lab and probes: 5.4 GB | `~/canery-lab` on the GB10 | Part 4's capture | deleted 2026-10-30 after the capture |
 
 ## Capture backlog
 
 | Part | Files | Waiting on | Then |
 |---|---|---|---|
-| 3 | `lab/step_timing.py`, `lab/util_probe.py` | AR-01 | run, fill `results.json`, and add the measured result before upload (the part is not published yet) |
-| 6 | `examples/benchmark.sh` (AIperf harness) | AR-01 | run on one GPU and fill `examples/benchmark-report.md` |
+| 3 | `lab/step_timing.py`, `lab/util_probe.py` | a session on the GB10 (AR-01 granted; not run in Part 4's) | run, fill `results.json`, and add the measured result before upload (the part is not published yet) |
+| 6 | `examples/benchmark.sh` (AIperf harness) | a session on the GB10; check its engine runs on aarch64 | run on one GPU and fill `examples/benchmark-report.md` |

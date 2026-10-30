@@ -1,0 +1,12 @@
+flowchart LR
+  S["CUDA out of memory<br/>Tried to allocate R"] --> Q1{"Does allocated memory grow<br/>between iterations, g > 0?"}
+  Q1 -- "yes" --> C3["retained graph<br/>run 3: +1.55 GiB per batch"]
+  Q1 -- "no, or not known" --> Q2{"Reserved but unallocated<br/>at least the request, U ≥ R?"}
+  Q2 -- "yes" --> C1["fragmentation<br/>run 1: U 4.63 GiB, R 256 MiB"]
+  Q2 -- "no" --> Q3{"Other processes cover<br/>the shortfall, O + X ≥ D?"}
+  Q3 -- "yes" --> C4["another process<br/>run 4: PID 189145 holds 6.17 GiB"]
+  Q3 -- "no" --> Q4{"Outside PyTorch beyond the<br/>context covers it, N − 0.5 GiB ≥ D?"}
+  Q4 -- "yes" --> C5["memory outside PyTorch<br/>run 5: N = 4.33 GiB"]
+  Q4 -- "no" --> C2["capacity<br/>run 2: A = 23.25 of 23.67 GiB allowed"]
+  classDef cause fill:#fdf0ea,stroke:#eb6c36,color:#2d3142
+  class C1,C2,C3,C4,C5 cause

@@ -1,0 +1,127 @@
+Captured 2026-10-30T11:44:17+00:00 on NVIDIA GB10 (sm_121, 48 SMs, 121.63 GiB unified), KMD 595.71.05, CUDA UMD 13.2, torch 2.15.0+cu132 (runtime 13.2), Cortex-X925 + Cortex-A725, Python 3.12.3, Ubuntu 24.04.4 LTS, Dell Inc. Dell Pro Max with GB10 FCM1253.
+-- running baseline
+    step 0 batch 6144: allocated 4.00 GiB at start, peak 20.00 GiB
+    step 1 batch 6144: allocated 12.00 GiB at start, peak 20.00 GiB
+    step 2 batch 6144: allocated 12.00 GiB at start, peak 20.00 GiB
+== baseline
+   completed 3 steps of batch 6144, peak allocated 20.00 GiB
+-- running fragmentation
+    OOM at {'step': 0, 'phase': 'optimizer', 'batch': 12288}: CUDA out of memory. Tried to allocate 256.00 MiB. GPU 0 has a total capacity of 121.63 GiB of wh...
+    empty_cache() released 3072 MiB; retry failed: True
+== fragmentation
+   OOM at optimizer of step 0 (batch 12288)
+   CUDA out of memory. Tried to allocate 256.00 MiB. GPU 0 has a total capacity of 121.63 GiB of which 79.59 GiB is free. Including non-PyTorch memory, this process has 23.96 GiB memory in use. 23.67 GiB allowed; Of the allocated memory 19.00 GiB is allocated by PyTorch, and 4.63 GiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://docs.pytorch.org/docs/stable/notes/cuda.html#optimizing-memory-usage-with-pytorch-cuda-alloc-conf)
+   fragmentation: FRAGMENTATION
+     discriminating number: reserved_but_unallocated = 4.63 GiB
+     request 256.00 MiB, short by 215.04 MiB; reserved but unallocated 4.63 GiB; other processes 0 bytes; non-PyTorch 337.92 MiB
+     why: PyTorch already holds 4.63 GiB reserved but unallocated, at least the 256.00 MiB requested, but in pieces too small for it.
+     fix: set PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True (or max_split_size_mb), or keep shapes stable
+   empty_cache() then the same optimizer again: released 3.00 GiB, failed again: True
+-- running capacity
+    step 0 batch 12288: allocated 4.00 GiB at start, peak 20.00 GiB
+    OOM at {'step': 1, 'phase': 'forward', 'batch': 12288}: CUDA out of memory. Tried to allocate 384.00 MiB. GPU 0 has a total capacity of 121.63 GiB of wh...
+    empty_cache() released 0 MiB; retry failed: True
+== capacity
+   OOM at forward of step 1 (batch 12288)
+   CUDA out of memory. Tried to allocate 384.00 MiB. GPU 0 has a total capacity of 121.63 GiB of which 79.60 GiB is free. Including non-PyTorch memory, this process has 23.82 GiB memory in use. 23.67 GiB allowed; Of the allocated memory 23.25 GiB is allocated by PyTorch, and 252.00 MiB is reserved by PyTorch but unallocated. expandable_segments is enabled. If instead the process is running out of virtual address space (VSZ), expandable segments may be over-reserving VA (each segment reserves ~9/8 of device memory, times the number of streams); reduce it via PYTORCH_CUDA_ALLOC_CONF expandable_segments_reserve / expandable_segments_reserve_by_class.
+   capacity: CAPACITY
+     discriminating number: allocated_by_pytorch = 23.25 GiB
+     request 384.00 MiB, short by 199.68 MiB; reserved but unallocated 252.00 MiB; other processes 0 bytes; non-PyTorch 331.68 MiB
+     why: PyTorch itself has 23.25 GiB allocated and nothing else explains the 199.68 MiB shortfall; check growth across iterations to rule out a retained graph.
+     fix: lower the peak: smaller batch, activation checkpointing, lower precision
+   empty_cache() then the same forward again: released 0 bytes, failed again: True
+-- running capacity-fix
+    step 0 batch 12288: allocated 4.00 GiB at start, peak 20.00 GiB
+    step 1 batch 12288: allocated 12.00 GiB at start, peak 20.00 GiB
+    step 2 batch 12288: allocated 12.00 GiB at start, peak 20.00 GiB
+== capacity-fix
+   completed 3 steps of batch 12288, peak allocated 20.00 GiB
+-- running retained
+    step 0 batch 6144: allocated 4.00 GiB at start, peak 20.00 GiB
+    step 1 batch 6144: allocated 12.00 GiB at start, peak 20.00 GiB
+    OOM at {'step': 7, 'phase': 'validation', 'batch': 1536}: CUDA out of memory. Tried to allocate 48.00 MiB. GPU 0 has a total capacity of 121.63 GiB of whi...
+== retained
+   OOM at validation of step 7 (batch 1536)
+   CUDA out of memory. Tried to allocate 48.00 MiB. GPU 0 has a total capacity of 121.63 GiB of which 79.50 GiB is free. Including non-PyTorch memory, this process has 23.99 GiB memory in use. 23.67 GiB allowed; Of the allocated memory 23.16 GiB is allocated by PyTorch, and 514.00 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://docs.pytorch.org/docs/stable/notes/cuda.html#optimizing-memory-usage-with-pytorch-cuda-alloc-conf)
+   retained: RETAINED GRAPH
+     discriminating number: growth_per_iteration = 1.55 GiB
+     request 48.00 MiB, short by 37.76 MiB; reserved but unallocated 514.00 MiB; other processes 0 bytes; non-PyTorch 335.92 MiB
+     why: PyTorch's allocated memory grows by 1.55 GiB per iteration; something keeps every iteration's tensors alive.
+     fix: run evaluation under torch.no_grad(); accumulate loss.item(), not loss
+-- running retained-fix
+    step 0 batch 6144: allocated 4.00 GiB at start, peak 20.00 GiB
+    step 1 batch 6144: allocated 12.00 GiB at start, peak 20.00 GiB
+    validation: 12 batches, allocated 12.00 -> 12.00 GiB
+== retained-fix
+   completed 2 steps of batch 6144, peak allocated 20.00 GiB
+   completed 12 validation batches, allocated at batch start 12.00 GiB -> 12.00 GiB
+-- running other-process
+    OOM at {'step': 0, 'phase': 'optimizer', 'batch': 6144}: CUDA out of memory. Tried to allocate 256.00 MiB. GPU 0 has a total capacity of 121.63 GiB of wh...
+== other-process
+   OOM at optimizer of step 0 (batch 6144)
+   CUDA out of memory. Tried to allocate 256.00 MiB. GPU 0 has a total capacity of 121.63 GiB of which 79.29 GiB is free. Including non-PyTorch memory, this process has 17.83 GiB memory in use. Process 189145 has 6.17 GiB memory in use. 17.50 GiB allowed; Of the allocated memory 17.50 GiB is allocated by PyTorch, and 2.00 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://docs.pytorch.org/docs/stable/notes/cuda.html#optimizing-memory-usage-with-pytorch-cuda-alloc-conf)
+   other-process: OTHER PROCESS
+     discriminating number: other_processes = 6.17 GiB
+     request 256.00 MiB, short by 256.00 MiB; reserved but unallocated 2.00 MiB; other processes 6.17 GiB; non-PyTorch 335.92 MiB
+     why: Other processes hold 6.17 GiB (PID 189145 6.17 GiB), more than the 256.00 MiB this request was short.
+     fix: find the process (nvidia-smi, then ps -o pid,ppid,stat,cmd -p <pid>) and stop it
+-- running other-process-fix
+    step 0 batch 6144: allocated 4.00 GiB at start, peak 20.00 GiB
+    step 1 batch 6144: allocated 12.00 GiB at start, peak 20.00 GiB
+== other-process-fix
+   completed 2 steps of batch 6144, peak allocated 20.00 GiB
+-- running non-pytorch
+    OOM at {'step': 0, 'phase': 'optimizer', 'batch': 6144}: CUDA out of memory. Tried to allocate 256.00 MiB. GPU 0 has a total capacity of 121.63 GiB of wh...
+== non-pytorch
+   OOM at optimizer of step 0 (batch 6144)
+   CUDA out of memory. Tried to allocate 256.00 MiB. GPU 0 has a total capacity of 121.63 GiB of which 79.86 GiB is free. Including non-PyTorch memory, this process has 23.83 GiB memory in use. 19.67 GiB allowed; Of the allocated memory 19.50 GiB is allocated by PyTorch, and 2.00 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://docs.pytorch.org/docs/stable/notes/cuda.html#optimizing-memory-usage-with-pytorch-cuda-alloc-conf)
+   non-pytorch: NON-PYTORCH
+     discriminating number: non_pytorch_in_this_process = 4.33 GiB
+     request 256.00 MiB, short by 81.92 MiB; reserved but unallocated 2.00 MiB; other processes 0 bytes; non-PyTorch 4.33 GiB
+     why: This process holds 4.33 GiB outside PyTorch's allocator (its total minus PyTorch's 19.50 GiB reserved), more than the 81.92 MiB it was short.
+     fix: find what allocated it (CUDA context, NCCL, another library's pool) and shrink or free it
+-- running non-pytorch-fix
+    step 0 batch 6144: allocated 4.00 GiB at start, peak 20.00 GiB
+    step 1 batch 6144: allocated 12.00 GiB at start, peak 20.00 GiB
+== non-pytorch-fix
+   completed 2 steps of batch 6144, peak allocated 20.00 GiB
+-- running inventory
+    CUDA context and one tensor                          outside PyTorch    173.4 MiB
+    + first cuBLAS matrix multiply                       outside PyTorch    241.7 MiB
+    + the training step's kernels (GELU, Adam)           outside PyTorch    335.9 MiB
+    + first cuDNN convolution                            outside PyTorch    343.9 MiB
+    + NCCL communicator, one rank                        outside PyTorch    891.9 MiB
+    + first all_reduce                                   outside PyTorch    891.9 MiB
+    after destroy_process_group()                        outside PyTorch    503.9 MiB
+== inventory
+   CUDA context and one tensor                          outside PyTorch 173.42 MiB
+   + first cuBLAS matrix multiply                       outside PyTorch 241.67 MiB
+   + the training step's kernels (GELU, Adam)           outside PyTorch 335.92 MiB
+   + first cuDNN convolution                            outside PyTorch 343.92 MiB
+   + NCCL communicator, one rank                        outside PyTorch 891.92 MiB
+   + first all_reduce                                   outside PyTorch 891.92 MiB
+   after destroy_process_group()                        outside PyTorch 503.92 MiB
+-- running inventory-eager
+    CUDA context and one tensor                          outside PyTorch    942.9 MiB
+    + first cuBLAS matrix multiply                       outside PyTorch   1256.9 MiB
+== inventory-eager
+   CUDA context and one tensor                          outside PyTorch 942.92 MiB
+   + first cuBLAS matrix multiply                       outside PyTorch 1.23 GiB
+-- running unified
+== unified
+   start                        CUDA free 104.25 GiB, MemFree 104.25 GiB, MemAvailable 114.45 GiB
+   after a 8 GiB CPU tensor     CUDA free 96.22 GiB, MemFree 96.22 GiB, MemAvailable 106.43 GiB
+   after freeing it             CUDA free 104.20 GiB, MemFree 104.21 GiB, MemAvailable 114.42 GiB
+-- running zombie
+== zombie
+   t= 0.001 s  state R  listed by NVML: True  MemFree 0 bytes vs the start
+   t= 0.271 s  state Z  listed by NVML: True  MemFree 46.35 MiB vs the start
+   t= 0.404 s  state Z  listed by NVML: False  MemFree 6.61 GiB vs the start
+   reaped afterwards; listed by NVML after reaping: False
+-- running precedence-a
+== precedence-a
+   {'PYTORCH_CUDA_ALLOC_CONF': 'expandable_segments:False', 'PYTORCH_ALLOC_CONF': 'expandable_segments:True'} -> expandable segments active: False
+-- running precedence-b
+== precedence-b
+   {'PYTORCH_CUDA_ALLOC_CONF': 'expandable_segments:True', 'PYTORCH_ALLOC_CONF': 'expandable_segments:False'} -> expandable segments active: True
+wrote captures-new.json

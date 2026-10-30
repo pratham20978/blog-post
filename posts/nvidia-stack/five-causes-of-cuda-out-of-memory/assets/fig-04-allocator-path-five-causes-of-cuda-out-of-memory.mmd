@@ -1,0 +1,14 @@
+flowchart TD
+  A["a tensor needs n bytes on CUDA stream s<br/>round n up: at least 512 B · up to 1 MiB → small pool"] --> C{"a free cached block that fits,<br/>in this stream's pool?"}
+  C -- "yes: the smallest that fits" --> D["split off the rest if worth keeping<br/>small pool ≥ 512 B · large pool > 1 MiB<br/>the block goes to the tensor: allocated += block"]
+  C -- "no" --> F["cudaMalloc a new segment<br/>2 MiB · 20 MiB · n rounded to 2 MiB"]
+  F -- "granted: reserved += segment" --> D
+  F -- "refused, or over the memory fraction" --> H{"max_split_size_mb set?"}
+  H -- "yes" --> I["free just enough large<br/>cached blocks, try again"]
+  I -- "granted" --> D
+  I -- "refused" --> J
+  H -- "no" --> J["synchronize, free every unsplit<br/>cached block, try again<br/>num_alloc_retries += 1"]
+  J -- "granted" --> D
+  J -- "refused" --> K["raise OutOfMemoryError<br/>U = free space inside split segments"]
+  classDef stop fill:#fdf0ea,stroke:#eb6c36,color:#2d3142
+  class K stop

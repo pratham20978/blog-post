@@ -21,8 +21,7 @@
   13). Every lab states its tier — A (no GPU), B (one GPU), C (multi-GPU) — because the authoring
   machine has **no NVIDIA GPU**. No number is invented; unmeasured values ship as empty schemas.
 - **Visual convention:** caption style `*Figure N. <sentence>.*`, figure numbers from the same
-  constants the prose uses, and **every rendered PNG opened and read before the gate** — part 2
-  caught a figure that had silently rendered as a browser error page this way.
+  constants the prose uses, and **every rendered PNG opened and read before the gate**.
 
 ## Part status
 
@@ -33,14 +32,14 @@
 | 1 | what-the-nvidia-stack-actually-is | **ready** | 9 | one-kernel-four-ways | planned |
 | 2 | four-cuda-version-numbers | **ready** | 10 | what-tensor-cores-actually-execute | planned |
 | 3 | gpu-idle-at-100-percent-utilization | **ready** | 11 | sizing-vram-for-llm-serving | planned |
-| 4 | five-causes-of-cuda-out-of-memory | planned | 12 | choosing-an-inference-engine | planned |
+| 4 | five-causes-of-cuda-out-of-memory | **ready** | 12 | choosing-an-inference-engine | planned |
 | 5 | reading-a-gpu-profile | planned | 13 | nvidia-serving-stack-disambiguated | planned |
 | 6 | architecture-aware-tensorrt-llm-cuda-onnx | **ready** | 14 | why-your-multi-gpu-job-hangs | planned |
 | 7 | what-changes-between-gpu-generations | planned | 15 | the-parallelism-decision | planned |
 | 8 | gpu-memory-hierarchy-after-tma | planned | 16 | jetson-version-lattice | planned (optional) |
 
 Status is `planned`, `researching`, `drafting`, `ready`, or `published`. Nothing is uploaded yet;
-parts 1, 2, 3 and 6 are all waiting on Checkpoint C.
+parts 1, 2, 3, 4 and 6 are all waiting on Checkpoint C.
 
 ## Knowledge established
 
@@ -55,8 +54,6 @@ parts 1, 2, 3 and 6 are all waiting on Checkpoint C.
   Component versions disagree inside one release.
 - The traced call at tag `v2.14.0`: `mm_out_cuda` → `at::cuda::blas::gemm<float>` → `cublasSgemm`
   **or** `cublasLtMatmul`, chosen at run time.
-- Two claims failed re-verification and were repaired: PyPI's JSON does *not* omit torch's
-  `cuda-toolkit` line, and NVIDIA no longer ships only three CUDA image variants.
 
 ### Part 2 — The Four CUDA Version Numbers (gate PASS, 4,594 words, 8 figures)
 
@@ -83,16 +80,32 @@ parts 1, 2, 3 and 6 are all waiting on Checkpoint C.
   example reads 100% vs 0.20.
 - **Contested, and the post says so:** RL-Scope (MLSys '21) saw 100% at a few percent kernel time;
   the Philly study (ATC '19) calls the counter an upper bound. NVIDIA does not document the
-  sampling. `lab/util_probe.py` settles it on hardware; it has not been run.
+  sampling.
 - The worked example is a **labelled model** (`lab/queue_model.py`; figures 2, 3, 4, 9, 10 import
   it): a 32.0 ms step where the host timer bills 9.6 ms to `loss.item()` and events read 0.0; 53%
-  GPU idle; fixes give 22.4 then 15.0 ms (47 → 67 → 100% by definition).
+  GPU idle; fixes give 22.4 then 15.0 ms.
 - The rule the later parts reuse: **a sync point costs the overlap it destroys** — a sum of
   per-segment maxes is never below the max of the sums (equation 3).
-- Heading `## Host-side sync points` exists for part 5's `#host-side-sync-points` link. CUDA
-  Graphs shorten the host lane, never the GPU lane, and forbid sync points.
-- PyTorch's default stream is stream 0; its pool streams are non-blocking. At writing: torch
-  2.14.0, CUDA 13.4 Update 1; the old C++ Programming Guide is frozen as "Legacy" since 13.0.
+- CUDA Graphs shorten the host lane, never the GPU lane, and forbid sync points.
+- PyTorch's default stream is stream 0; its pool streams are non-blocking. The old C++ Programming Guide is frozen as "Legacy" since 13.0.
+
+### Part 4 — Five Causes of One “CUDA Out of Memory” (gate PASS but the feed-only Story checks, 6,480 words, 9 figures)
+
+- The message is **six numbers from three instruments**: `cudaMemGetInfo` (total, free), NVML's
+  compute-process list (other processes, *this process*), the allocator (allocated, reserved but
+  unallocated). Graphics processes never appear.
+- **Decision order:** growth between iterations first (a leak dies among slivers and reads as
+  fragmentation), then unallocated ≥ request, then other holders beyond a ~512 MiB context floor,
+  else capacity. `lab/diagnose.py` implements it.
+- Before raising, the allocator frees every releasable cached block (not during graph capture), so
+  `empty_cache()` never rescues the crashed process. Measured at torch 2.15.0:
+  `PYTORCH_CUDA_ALLOC_CONF` beats `PYTORCH_ALLOC_CONF`; a zombie's memory returns before reaping (the
+  holder is a live orphan); context 173 MiB lazy, 943 eager; NCCL +548 MiB.
+- **Plan correction:** cuBLAS workspaces come from PyTorch's allocator at 2.15.0, so they count as
+  allocated, not non-PyTorch.
+- **Method for a shared GPU:** emulate the card with `set_per_process_memory_fraction`, never fill
+  the machine. On the GB10's unified memory, CUDA free is `MemFree`, CPU allocations shrink it, and
+  `nvidia-smi` reports no device memory.
 
 ### Part 6 — CUDA Architecture Repairs (gate PASS, 8,024 words, 18 figures)
 
@@ -151,29 +164,25 @@ parts 1, 2, 3 and 6 are all waiting on Checkpoint C.
   `machine-learning` for every part; `series` + `series_position` are the keys the platform reads.
 - **Part 9's fourth implementation** may not be measurable fairly; that post drops to three ways
   rather than waiting.
-- **Tier B has a harness but no run.** Part 3 ships `step_timing.py` and `util_probe.py` unrun,
-  with an empty `results-schema.json`. The first rented GPU session should run them before any
-  part 4 or 5 lab, and `util_probe.py`'s result decides whether the RL-Scope reading holds.
+- **Tier B has a machine:** AR-01 was granted on 2026-10-30 as an NVIDIA GB10 on the owner's
+  network (`access.md`); Part 4 ran there. Part 3's `step_timing.py` and `util_probe.py` are still
+  unrun: run them before Part 5's lab, since `util_probe.py` decides the RL-Scope reading.
 - **Part 3's six-lens review ran inline** after all eight agents died on the session limit.
   Re-run it with bounded agents when budget allows.
 
 ## Next part brief
 
-- **Part:** 4 — Five Causes of One "CUDA Out of Memory" (`five-causes-of-cuda-out-of-memory`)
-- **Tier:** L3, intermediate, ~5,500 words, 9 figures.
-- **Can assume:** part 3's execution model, linked at
-  `#intuition-two-clocks-and-a-queue` — the host runs ahead, so memory freed in Python may still
-  be in use by queued kernels. Part 3 already said, in one sentence, that `cudaFree` can block and
-  is why PyTorch caches.
-- **Must teach:** the caching allocator, `reserved` vs `allocated`, fragmentation and
-  `expandable_segments`, a retained autograd graph, a second process or zombie holding VRAM, and
-  non-PyTorch allocations (NCCL, cuBLAS workspaces, the context). One decision tree from evidence
-  to exactly one cause.
-- **Must not touch:** serving-time capacity planning (part 11) or the profiler workflow (part 5).
-- **Worked example:** the same 20 GiB model failing five times for five reasons, with the
-  allocator summary after each and the one number that discriminates it.
-- **Evidence still needed:** PyTorch's memory docs and snapshot tooling,
-  `PYTORCH_CUDA_ALLOC_CONF`, and the allocator source at the release tag.
-- **Lab:** the OOM reproductions are Tier B. Look for a Tier A core — allocator arithmetic that
-  can run without a GPU — the way part 3 used a queue model, and label it as a model.
-- **Handoff:** the memory vocabulary part 11 sizes deployments with.
+- **Part:** 5 — Reading a GPU Profile (`reading-a-gpu-profile`)
+- **Tier:** L3, intermediate, ~6,500 words, 11 figures.
+- **Can assume:** part 3's sync-point rule at `#host-side-sync-points`, its only prerequisite.
+- **Must teach:** the workflow, not the counter dictionary: Nsight Systems first, to decide whether
+  the time is on the GPU at all; then Nsight Compute on the one kernel that matters; roofline
+  reading; why low occupancy is often the correct answer.
+- **Must not touch:** fixing what the profile reveals (parts 8 and 9), or memory failures (part 4).
+- **Worked example:** one slow model whose first profile blames the data loader, not the GPU; after
+  that fix, a second pass earns a kernel profile.
+- **Evidence still needed:** the Nsight Systems and Nsight Compute user guides and CUPTI docs, and the roofline model's original paper.
+- **Lab:** G3 on the GB10 if `nsys` and `ncu` run there without sudo: the driver can restrict GPU
+  counters to administrators (`NVreg_RestrictProfilingToAdminUsers`); if so, raise an access
+  request. The GB10 is aarch64 with unified memory and a live desktop.
+- **Handoff:** named bottlenecks, which parts 8 and 9 fix.

@@ -1,0 +1,4 @@
+# The versions of the run in captures.json (2026-10-30). On Linux, PyPI's torch wheel brings its own
+# CUDA 13.2 libraries and cuda-bindings. diagnose.py needs none of this: it is standard library only.
+torch==2.15.0
+numpy==2.3.4

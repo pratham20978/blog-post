@@ -1,0 +1,4303 @@
+{
+ "schema": 1,
+ "card_bytes": 25769803776,
+ "config": {
+  "layers": 16,
+  "val_batch": 1536,
+  "card": 25769803776,
+  "holder": 6442450944,
+  "pool": 4294967296,
+  "cpu": 8589934592,
+  "width": 8192,
+  "batch": 6144,
+  "val_batches": 12
+ },
+ "runs": {
+  "baseline": {
+   "case": "baseline",
+   "env": {},
+   "config": {
+    "layers": 16,
+    "val_batch": 1536,
+    "card": 25769803776,
+    "holder": 6442450944,
+    "pool": 4294967296,
+    "cpu": 8589934592,
+    "batch": 6144,
+    "steps": 3
+   },
+   "ledger_start": {
+    "capacity": 25769803776,
+    "allowed": 25417564160,
+    "others": {},
+    "this_process": 4682858496,
+    "reserved": 4330618880,
+    "allocated": 4294967296,
+    "non_pytorch": 352239616,
+    "device_free": 106549563392,
+    "device_total": 130596077568
+   },
+   "trace": [
+    {
+     "step": 0,
+     "batch": 6144,
+     "allocated": 4294967296,
+     "reserved": 4330618880,
+     "peaks": {
+      "forward": 11140073984,
+      "backward": 11744052224,
+      "optimizer": 21474836992
+     },
+     "end_allocated": 12884901888,
+     "seconds": 1.812
+    },
+    {
+     "step": 1,
+     "batch": 6144,
+     "allocated": 12884901888,
+     "reserved": 21476933632,
+     "peaks": {
+      "forward": 19730008576,
+      "backward": 20333986816,
+      "optimizer": 21474836992
+     },
+     "end_allocated": 12884901888,
+     "seconds": 1.295
+    },
+    {
+     "step": 2,
+     "batch": 6144,
+     "allocated": 12884901888,
+     "reserved": 22483566592,
+     "peaks": {
+      "forward": 19730008576,
+      "backward": 20333986816,
+      "optimizer": 21474836992
+     },
+     "end_allocated": 12884901888,
+     "seconds": 1.296
+    }
+   ],
+   "completed": true
+  },
+  "fragmentation": {
+   "case": "fragmentation",
+   "env": {},
+   "config": {
+    "layers": 16,
+    "val_batch": 1536,
+    "card": 25769803776,
+    "holder": 6442450944,
+    "pool": 4294967296,
+    "cpu": 8589934592,
+    "batch": 12288,
+    "steps": 3,
+    "retry": true
+   },
+   "ledger_start": {
+    "capacity": 25769803776,
+    "allowed": 25417564160,
+    "others": {},
+    "this_process": 4682858496,
+    "reserved": 4330618880,
+    "allocated": 4294967296,
+    "non_pytorch": 352239616,
+    "device_free": 106751025152,
+    "device_total": 130596077568
+   },
+   "trace": [
+    {
+     "step": 0,
+     "batch": 12288,
+     "allocated": 4294967296,
+     "reserved": 4330618880,
+     "peaks": {
+      "forward": 17985179648,
+      "backward": 19193136128
+     },
+     "oom": true
+    }
+   ],
+   "oom": {
+    "message": "CUDA out of memory. Tried to allocate 256.00 MiB. GPU 0 has a total capacity of 121.63 GiB of which 79.59 GiB is free. Including non-PyTorch memory, this process has 23.96 GiB memory in use. 23.67 GiB allowed; Of the allocated memory 19.00 GiB is allocated by PyTorch, and 4.63 GiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://docs.pytorch.org/docs/stable/notes/cuda.html#optimizing-memory-usage-with-pytorch-cuda-alloc-conf)",
+    "step": 0,
+    "phase": "optimizer",
+    "batch": 12288,
+    "stats": {
+     "allocated_bytes.all.current": 17179869696,
+     "allocated_bytes.all.peak": 20401095168,
+     "reserved_bytes.all.current": 25369247744,
+     "reserved_bytes.all.peak": 25402802176,
+     "inactive_split_bytes.all.current": 4968152576,
+     "inactive_split.all.current": 38,
+     "segment.all.current": 77,
+     "num_alloc_retries": 1,
+     "num_ooms": 1,
+     "num_device_alloc": 78,
+     "num_device_free": 1
+    },
+    "snapshot": {
+     "segments": [
+      {
+       "total": 268435456,
+       "allocated": 0,
+       "blocks": 1,
+       "largest_free": 268435456,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 0,
+       "blocks": 1,
+       "largest_free": 268435456,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 0,
+       "blocks": 1,
+       "largest_free": 268435456,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 0,
+       "blocks": 1,
+       "largest_free": 268435456,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 0,
+       "blocks": 1,
+       "largest_free": 268435456,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 0,
+       "blocks": 1,
+       "largest_free": 268435456,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 0,
+       "blocks": 1,
+       "largest_free": 268435456,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 0,
+       "blocks": 1,
+       "largest_free": 268435456,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 0,
+       "blocks": 1,
+       "largest_free": 268435456,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 0,
+       "blocks": 1,
+       "largest_free": 268435456,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 0,
+       "blocks": 1,
+       "largest_free": 268435456,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 0,
+       "blocks": 1,
+       "largest_free": 268435456,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 402653184,
+       "allocated": 268435456,
+       "blocks": 2,
+       "largest_free": 134217728,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 402653184,
+       "allocated": 268435456,
+       "blocks": 2,
+       "largest_free": 134217728,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 402653184,
+       "allocated": 268435456,
+       "blocks": 2,
+       "largest_free": 134217728,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 402653184,
+       "allocated": 268435456,
+       "blocks": 2,
+       "largest_free": 134217728,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 402653184,
+       "allocated": 268435456,
+       "blocks": 2,
+       "largest_free": 134217728,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 402653184,
+       "allocated": 268435456,
+       "blocks": 2,
+       "largest_free": 134217728,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 402653184,
+       "allocated": 268435456,
+       "blocks": 2,
+       "largest_free": 134217728,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 402653184,
+       "allocated": 268435456,
+       "blocks": 2,
+       "largest_free": 134217728,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 402653184,
+       "allocated": 268435456,
+       "blocks": 2,
+       "largest_free": 134217728,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 402653184,
+       "allocated": 268435456,
+       "blocks": 2,
+       "largest_free": 134217728,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 402653184,
+       "allocated": 268435456,
+       "blocks": 2,
+       "largest_free": 134217728,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 402653184,
+       "allocated": 268435456,
+       "blocks": 2,
+       "largest_free": 134217728,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 402653184,
+       "allocated": 268435456,
+       "blocks": 2,
+       "largest_free": 134217728,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 402653184,
+       "allocated": 268435456,
+       "blocks": 2,
+       "largest_free": 134217728,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 402653184,
+       "allocated": 268435456,
+       "blocks": 2,
+       "largest_free": 134217728,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 402653184,
+       "allocated": 268435456,
+       "blocks": 2,
+       "largest_free": 134217728,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 402653184,
+       "allocated": 268435456,
+       "blocks": 2,
+       "largest_free": 134217728,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 402653184,
+       "allocated": 268435456,
+       "blocks": 2,
+       "largest_free": 134217728,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 402653184,
+       "allocated": 268435456,
+       "blocks": 2,
+       "largest_free": 134217728,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 402653184,
+       "allocated": 268435456,
+       "blocks": 2,
+       "largest_free": 134217728,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 402653184,
+       "allocated": 268435456,
+       "blocks": 2,
+       "largest_free": 134217728,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 402653184,
+       "allocated": 268435456,
+       "blocks": 2,
+       "largest_free": 134217728,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 402653184,
+       "allocated": 268435456,
+       "blocks": 2,
+       "largest_free": 134217728,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 402653184,
+       "allocated": 268435456,
+       "blocks": 2,
+       "largest_free": 134217728,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 402653184,
+       "allocated": 268435456,
+       "blocks": 2,
+       "largest_free": 134217728,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 402653184,
+       "allocated": 268435456,
+       "blocks": 2,
+       "largest_free": 134217728,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 402653184,
+       "allocated": 268435456,
+       "blocks": 2,
+       "largest_free": 134217728,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 402653184,
+       "allocated": 268435456,
+       "blocks": 2,
+       "largest_free": 134217728,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 402653184,
+       "allocated": 268435456,
+       "blocks": 2,
+       "largest_free": 134217728,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 402653184,
+       "allocated": 268435456,
+       "blocks": 2,
+       "largest_free": 134217728,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 402653184,
+       "allocated": 268435456,
+       "blocks": 2,
+       "largest_free": 134217728,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 402653184,
+       "allocated": 268435456,
+       "blocks": 2,
+       "largest_free": 134217728,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 402653184,
+       "allocated": 268435456,
+       "blocks": 2,
+       "largest_free": 134217728,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 402653184,
+       "allocated": 268435456,
+       "blocks": 2,
+       "largest_free": 134217728,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 402653184,
+       "allocated": 268435456,
+       "blocks": 2,
+       "largest_free": 134217728,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 402653184,
+       "allocated": 268435456,
+       "blocks": 2,
+       "largest_free": 134217728,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 402653184,
+       "allocated": 268435456,
+       "blocks": 2,
+       "largest_free": 134217728,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 2097152,
+       "allocated": 512,
+       "blocks": 2,
+       "largest_free": 2096640,
+       "pool": "small",
+       "expandable": false
+      }
+     ],
+     "free_block_sizes": {
+      "2096640": 1,
+      "134217728": 37,
+      "268435456": 12
+     },
+     "largest_free_block": 268435456,
+     "free_in_partly_used_segments": 4968152576,
+     "free_in_empty_segments": 3221225472
+    },
+    "ledger": {
+     "capacity": 25769803776,
+     "allowed": 25417564160,
+     "others": {},
+     "this_process": 25721487360,
+     "reserved": 25369247744,
+     "allocated": 17179869696,
+     "non_pytorch": 352239616,
+     "device_free": 85455757312,
+     "device_total": 130596077568
+    }
+   },
+   "retry_after_empty_cache": {
+    "released": 3221225472,
+    "failed": true,
+    "message": "CUDA out of memory. Tried to allocate 256.00 MiB. GPU 0 has a total capacity of 121.63 GiB of which 79.63 GiB is free. Including non-PyTorch memory, this process has 23.96 GiB memory in use. 23.67 GiB allowed; Of the allocated memory 19.00 GiB is allocated by PyTorch, and 4.63 GiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://docs.pytorch.org/docs/stable/notes/cuda.html#optimizing-memory-usage-with-pytorch-cuda-alloc-conf)"
+   },
+   "completed": false,
+   "verdict": {
+    "cause": "fragmentation",
+    "discriminating_number": "reserved_but_unallocated",
+    "value": 4971424645,
+    "why": "PyTorch already holds 4.63 GiB reserved but unallocated, at least the 256.00 MiB requested, but in pieces too small for it.",
+    "fix": "set PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True (or max_split_size_mb), or keep shapes stable",
+    "numbers": {
+     "requested": 268435456,
+     "capacity": 25769803776,
+     "free_on_card": 42949673,
+     "deficit": 225485783,
+     "allocated_by_pytorch": 20401094656,
+     "reserved_but_unallocated": 4971424645,
+     "other_processes": 0,
+     "unlisted": 0,
+     "non_pytorch_in_this_process": 354334802,
+     "growth_per_iteration": null
+    }
+   }
+  },
+  "capacity": {
+   "case": "capacity",
+   "env": {
+    "PYTORCH_ALLOC_CONF": "expandable_segments:True"
+   },
+   "config": {
+    "layers": 16,
+    "val_batch": 1536,
+    "card": 25769803776,
+    "holder": 6442450944,
+    "pool": 4294967296,
+    "cpu": 8589934592,
+    "batch": 12288,
+    "steps": 3,
+    "retry": true
+   },
+   "ledger_start": {
+    "capacity": 25769803776,
+    "allowed": 25417564160,
+    "others": {},
+    "this_process": 4653498368,
+    "reserved": 4301258752,
+    "allocated": 4294967296,
+    "non_pytorch": 352239616,
+    "device_free": 106758709248,
+    "device_total": 130596077568
+   },
+   "trace": [
+    {
+     "step": 0,
+     "batch": 12288,
+     "allocated": 4294967296,
+     "reserved": 4301258752,
+     "peaks": {
+      "forward": 17985179648,
+      "backward": 19193136128,
+      "optimizer": 21474836992
+     },
+     "end_allocated": 12884901888,
+     "seconds": 2.543
+    },
+    {
+     "step": 1,
+     "batch": 12288,
+     "allocated": 12884901888,
+     "reserved": 21623734272,
+     "peaks": {},
+     "oom": true
+    }
+   ],
+   "oom": {
+    "message": "CUDA out of memory. Tried to allocate 384.00 MiB. GPU 0 has a total capacity of 121.63 GiB of which 79.60 GiB is free. Including non-PyTorch memory, this process has 23.82 GiB memory in use. 23.67 GiB allowed; Of the allocated memory 23.25 GiB is allocated by PyTorch, and 252.00 MiB is reserved by PyTorch but unallocated. expandable_segments is enabled. If instead the process is running out of virtual address space (VSZ), expandable segments may be over-reserving VA (each segment reserves ~9/8 of device memory, times the number of streams); reduce it via PYTORCH_CUDA_ALLOC_CONF expandable_segments_reserve / expandable_segments_reserve_by_class.",
+    "step": 1,
+    "phase": "forward",
+    "batch": 12288,
+    "stats": {
+     "allocated_bytes.all.current": 24964497408,
+     "allocated_bytes.all.peak": 24998051840,
+     "reserved_bytes.all.current": 25228738560,
+     "reserved_bytes.all.peak": 25377636352,
+     "inactive_split_bytes.all.current": 0,
+     "inactive_split.all.current": 0,
+     "segment.all.current": 0,
+     "num_alloc_retries": 2,
+     "num_ooms": 1,
+     "num_device_alloc": 100,
+     "num_device_free": 17
+    },
+    "snapshot": {
+     "segments": [
+      {
+       "total": 5515509760,
+       "allocated": 5502926848,
+       "blocks": 21,
+       "largest_free": 12582912,
+       "pool": "large",
+       "expandable": true
+      },
+      {
+       "total": 545259520,
+       "allocated": 536870912,
+       "blocks": 4,
+       "largest_free": 4194304,
+       "pool": "large",
+       "expandable": true
+      },
+      {
+       "total": 566231040,
+       "allocated": 536870912,
+       "blocks": 4,
+       "largest_free": 16777216,
+       "pool": "large",
+       "expandable": true
+      },
+      {
+       "total": 545259520,
+       "allocated": 536870912,
+       "blocks": 3,
+       "largest_free": 8388608,
+       "pool": "large",
+       "expandable": true
+      },
+      {
+       "total": 545259520,
+       "allocated": 536870912,
+       "blocks": 3,
+       "largest_free": 8388608,
+       "pool": "large",
+       "expandable": true
+      },
+      {
+       "total": 566231040,
+       "allocated": 536870912,
+       "blocks": 4,
+       "largest_free": 16777216,
+       "pool": "large",
+       "expandable": true
+      },
+      {
+       "total": 545259520,
+       "allocated": 536870912,
+       "blocks": 4,
+       "largest_free": 4194304,
+       "pool": "large",
+       "expandable": true
+      },
+      {
+       "total": 566231040,
+       "allocated": 536870912,
+       "blocks": 4,
+       "largest_free": 16777216,
+       "pool": "large",
+       "expandable": true
+      },
+      {
+       "total": 545259520,
+       "allocated": 536870912,
+       "blocks": 3,
+       "largest_free": 8388608,
+       "pool": "large",
+       "expandable": true
+      },
+      {
+       "total": 545259520,
+       "allocated": 536870912,
+       "blocks": 3,
+       "largest_free": 8388608,
+       "pool": "large",
+       "expandable": true
+      },
+      {
+       "total": 566231040,
+       "allocated": 536870912,
+       "blocks": 4,
+       "largest_free": 16777216,
+       "pool": "large",
+       "expandable": true
+      },
+      {
+       "total": 545259520,
+       "allocated": 536870912,
+       "blocks": 4,
+       "largest_free": 4194304,
+       "pool": "large",
+       "expandable": true
+      },
+      {
+       "total": 566231040,
+       "allocated": 536870912,
+       "blocks": 4,
+       "largest_free": 16777216,
+       "pool": "large",
+       "expandable": true
+      },
+      {
+       "total": 545259520,
+       "allocated": 536870912,
+       "blocks": 3,
+       "largest_free": 8388608,
+       "pool": "large",
+       "expandable": true
+      },
+      {
+       "total": 545259520,
+       "allocated": 536870912,
+       "blocks": 3,
+       "largest_free": 8388608,
+       "pool": "large",
+       "expandable": true
+      },
+      {
+       "total": 11974737920,
+       "allocated": 11945377792,
+       "blocks": 32,
+       "largest_free": 16777216,
+       "pool": "large",
+       "expandable": true
+      }
+     ],
+     "free_block_sizes": {
+      "4194304": 6,
+      "8388608": 6,
+      "12582912": 7,
+      "16777216": 6
+     },
+     "largest_free_block": 16777216,
+     "free_in_partly_used_segments": 264241152,
+     "free_in_empty_segments": 0
+    },
+    "ledger": {
+     "capacity": 25769803776,
+     "allowed": 25417564160,
+     "others": {},
+     "this_process": 25580978176,
+     "reserved": 25228738560,
+     "allocated": 24964497408,
+     "non_pytorch": 352239616,
+     "device_free": 85466562560,
+     "device_total": 130596077568
+    }
+   },
+   "retry_after_empty_cache": {
+    "released": 0,
+    "failed": true,
+    "message": "CUDA out of memory. Tried to allocate 384.00 MiB. GPU 0 has a total capacity of 121.63 GiB of which 79.60 GiB is free. Including non-PyTorch memory, this process has 23.82 GiB memory in use. 23.67 GiB allowed; Of the allocated memory 23.25 GiB is allocated by PyTorch, and 252.00 MiB is reserved by PyTorch but unallocated. expandable_segments is enabled. If instead the process is running out of virtual address space (VSZ), expandable segments may be over-reserving VA (each segment reserves ~9/8 of device memory, times the number of streams); reduce it via PYTORCH_CUDA_ALLOC_CONF expandable_segments_reserve / expandable_segments_reserve_by_class."
+   },
+   "completed": false,
+   "verdict": {
+    "cause": "capacity",
+    "discriminating_number": "allocated_by_pytorch",
+    "value": 24964497408,
+    "why": "PyTorch itself has 23.25 GiB allocated and nothing else explains the 199.68 MiB shortfall; check growth across iterations to rule out a retained graph.",
+    "fix": "lower the peak: smaller batch, activation checkpointing, lower precision",
+    "numbers": {
+     "requested": 402653184,
+     "capacity": 25769803776,
+     "free_on_card": 193273528,
+     "deficit": 209379656,
+     "allocated_by_pytorch": 24964497408,
+     "reserved_but_unallocated": 264241152,
+     "other_processes": 0,
+     "unlisted": 0,
+     "non_pytorch_in_this_process": 347791688,
+     "growth_per_iteration": null
+    }
+   }
+  },
+  "capacity-fix": {
+   "case": "capacity-fix",
+   "env": {
+    "PYTORCH_ALLOC_CONF": "expandable_segments:True"
+   },
+   "config": {
+    "layers": 16,
+    "val_batch": 1536,
+    "card": 25769803776,
+    "holder": 6442450944,
+    "pool": 4294967296,
+    "cpu": 8589934592,
+    "batch": 12288,
+    "steps": 3,
+    "checkpoint": 4
+   },
+   "ledger_start": {
+    "capacity": 25769803776,
+    "allowed": 25417564160,
+    "others": {},
+    "this_process": 4653498368,
+    "reserved": 4301258752,
+    "allocated": 4294967296,
+    "non_pytorch": 352239616,
+    "device_free": 106769174528,
+    "device_total": 130596077568
+   },
+   "trace": [
+    {
+     "step": 0,
+     "batch": 12288,
+     "allocated": 4294967296,
+     "reserved": 4301258752,
+     "peaks": {
+      "forward": 9529462784,
+      "backward": 11542725632,
+      "optimizer": 21474836992
+     },
+     "end_allocated": 12884901888,
+     "seconds": 2.941
+    },
+    {
+     "step": 1,
+     "batch": 12288,
+     "allocated": 12884901888,
+     "reserved": 21896364032,
+     "peaks": {
+      "forward": 18119397376,
+      "backward": 20132660224,
+      "optimizer": 21474836992
+     },
+     "end_allocated": 12884901888,
+     "seconds": 2.745
+    },
+    {
+     "step": 2,
+     "batch": 12288,
+     "allocated": 12884901888,
+     "reserved": 21896364032,
+     "peaks": {
+      "forward": 18119397376,
+      "backward": 20132660224,
+      "optimizer": 21474836992
+     },
+     "end_allocated": 12884901888,
+     "seconds": 2.776
+    }
+   ],
+   "completed": true
+  },
+  "retained": {
+   "case": "retained",
+   "env": {},
+   "config": {
+    "layers": 16,
+    "val_batch": 1536,
+    "card": 25769803776,
+    "holder": 6442450944,
+    "pool": 4294967296,
+    "cpu": 8589934592
+   },
+   "ledger_start": {
+    "capacity": 25769803776,
+    "allowed": 25417564160,
+    "others": {},
+    "this_process": 4682858496,
+    "reserved": 4330618880,
+    "allocated": 4294967296,
+    "non_pytorch": 352239616,
+    "device_free": 106861858816,
+    "device_total": 130596077568
+   },
+   "trace": [
+    {
+     "step": 0,
+     "batch": 6144,
+     "allocated": 4294967296,
+     "reserved": 4330618880,
+     "peaks": {
+      "forward": 11140073984,
+      "backward": 11744052224,
+      "optimizer": 21474836992
+     },
+     "end_allocated": 12884902400,
+     "seconds": 1.762
+    },
+    {
+     "step": 1,
+     "batch": 6144,
+     "allocated": 12884902400,
+     "reserved": 21476933632,
+     "peaks": {
+      "forward": 19730009088,
+      "backward": 20333987328,
+      "optimizer": 21474837504
+     },
+     "end_allocated": 12884902400,
+     "seconds": 1.334
+    }
+   ],
+   "val_trace": [
+    {
+     "batch_index": 0,
+     "allocated": 12884901888
+    },
+    {
+     "batch_index": 1,
+     "allocated": 14545847296
+    },
+    {
+     "batch_index": 2,
+     "allocated": 16206791680
+    },
+    {
+     "batch_index": 3,
+     "allocated": 17867736064
+    },
+    {
+     "batch_index": 4,
+     "allocated": 19528680448
+    },
+    {
+     "batch_index": 5,
+     "allocated": 21189624832
+    },
+    {
+     "batch_index": 6,
+     "allocated": 22850569216
+    },
+    {
+     "batch_index": 7,
+     "allocated": 24511513600,
+     "oom": true
+    }
+   ],
+   "oom": {
+    "message": "CUDA out of memory. Tried to allocate 48.00 MiB. GPU 0 has a total capacity of 121.63 GiB of which 79.50 GiB is free. Including non-PyTorch memory, this process has 23.99 GiB memory in use. 23.67 GiB allowed; Of the allocated memory 23.16 GiB is allocated by PyTorch, and 514.00 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://docs.pytorch.org/docs/stable/notes/cuda.html#optimizing-memory-usage-with-pytorch-cuda-alloc-conf)",
+    "step": 7,
+    "phase": "validation",
+    "batch": 1536,
+    "stats": {
+     "allocated_bytes.all.current": 24863835136,
+     "allocated_bytes.all.peak": 24863835136,
+     "reserved_bytes.all.current": 25402802176,
+     "reserved_bytes.all.peak": 25402802176,
+     "inactive_split_bytes.all.current": 538967040,
+     "inactive_split.all.current": 33,
+     "segment.all.current": 144,
+     "num_alloc_retries": 3,
+     "num_ooms": 1,
+     "num_device_alloc": 183,
+     "num_device_free": 39
+    },
+    "snapshot": {
+     "segments": [
+      {
+       "total": 50331648,
+       "allocated": 50331648,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 50331648,
+       "allocated": 50331648,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 50331648,
+       "allocated": 50331648,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 50331648,
+       "allocated": 50331648,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 50331648,
+       "allocated": 50331648,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 50331648,
+       "allocated": 50331648,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 251658240,
+       "blocks": 6,
+       "largest_free": 16777216,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 251658240,
+       "blocks": 6,
+       "largest_free": 16777216,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 251658240,
+       "blocks": 6,
+       "largest_free": 16777216,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 251658240,
+       "blocks": 6,
+       "largest_free": 16777216,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 251658240,
+       "blocks": 6,
+       "largest_free": 16777216,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 251658240,
+       "blocks": 6,
+       "largest_free": 16777216,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 251658240,
+       "blocks": 6,
+       "largest_free": 16777216,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 251658240,
+       "blocks": 6,
+       "largest_free": 16777216,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 251658240,
+       "blocks": 6,
+       "largest_free": 16777216,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 251658240,
+       "blocks": 6,
+       "largest_free": 16777216,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 251658240,
+       "blocks": 6,
+       "largest_free": 16777216,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 251658240,
+       "blocks": 6,
+       "largest_free": 16777216,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 251658240,
+       "blocks": 6,
+       "largest_free": 16777216,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 251658240,
+       "blocks": 6,
+       "largest_free": 16777216,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 251658240,
+       "blocks": 6,
+       "largest_free": 16777216,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 251658240,
+       "blocks": 6,
+       "largest_free": 16777216,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 251658240,
+       "blocks": 6,
+       "largest_free": 16777216,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 251658240,
+       "blocks": 6,
+       "largest_free": 16777216,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 50331648,
+       "allocated": 50331648,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 50331648,
+       "allocated": 50331648,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 50331648,
+       "allocated": 50331648,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 50331648,
+       "allocated": 50331648,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 50331648,
+       "allocated": 50331648,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 50331648,
+       "allocated": 50331648,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 50331648,
+       "allocated": 50331648,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 50331648,
+       "allocated": 50331648,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 50331648,
+       "allocated": 50331648,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 50331648,
+       "allocated": 50331648,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 50331648,
+       "allocated": 50331648,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 50331648,
+       "allocated": 50331648,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 50331648,
+       "allocated": 50331648,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 50331648,
+       "allocated": 50331648,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 50331648,
+       "allocated": 50331648,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 50331648,
+       "allocated": 50331648,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 50331648,
+       "allocated": 50331648,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 50331648,
+       "allocated": 50331648,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 50331648,
+       "allocated": 50331648,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 50331648,
+       "allocated": 50331648,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 50331648,
+       "allocated": 50331648,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 50331648,
+       "allocated": 50331648,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 50331648,
+       "allocated": 50331648,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 50331648,
+       "allocated": 50331648,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 50331648,
+       "allocated": 50331648,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 50331648,
+       "allocated": 50331648,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 50331648,
+       "allocated": 50331648,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 50331648,
+       "allocated": 50331648,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 50331648,
+       "allocated": 50331648,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 50331648,
+       "allocated": 50331648,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 50331648,
+       "allocated": 50331648,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 50331648,
+       "allocated": 50331648,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 50331648,
+       "allocated": 50331648,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 50331648,
+       "allocated": 50331648,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 50331648,
+       "allocated": 50331648,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 50331648,
+       "allocated": 50331648,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 50331648,
+       "allocated": 50331648,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 50331648,
+       "allocated": 50331648,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 50331648,
+       "allocated": 50331648,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 50331648,
+       "allocated": 50331648,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 50331648,
+       "allocated": 50331648,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 50331648,
+       "allocated": 50331648,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 50331648,
+       "allocated": 50331648,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 50331648,
+       "allocated": 50331648,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 50331648,
+       "allocated": 50331648,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 50331648,
+       "allocated": 50331648,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 50331648,
+       "allocated": 50331648,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 50331648,
+       "allocated": 50331648,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 50331648,
+       "allocated": 50331648,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 50331648,
+       "allocated": 50331648,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 50331648,
+       "allocated": 50331648,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 50331648,
+       "allocated": 50331648,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 201326592,
+       "allocated": 201326592,
+       "blocks": 4,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 201326592,
+       "allocated": 201326592,
+       "blocks": 4,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 201326592,
+       "allocated": 201326592,
+       "blocks": 4,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 201326592,
+       "allocated": 201326592,
+       "blocks": 4,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 201326592,
+       "allocated": 201326592,
+       "blocks": 4,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 251658240,
+       "blocks": 6,
+       "largest_free": 16777216,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 251658240,
+       "blocks": 6,
+       "largest_free": 16777216,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 251658240,
+       "blocks": 6,
+       "largest_free": 16777216,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 251658240,
+       "blocks": 6,
+       "largest_free": 16777216,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 251658240,
+       "blocks": 6,
+       "largest_free": 16777216,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 251658240,
+       "blocks": 6,
+       "largest_free": 16777216,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 251658240,
+       "blocks": 6,
+       "largest_free": 16777216,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 251658240,
+       "blocks": 6,
+       "largest_free": 16777216,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 251658240,
+       "blocks": 6,
+       "largest_free": 16777216,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 251658240,
+       "blocks": 6,
+       "largest_free": 16777216,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 251658240,
+       "blocks": 6,
+       "largest_free": 16777216,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 251658240,
+       "blocks": 6,
+       "largest_free": 16777216,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 251658240,
+       "blocks": 6,
+       "largest_free": 16777216,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 251658240,
+       "blocks": 6,
+       "largest_free": 16777216,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 2097152,
+       "allocated": 1024,
+       "blocks": 3,
+       "largest_free": 2096128,
+       "pool": "small",
+       "expandable": false
+      }
+     ],
+     "free_block_sizes": {
+      "2096128": 1,
+      "16777216": 32
+     },
+     "largest_free_block": 16777216,
+     "free_in_partly_used_segments": 538967040,
+     "free_in_empty_segments": 0
+    },
+    "ledger": {
+     "capacity": 25769803776,
+     "allowed": 25417564160,
+     "others": {},
+     "this_process": 25755041792,
+     "reserved": 25402802176,
+     "allocated": 24863835136,
+     "non_pytorch": 352239616,
+     "device_free": 85364850688,
+     "device_total": 130596077568
+    }
+   },
+   "completed": false,
+   "verdict": {
+    "cause": "retained graph",
+    "discriminating_number": "growth_per_iteration",
+    "value": 1660944384,
+    "why": "PyTorch's allocated memory grows by 1.55 GiB per iteration; something keeps every iteration's tensors alive.",
+    "fix": "run evaluation under torch.no_grad(); accumulate loss.item(), not loss",
+    "numbers": {
+     "requested": 50331648,
+     "capacity": 25769803776,
+     "free_on_card": 10737418,
+     "deficit": 39594230,
+     "allocated_by_pytorch": 24867860644,
+     "reserved_but_unallocated": 538968064,
+     "other_processes": 0,
+     "unlisted": 0,
+     "non_pytorch_in_this_process": 352237650,
+     "growth_per_iteration": 1660944384
+    }
+   }
+  },
+  "retained-fix": {
+   "case": "retained-fix",
+   "env": {},
+   "config": {
+    "layers": 16,
+    "val_batch": 1536,
+    "card": 25769803776,
+    "holder": 6442450944,
+    "pool": 4294967296,
+    "cpu": 8589934592,
+    "no_grad": true
+   },
+   "ledger_start": {
+    "capacity": 25769803776,
+    "allowed": 25417564160,
+    "others": {},
+    "this_process": 4682858496,
+    "reserved": 4330618880,
+    "allocated": 4294967296,
+    "non_pytorch": 352239616,
+    "device_free": 106672672768,
+    "device_total": 130596077568
+   },
+   "trace": [
+    {
+     "step": 0,
+     "batch": 6144,
+     "allocated": 4294967296,
+     "reserved": 4330618880,
+     "peaks": {
+      "forward": 11140073984,
+      "backward": 11744052224,
+      "optimizer": 21474836992
+     },
+     "end_allocated": 12884902400,
+     "seconds": 1.762
+    },
+    {
+     "step": 1,
+     "batch": 6144,
+     "allocated": 12884902400,
+     "reserved": 21476933632,
+     "peaks": {
+      "forward": 19730009088,
+      "backward": 20333987328,
+      "optimizer": 21474837504
+     },
+     "end_allocated": 12884902400,
+     "seconds": 1.304
+    }
+   ],
+   "val_trace": [
+    {
+     "batch_index": 0,
+     "allocated": 12884901888
+    },
+    {
+     "batch_index": 1,
+     "allocated": 12884902400
+    },
+    {
+     "batch_index": 2,
+     "allocated": 12884902400
+    },
+    {
+     "batch_index": 3,
+     "allocated": 12884902400
+    },
+    {
+     "batch_index": 4,
+     "allocated": 12884902400
+    },
+    {
+     "batch_index": 5,
+     "allocated": 12884902400
+    },
+    {
+     "batch_index": 6,
+     "allocated": 12884902400
+    },
+    {
+     "batch_index": 7,
+     "allocated": 12884902400
+    },
+    {
+     "batch_index": 8,
+     "allocated": 12884902400
+    },
+    {
+     "batch_index": 9,
+     "allocated": 12884902400
+    },
+    {
+     "batch_index": 10,
+     "allocated": 12884902400
+    },
+    {
+     "batch_index": 11,
+     "allocated": 12884902400
+    }
+   ],
+   "completed": true
+  },
+  "other-process": {
+   "case": "other-process",
+   "env": {},
+   "config": {
+    "layers": 16,
+    "val_batch": 1536,
+    "card": 25769803776,
+    "holder": 6442450944,
+    "pool": 4294967296,
+    "cpu": 8589934592
+   },
+   "holder": {
+    "pid": 189145,
+    "ppid": 1,
+    "now": {
+     "pid": 189145,
+     "state": "S",
+     "ppid": 1
+    },
+    "comm": "python",
+    "parent_comm": "systemd"
+   },
+   "ledger_start": {
+    "capacity": 25769803776,
+    "allowed": 18793267200,
+    "others": {
+     "189145": 6624296960
+    },
+    "this_process": 4682858496,
+    "reserved": 4330618880,
+    "allocated": 4294967296,
+    "non_pytorch": 352239616,
+    "device_free": 99745128448,
+    "device_total": 130596077568
+   },
+   "trace": [
+    {
+     "step": 0,
+     "batch": 6144,
+     "allocated": 4294967296,
+     "reserved": 4330618880,
+     "peaks": {
+      "forward": 11140073984,
+      "backward": 11744052224
+     },
+     "oom": true
+    }
+   ],
+   "oom": {
+    "message": "CUDA out of memory. Tried to allocate 256.00 MiB. GPU 0 has a total capacity of 121.63 GiB of which 79.29 GiB is free. Including non-PyTorch memory, this process has 17.83 GiB memory in use. Process 189145 has 6.17 GiB memory in use. 17.50 GiB allowed; Of the allocated memory 17.50 GiB is allocated by PyTorch, and 2.00 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://docs.pytorch.org/docs/stable/notes/cuda.html#optimizing-memory-usage-with-pytorch-cuda-alloc-conf)",
+    "step": 0,
+    "phase": "optimizer",
+    "batch": 6144,
+    "stats": {
+     "allocated_bytes.all.current": 17179869696,
+     "allocated_bytes.all.peak": 18790482432,
+     "reserved_bytes.all.current": 18792579072,
+     "reserved_bytes.all.peak": 18792579072,
+     "inactive_split_bytes.all.current": 2096640,
+     "inactive_split.all.current": 1,
+     "segment.all.current": 71,
+     "num_alloc_retries": 2,
+     "num_ooms": 1,
+     "num_device_alloc": 109,
+     "num_device_free": 38
+    },
+    "snapshot": {
+     "segments": [
+      {
+       "total": 268435456,
+       "allocated": 0,
+       "blocks": 1,
+       "largest_free": 268435456,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 0,
+       "blocks": 1,
+       "largest_free": 268435456,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 0,
+       "blocks": 1,
+       "largest_free": 268435456,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 0,
+       "blocks": 1,
+       "largest_free": 268435456,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 0,
+       "blocks": 1,
+       "largest_free": 268435456,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 0,
+       "blocks": 1,
+       "largest_free": 268435456,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 2097152,
+       "allocated": 512,
+       "blocks": 2,
+       "largest_free": 2096640,
+       "pool": "small",
+       "expandable": false
+      }
+     ],
+     "free_block_sizes": {
+      "2096640": 1,
+      "268435456": 6
+     },
+     "largest_free_block": 268435456,
+     "free_in_partly_used_segments": 2096640,
+     "free_in_empty_segments": 1610612736
+    },
+    "ledger": {
+     "capacity": 25769803776,
+     "allowed": 18793267200,
+     "others": {
+      "189145": 6624296960
+     },
+     "this_process": 19144818688,
+     "reserved": 18792579072,
+     "allocated": 17179869696,
+     "non_pytorch": 352239616,
+     "device_free": 85136887808,
+     "device_total": 130596077568
+    }
+   },
+   "completed": false,
+   "verdict": {
+    "cause": "other process",
+    "discriminating_number": "other_processes",
+    "value": 6624987054,
+    "why": "Other processes hold 6.17 GiB (PID 189145 6.17 GiB), more than the 256.00 MiB this request was short.",
+    "fix": "find the process (nvidia-smi, then ps -o pid,ppid,stat,cmd -p <pid>) and stop it",
+    "numbers": {
+     "requested": 268435456,
+     "capacity": 25769803776,
+     "free_on_card": 0,
+     "deficit": 268435456,
+     "allocated_by_pytorch": 18790481920,
+     "reserved_but_unallocated": 2097152,
+     "other_processes": 6624987054,
+     "unlisted": 0,
+     "non_pytorch_in_this_process": 352237650,
+     "growth_per_iteration": null
+    }
+   }
+  },
+  "other-process-fix": {
+   "case": "other-process-fix",
+   "env": {},
+   "config": {
+    "layers": 16,
+    "val_batch": 1536,
+    "card": 25769803776,
+    "holder": 6442450944,
+    "pool": 4294967296,
+    "cpu": 8589934592,
+    "fix": true
+   },
+   "holder": {
+    "pid": 189284,
+    "ppid": 1,
+    "now": {
+     "pid": 189284,
+     "state": "S",
+     "ppid": 1
+    },
+    "comm": "python",
+    "parent_comm": "systemd"
+   },
+   "ledger_start": {
+    "capacity": 25769803776,
+    "allowed": 25417564160,
+    "others": {},
+    "this_process": 4682858496,
+    "reserved": 4330618880,
+    "allocated": 4294967296,
+    "non_pytorch": 352239616,
+    "device_free": 106877652992,
+    "device_total": 130596077568
+   },
+   "trace": [
+    {
+     "step": 0,
+     "batch": 6144,
+     "allocated": 4294967296,
+     "reserved": 4330618880,
+     "peaks": {
+      "forward": 11140073984,
+      "backward": 11744052224,
+      "optimizer": 21474836992
+     },
+     "end_allocated": 12884901888,
+     "seconds": 1.754
+    },
+    {
+     "step": 1,
+     "batch": 6144,
+     "allocated": 12884901888,
+     "reserved": 21476933632,
+     "peaks": {
+      "forward": 19730008576,
+      "backward": 20333986816,
+      "optimizer": 21474836992
+     },
+     "end_allocated": 12884901888,
+     "seconds": 1.307
+    }
+   ],
+   "completed": true
+  },
+  "non-pytorch": {
+   "case": "non-pytorch",
+   "env": {},
+   "config": {
+    "layers": 16,
+    "val_batch": 1536,
+    "card": 25769803776,
+    "holder": 6442450944,
+    "pool": 4294967296,
+    "cpu": 8589934592
+   },
+   "pool_bytes": 4294967296,
+   "ledger_start": {
+    "capacity": 25769803776,
+    "allowed": 21122596864,
+    "others": {},
+    "this_process": 8977825792,
+    "reserved": 4330618880,
+    "allocated": 4294967296,
+    "non_pytorch": 4647206912,
+    "device_free": 102519496704,
+    "device_total": 130596077568
+   },
+   "trace": [
+    {
+     "step": 0,
+     "batch": 6144,
+     "allocated": 4294967296,
+     "reserved": 4330618880,
+     "peaks": {
+      "forward": 11140073984,
+      "backward": 11744052224
+     },
+     "oom": true
+    }
+   ],
+   "oom": {
+    "message": "CUDA out of memory. Tried to allocate 256.00 MiB. GPU 0 has a total capacity of 121.63 GiB of which 79.86 GiB is free. Including non-PyTorch memory, this process has 23.83 GiB memory in use. 19.67 GiB allowed; Of the allocated memory 19.50 GiB is allocated by PyTorch, and 2.00 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://docs.pytorch.org/docs/stable/notes/cuda.html#optimizing-memory-usage-with-pytorch-cuda-alloc-conf)",
+    "step": 0,
+    "phase": "optimizer",
+    "batch": 6144,
+    "stats": {
+     "allocated_bytes.all.current": 17179869696,
+     "allocated_bytes.all.peak": 20937966080,
+     "reserved_bytes.all.current": 20940062720,
+     "reserved_bytes.all.peak": 20940062720,
+     "inactive_split_bytes.all.current": 2096640,
+     "inactive_split.all.current": 1,
+     "segment.all.current": 79,
+     "num_alloc_retries": 2,
+     "num_ooms": 1,
+     "num_device_alloc": 117,
+     "num_device_free": 38
+    },
+    "snapshot": {
+     "segments": [
+      {
+       "total": 268435456,
+       "allocated": 0,
+       "blocks": 1,
+       "largest_free": 268435456,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 0,
+       "blocks": 1,
+       "largest_free": 268435456,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 0,
+       "blocks": 1,
+       "largest_free": 268435456,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 0,
+       "blocks": 1,
+       "largest_free": 268435456,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 0,
+       "blocks": 1,
+       "largest_free": 268435456,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 0,
+       "blocks": 1,
+       "largest_free": 268435456,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 0,
+       "blocks": 1,
+       "largest_free": 268435456,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 0,
+       "blocks": 1,
+       "largest_free": 268435456,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 0,
+       "blocks": 1,
+       "largest_free": 268435456,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 0,
+       "blocks": 1,
+       "largest_free": 268435456,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 0,
+       "blocks": 1,
+       "largest_free": 268435456,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 0,
+       "blocks": 1,
+       "largest_free": 268435456,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 0,
+       "blocks": 1,
+       "largest_free": 268435456,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 0,
+       "blocks": 1,
+       "largest_free": 268435456,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 268435456,
+       "allocated": 268435456,
+       "blocks": 1,
+       "largest_free": 0,
+       "pool": "large",
+       "expandable": false
+      },
+      {
+       "total": 2097152,
+       "allocated": 512,
+       "blocks": 2,
+       "largest_free": 2096640,
+       "pool": "small",
+       "expandable": false
+      }
+     ],
+     "free_block_sizes": {
+      "2096640": 1,
+      "268435456": 14
+     },
+     "largest_free_block": 268435456,
+     "free_in_partly_used_segments": 2096640,
+     "free_in_empty_segments": 3758096384
+    },
+    "ledger": {
+     "capacity": 25769803776,
+     "allowed": 21122596864,
+     "others": {},
+     "this_process": 25587269632,
+     "reserved": 20940062720,
+     "allocated": 17179869696,
+     "non_pytorch": 4647206912,
+     "device_free": 85744934912,
+     "device_total": 130596077568
+    }
+   },
+   "completed": false,
+   "verdict": {
+    "cause": "non-PyTorch",
+    "discriminating_number": "non_pytorch_in_this_process",
+    "value": 4647204946,
+    "why": "This process holds 4.33 GiB outside PyTorch's allocator (its total minus PyTorch's 19.50 GiB reserved), more than the 81.92 MiB it was short.",
+    "fix": "find what allocated it (CUDA context, NCCL, another library's pool) and shrink or free it",
+    "numbers": {
+     "requested": 268435456,
+     "capacity": 25769803776,
+     "free_on_card": 182536110,
+     "deficit": 85899346,
+     "allocated_by_pytorch": 20937965568,
+     "reserved_but_unallocated": 2097152,
+     "other_processes": 0,
+     "unlisted": 0,
+     "non_pytorch_in_this_process": 4647204946,
+     "growth_per_iteration": null
+    }
+   }
+  },
+  "non-pytorch-fix": {
+   "case": "non-pytorch-fix",
+   "env": {},
+   "config": {
+    "layers": 16,
+    "val_batch": 1536,
+    "card": 25769803776,
+    "holder": 6442450944,
+    "pool": 4294967296,
+    "cpu": 8589934592,
+    "fix": true
+   },
+   "pool_bytes": 4294967296,
+   "ledger_start": {
+    "capacity": 25769803776,
+    "allowed": 25417564160,
+    "others": {},
+    "this_process": 4682858496,
+    "reserved": 4330618880,
+    "allocated": 4294967296,
+    "non_pytorch": 352239616,
+    "device_free": 106690220032,
+    "device_total": 130596077568
+   },
+   "trace": [
+    {
+     "step": 0,
+     "batch": 6144,
+     "allocated": 4294967296,
+     "reserved": 4330618880,
+     "peaks": {
+      "forward": 11140073984,
+      "backward": 11744052224,
+      "optimizer": 21474836992
+     },
+     "end_allocated": 12884901888,
+     "seconds": 1.78
+    },
+    {
+     "step": 1,
+     "batch": 6144,
+     "allocated": 12884901888,
+     "reserved": 21476933632,
+     "peaks": {
+      "forward": 19730008576,
+      "backward": 20333986816,
+      "optimizer": 21474836992
+     },
+     "end_allocated": 12884901888,
+     "seconds": 1.304
+    }
+   ],
+   "completed": true
+  },
+  "inventory": {
+   "case": "inventory",
+   "env": {},
+   "config": {
+    "layers": 16,
+    "val_batch": 1536,
+    "card": 25769803776,
+    "holder": 6442450944,
+    "pool": 4294967296,
+    "cpu": 8589934592
+   },
+   "stages": [
+    {
+     "stage": "CUDA context and one tensor",
+     "non_pytorch": 181846016,
+     "this_process": 183943168,
+     "reserved": 2097152
+    },
+    {
+     "stage": "+ first cuBLAS matrix multiply",
+     "non_pytorch": 253411328,
+     "this_process": 423280640,
+     "reserved": 169869312
+    },
+    {
+     "stage": "+ the training step's kernels (GELU, Adam)",
+     "non_pytorch": 352239616,
+     "this_process": 522108928,
+     "reserved": 169869312
+    },
+    {
+     "stage": "+ first cuDNN convolution",
+     "non_pytorch": 360628224,
+     "this_process": 530497536,
+     "reserved": 169869312
+    },
+    {
+     "stage": "+ NCCL communicator, one rank",
+     "non_pytorch": 935247872,
+     "this_process": 1105117184,
+     "reserved": 169869312
+    },
+    {
+     "stage": "+ first all_reduce",
+     "non_pytorch": 935247872,
+     "this_process": 1105117184,
+     "reserved": 169869312
+    },
+    {
+     "stage": "after destroy_process_group()",
+     "non_pytorch": 528400384,
+     "this_process": 698269696,
+     "reserved": 169869312
+    }
+   ]
+  },
+  "inventory-eager": {
+   "case": "inventory-eager",
+   "env": {
+    "CUDA_MODULE_LOADING": "EAGER"
+   },
+   "config": {
+    "layers": 16,
+    "val_batch": 1536,
+    "card": 25769803776,
+    "holder": 6442450944,
+    "pool": 4294967296,
+    "cpu": 8589934592
+   },
+   "stages": [
+    {
+     "stage": "CUDA context and one tensor",
+     "non_pytorch": 988725248,
+     "this_process": 990822400,
+     "reserved": 2097152
+    },
+    {
+     "stage": "+ first cuBLAS matrix multiply",
+     "non_pytorch": 1317978112,
+     "this_process": 1487847424,
+     "reserved": 169869312
+    }
+   ]
+  },
+  "unified": {
+   "case": "unified",
+   "env": {},
+   "config": {
+    "layers": 16,
+    "val_batch": 1536,
+    "card": 25769803776,
+    "holder": 6442450944,
+    "pool": 4294967296,
+    "cpu": 8589934592
+   },
+   "integrated": true,
+   "nvml_memory_info": {
+    "rc": 3,
+    "total": null,
+    "used": null
+   },
+   "graphics_processes": {
+    "9112": {
+     "used": 262348800,
+     "comm": "Xorg"
+    },
+    "9353": {
+     "used": 126509056,
+     "comm": "gnome-shell"
+    },
+    "10121": {
+     "used": 292319232,
+     "comm": "firefox"
+    },
+    "76195": {
+     "used": 46264320,
+     "comm": "nautilus"
+    },
+    "78062": {
+     "used": 103264256,
+     "comm": "code"
+    }
+   },
+   "looks": [
+    {
+     "label": "start",
+     "cuda_free": 111932469248,
+     "cuda_total": 130596077568,
+     "nvml_this_process": 183943168,
+     "MemTotal": 130596077568,
+     "MemFree": 111932469248,
+     "MemAvailable": 122894434304,
+     "Cached": 9857482752
+    },
+    {
+     "label": "after a 8 GiB CPU tensor",
+     "cuda_free": 103317274624,
+     "cuda_total": 130596077568,
+     "nvml_this_process": 183943168,
+     "MemTotal": 130596077568,
+     "MemFree": 103317274624,
+     "MemAvailable": 114279239680,
+     "Cached": 9857617920
+    },
+    {
+     "label": "after freeing it",
+     "cuda_free": 111888113664,
+     "cuda_total": 130596077568,
+     "nvml_this_process": 183943168,
+     "MemTotal": 130596077568,
+     "MemFree": 111894634496,
+     "MemAvailable": 122856607744,
+     "Cached": 9857617920
+    }
+   ]
+  },
+  "zombie": {
+   "case": "zombie",
+   "env": {},
+   "config": {
+    "layers": 16,
+    "val_batch": 1536,
+    "card": 25769803776,
+    "holder": 6442450944,
+    "pool": 4294967296,
+    "cpu": 8589934592
+   },
+   "timeline": [
+    {
+     "t": 0.001,
+     "state": "R",
+     "listed_by_nvml": true,
+     "used": 6624296960,
+     "memfree_delta": 0
+    },
+    {
+     "t": 0.271,
+     "state": "Z",
+     "listed_by_nvml": true,
+     "used": 6624296960,
+     "memfree_delta": 48599040
+    },
+    {
+     "t": 0.404,
+     "state": "Z",
+     "listed_by_nvml": false,
+     "used": null,
+     "memfree_delta": 7101968384
+    }
+   ],
+   "child": {
+    "pid": 189962,
+    "state": "Z",
+    "ppid": 189960
+   },
+   "after_reap_listed": false
+  },
+  "precedence-a": {
+   "case": "precedence-a",
+   "env": {
+    "PYTORCH_CUDA_ALLOC_CONF": "expandable_segments:False",
+    "PYTORCH_ALLOC_CONF": "expandable_segments:True"
+   },
+   "config": {
+    "layers": 16,
+    "val_batch": 1536,
+    "card": 25769803776,
+    "holder": 6442450944,
+    "pool": 4294967296,
+    "cpu": 8589934592
+   },
+   "expandable_segments_active": false
+  },
+  "precedence-b": {
+   "case": "precedence-b",
+   "env": {
+    "PYTORCH_CUDA_ALLOC_CONF": "expandable_segments:True",
+    "PYTORCH_ALLOC_CONF": "expandable_segments:False"
+   },
+   "config": {
+    "layers": 16,
+    "val_batch": 1536,
+    "card": 25769803776,
+    "holder": 6442450944,
+    "pool": 4294967296,
+    "cpu": 8589934592
+   },
+   "expandable_segments_active": true
+  }
+ },
+ "provenance": {
+  "captured_at_utc": "2026-10-30T11:44:17+00:00",
+  "gpu_name": "NVIDIA GB10",
+  "compute_capability": "sm_121",
+  "sm_count": 48,
+  "integrated": true,
+  "device_total_bytes": 130596077568,
+  "kmd_version": "595.71.05",
+  "cuda_umd_version": 13020,
+  "versions": {
+   "torch": "2.15.0+cu132",
+   "torch_cuda_runtime": "13.2",
+   "cuda.bindings": "13.4.4",
+   "numpy": "2.3.4"
+  },
+  "cpu_model": "Cortex-X925 + Cortex-A725",
+  "python_version": "3.12.3",
+  "os": "Ubuntu 24.04.4 LTS",
+  "kernel": "6.17.0-1021-nvidia",
+  "instance": "Dell Inc. Dell Pro Max with GB10 FCM1253"
+ }
+}
