@@ -1,0 +1,85 @@
+Captured 2026-10-28T16:19:23Z on Linux 7.0.0-38-generic x86_64, AMD Ryzen 7 5825U with Radeon Graphics; Python 3.12.15, NumPy 2.5.4, SciPy 1.18.1, statsmodels 0.15.0; likelihood.py 786c58fb52d9; budget full, seed 20261028.
+
+V-1 hits (Clarke): n = 576 squares, total = 537 hits
+  log-likelihood l(lam) = 537 log(lam) - 576 lam - 157.9458;  score U(lam) = 537/lam - 576
+  MLE lam_hat = 537/576 = 0.932292; l(lam_hat) = -732.5946
+  observed information -l''(lam_hat) = 537/lam_hat^2 = 617.8324; expected n/lam_hat = 617.8324; SE = 0.040231
+  scipy.optimize.minimize_scalar: lam_hat = 0.932291680 (|diff| 1.4e-08)
+  statsmodels GLM Poisson, log link: intercept -0.070110 (SE 0.043153 = 1/sqrt(537)); exp gives lam 0.932292, delta-method SE 0.040231; llf -732.5946
+  H0: lam = 0.85 (+2.05 SE): Wald 4.1839 (log scale 4.5857), score 4.5890, LR 4.4477; chi2_1 p 0.0408 / 0.0322 / 0.0349
+  H0: lam = 1.0 (-1.68 SE): Wald 2.8324 (log scale 2.6395), score 2.6406, LR 2.7023; chi2_1 p 0.0924 / 0.1042 / 0.1002
+  95% intervals: wald 0.8534 to 1.0111; wald_log 0.8567 to 1.0146; score 0.8567 to 1.0145; lr 0.8556 to 1.0134
+
+Corps XI: 25 deaths in 20 years, lam_hat = 1.2500 (SE 0.2500); H0: the 10 regular corps' rate 122/200 = 0.6100 (its own SE 0.0552, taken as known)
+  Wald 6.5536 (log scale 12.8680), score 13.4295, LR 10.2720; chi2_1 p 0.01047 / 0.00025 / 0.00135
+  95% intervals: wald 0.7600 to 1.7400; wald_log 0.8446 to 1.8499; score 0.8467 to 1.8454; lr 0.8218 to 1.8060
+  corps whose three verdicts at 5% differ: VIII
+  corps XI, Wald on the scale lam^c for c from -1 to 2: 3.628 to 27.519 (c = 1: 6.554; c = 0, log: 12.868; c = 1/3: 10.179); score and LR do not change with the scale
+  exact size at expected count 12.2: Wald 0.0884, log-Wald 0.0426, score 0.0426, LR 0.0657; verdicts differ with probability 0.0806
+  exact size at expected count 537.0: Wald 0.0503, log-Wald 0.0495, score 0.0495, LR 0.0497; verdicts differ with probability 0.0101
+    m in [0.5, 2]: largest |size - 5%| Wald 0.5567, score 0.0536, LR 0.1092
+    m in [2, 20]: largest |size - 5%| Wald 0.1547, score 0.0277, LR 0.1006
+    m in [20, 200]: largest |size - 5%| Wald 0.0211, score 0.0089, LR 0.0100
+    m in [200, 2000]: largest |size - 5%| Wald 0.0038, score 0.0033, LR 0.0037
+
+Greenwood and Yule: n = 647 women, mean 0.465224, variance 0.691900 (divisor n - 1); moment estimate k = 0.954814
+  Newton 0: k = 0.9548137842  score -2.091e+00  step in log k -1.180e-01
+  Newton 1: k = 0.8485206952  score +4.985e-01  step in log k +1.878e-02
+  Newton 2: k = 0.8646034610  score +1.479e-02  step in log k +5.918e-04
+  Newton 3: k = 0.8651153242  score +1.429e-05  step in log k +5.731e-07
+  Newton 4: k = 0.8651158199  score +1.336e-11  step in log k +5.356e-13
+  Newton 5: k = 0.8651158199  score -5.684e-14  step in log k -2.279e-15
+  MLE: mu_hat = 0.465224 (the sample mean), k_hat = 0.865116, alpha_hat = 1/k_hat = 1.155915
+  log-likelihood: NB -592.2671 at the MLE, -592.3677 at the moment fit; Poisson -617.1843
+  scipy.optimize.minimize (Nelder-Mead on log mu, log k): mu 0.465224, k 0.865116, log-lik -592.2671
+  statsmodels NegativeBinomial (nb2): mu 0.465224, alpha 1.155915 (1/alpha = 0.865116), SE(alpha) 0.248858, llf -592.2671
+  observed information J: mu-mu 904.3857, mu-k -3.55e-15, k-k 28.827092 (numerical Hessian 904.3859, 2.8e-04, 28.827003)
+  expected information I: mu-mu 904.3857, k-k 29.570945 (series mass 1.000000000000000)
+  SE(mu_hat) 0.033252; SE(k_hat) 0.186251 observed, 0.183894 expected; SE(alpha_hat) by the observed information 0.248858
+  inner maximum over mu at k = 0.5, k_hat, 2.0: 0.465224, 0.465224, 0.465224
+  95% interval for k, profile  : 0.5855 to 1.3827  (below k_hat 0.2796, above 0.5176)
+  95% interval for k, wald_obs : 0.5001 to 1.2302  (below k_hat 0.3650, above 0.3650)
+  95% interval for k, wald_exp : 0.5047 to 1.2255  (below k_hat 0.3604, above 0.3604)
+  95% interval for k, wald_log : 0.5673 to 1.3193  (below k_hat 0.2978, above 0.4541)
+  for alpha = 1/k: profile 0.7232 to 1.7080; Wald 0.6682 to 1.6437
+  dispersion index 1 + mu/k: 1.5378; delta-method SE 0.1220 (90.1% of its variance from k); delta 95% 1.2987 to 1.7769; profile 1.3311 to 1.8185
+  expected women with 0..4 and 5+ accidents: ml 445.9, 134.9, 44.0, 14.7, 5.0, 2.6 (chi2 3.77); moments 442.9, 138.5, 44.4, 14.3, 4.6, 2.2 (chi2 4.20); poisson 406.3, 189.0, 44.0, 6.8, 0.8, 0.1 (chi2 103.14)
+  joint 95% likelihood region: k from 0.5355 to 1.5846; Wald ellipse: k from 0.4092 to 1.3210
+  k_hat over R = 20000 data sets from the fitted model: mean 0.9140, median 0.8809, SD 0.2163 (Wald SE 0.1863), skewness 1.376; infinite in 0.0000%
+    beyond the Wald limits: above 1.2302 in 0.0747 ± 0.0019, below 0.5001 in 0.0014 ± 0.0003
+    dispersion index: SD 0.1211 against the delta-method SE 0.1220; skewness 0.301
+
+Observed tests of Poisson (alpha = 0) against the negative binomial:
+  v1: mean 0.9323, variance (divisor n) 0.9694; alpha_hat 0.04006 (k_hat 24.960); LR 0.4104: chi2_1 p 0.5218, 50:50 mixture p 0.2609; dispersion statistic 598.91 on 575 df, one-sided p 0.2373
+  gy: mean 0.4652, variance (divisor n) 0.6908; alpha_hat 1.15591 (k_hat 0.865); LR 49.8344: chi2_1 p 1.673e-12, 50:50 mixture p 8.364e-13; dispersion statistic 960.76 on 646 df, one-sided p 9.567e-15
+  a simulated Poisson data set (n = 576): mean 0.9028, variance 0.8725, so the profile log-likelihood falls from alpha = 0 and alpha_hat = 0
+ Poisson null, n = 576, lam = 0.9323, R = 200000 (4.2 s):
+  boundary: LR = 0 exactly in 0.5261 ± 0.0011; score at the boundary <= 0 in 0.5261; smallest LR 0
+    P(LR > 3.841) = 0.0217 ± 0.0003   P(LR > 2.706) = 0.0440 ± 0.0005
+ Poisson null, n = 647, lam = 0.4652, R = 200000 (3.9 s):
+  boundary: LR = 0 exactly in 0.5253 ± 0.0011; score at the boundary <= 0 in 0.5253; smallest LR 0
+    P(LR > 3.841) = 0.0220 ± 0.0003   P(LR > 2.706) = 0.0446 ± 0.0005
+ negative binomial null, k = 0.8651 inside the parameter space, n = 647, R = 200000 (8.0 s):
+  interior: LR = 0 exactly in 0.0000 ± 0.0000; score at the boundary <= 0 in 0.0000; smallest LR 1.963e-10
+    P(LR > 3.841) = 0.0501 ± 0.0005   P(LR > 2.706) = 0.1009 ± 0.0007
+
+German tank likelihood, k = 5 serials, largest m = 303: L(N) = 1/C(N, 5) for N >= 303, 0 below
+  at the MLE N = 303: first difference of log L -0.01658 (no zero score), second difference +5.483e-05; d2 log L / dN2 = +5.519e-05 > 0, so -l'' is negative: no observed information
+  k = 5: N - MLE has mean 56.167, SD 47.890, skewness 1.183 (exponential: 2), P(MLE = N) = 0.01462
+  k = 20: N - MLE has mean 15.333, SD 15.089, skewness 1.734 (exponential: 2), P(MLE = N) = 0.05848
+  N = 100000, k = 5: k(N - MLE)/N is within 0.0580 of Exp(1) in distribution, 0.1183 from the normal with its mean and SD
+  N = 100000, k = 20: k(N - MLE)/N is within 0.0138 of Exp(1) in distribution, 0.1470 from the normal with its mean and SD
+
+Part 1's sample regenerated: Lognormal(0, 2.5), n = 10000; top 10% threshold 26.140414260414 (part 1 recorded 26.140414260414); least-squares log-log slope -0.9180
+  top   50% ( 5000 points above    0.999): power-law alpha 1.4959 ± 0.0070; lognormal mu  -0.134 sigma 2.587; R =  227.972, normalised 12.490, p 8.45e-36
+  top   25% ( 2500 points above    5.327): power-law alpha 1.6474 ± 0.0129; lognormal mu   0.078 sigma 2.540; R =   58.538, normalised  6.226, p 4.77e-10
+  top   10% ( 1000 points above   26.140): power-law alpha 1.8373 ± 0.0265; lognormal mu  -1.880 sigma 2.951; R =    7.016, normalised  2.286, p 0.0223
+  top    5% (  500 points above   64.378): power-law alpha 1.9240 ± 0.0413; lognormal mu  -2.207 sigma 3.006; R =    2.418, normalised  1.419, p 0.156
+  top    2% (  200 points above  186.026): power-law alpha 2.0258 ± 0.0725; lognormal mu  -0.006 sigma 2.614; R =    1.084, normalised  1.019, p 0.308
+  top    1% (  100 points above  381.013): power-law alpha 2.0832 ± 0.1083; lognormal mu   3.745 sigma 1.875; R =    1.277, normalised  1.097, p 0.273
+  CSN's KS choice: xmin = 63.651 (509 points, D = 0.0278): alpha 1.9308; R = 1.991, normalised 1.290, p 0.197
+  lognormal_top10  R = 1000: favours lognormal 0.981, power law 0.000, undecided 0.019 (each ± at most 0.016); median normalised ratio 2.710
+  lognormal_top5   R = 1000: favours lognormal 0.459, power law 0.000, undecided 0.541 (each ± at most 0.016); median normalised ratio 1.580
+  powerlaw_1000    R = 1000: favours lognormal 0.001, power law 0.044, undecided 0.955 (each ± at most 0.016); median normalised ratio -0.169
+
+wrote captures.json: poisson 0.9 s, nb 1.7 s, boundary 16.3 s, tank 0.0 s, powerlaw 79.0 s

@@ -1,0 +1,14 @@
+# Flying-bomb (V-1) hits on 576 squares of south London, from Clarke's table.
+# Source: R. D. Clarke (1946), "An application of the Poisson distribution",
+#   Journal of the Institute of Actuaries 72(3): 481. https://doi.org/10.1017/S0020268100035435
+# Area: 144 km2 of south London cut into 576 squares of 0.25 km2; 537 bombs over the period studied.
+# Clarke printed the last class as "5 and over" (one square). Its 7 hits are implied by his total
+#   of 537; stories.py pools hits >= 5 into one class whenever it compares with a model.
+# Licence: counts transcribed from the published table, which reports facts; attribute Clarke (1946).
+hits,squares
+0,229
+1,211
+2,93
+3,35
+4,7
+7,1

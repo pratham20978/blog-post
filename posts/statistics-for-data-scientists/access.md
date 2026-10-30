@@ -76,6 +76,30 @@ Part 3's lab, measured with `/usr/bin/time -v` on the frozen `estimators.py` (45
 peaked at 0.13 GB in 12.4 s, `--quick` at 0.10 GB in 2.7 s, and the E4 fault run at 0.10 GB in 1.4 s.
 Available RAM was the lowest yet, so later labs should keep checking it before long runs.
 
+## Probe — 2026-10-28 (Part 4)
+
+```
+ram_total=14G ram_available=7G
+disk_free=319G on /
+everything else as on 2026-10-23
+```
+
+Part 4's lab, measured with `/usr/bin/time -v` on the frozen `likelihood.py` (786c58fb52d9): the full
+run peaked at 0.27 GB in 99.4 s, `--quick` at 0.21 GB in 16.5 s, and the E4 fault run (`--fault`) at
+0.12 GB in 2.3 s.
+
+## Probe — 2026-10-29 (Part 5)
+
+```
+ram_total=14G ram_available=7G during the build, 9G at its end (2026-10-30)
+disk_free=318G on /
+everything else as on 2026-10-23
+```
+
+Part 5's lab, measured with `/usr/bin/time -v` on the frozen `testing.py` (13b3a5154d33): the full run
+peaked at 0.48 GB in 26.5 s, `--quick` at 0.27 GB in 7.6 s, and the E4 fault run (`retrodesign --quick
+--fault`) at 0.14 GB in 2.9 s.
+
 ## Requests
 
 None. Every part is **G1 — runs anywhere**, self-provisioned. No hardware, privilege, credential or
@@ -95,7 +119,13 @@ the venv unchanged; its notebook ran the same way (nbclient 0.11.0, nbformat 5.1
 7.4.0), its R cross-check used base R only, and the 23.7 MB UCI archive behind its spend CSV was
 downloaded to the session scratchpad, not the repository. On 2026-10-28, Part 3 reused the venv
 unchanged; its notebook ran the same way, its private R check used base R only (`choose`, `dpois`,
-`lm`), and the papers it read were downloaded to the session scratchpad.
+`lm`), and the papers it read were downloaded to the session scratchpad. On 2026-10-28, Part 4
+added statsmodels 0.15.0 and pandas 3.1.0 to the venv; its notebook ran the same way, its private R
+check used the system MASS (`glm.nb`), and its `powerlaw` 2.0.0 check ran in a throwaway venv in the
+session scratchpad. On 2026-10-29, Part 5
+reused the venv unchanged; its notebook ran the same way, its private R check used base R only
+(`power.t.test` and Gelman and Carlin's `retrodesign()` as printed in their appendix), and the papers
+it read were downloaded to the session scratchpad.
 
 | What | Where | For | Undo |
 |---|---|---|---|

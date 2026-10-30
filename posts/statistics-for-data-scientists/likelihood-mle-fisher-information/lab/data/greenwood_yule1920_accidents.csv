@@ -1,0 +1,16 @@
+# Accidents to 647 women working on high-explosive shells over five weeks.
+# Source: M. Greenwood and G. U. Yule (1920), Journal of the Royal Statistical Society 83(2): 255-279.
+#   https://doi.org/10.2307/2341080
+# The 1920 paper was not accessible to the author of this lab; the counts are as printed in two
+#   independent reproductions that agree: D. Bohning (1998), Biometrical Journal 40(7): 833-843,
+#   Fig. 3, and B. K. Sah and S. K. Sahani (2024), Mathematical Models in Engineering 10(4), Table 2
+#   (https://doi.org/10.21595/mme.2024.24258). Their total of 301 accidents (mean 301/647) means
+#   the two women in the last class had exactly 5 accidents each.
+# Licence: counts transcribed from published tables, which report facts; attribute Greenwood and Yule.
+accidents,women
+0,447
+1,132
+2,42
+3,21
+4,3
+5,2

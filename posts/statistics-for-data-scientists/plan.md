@@ -86,15 +86,15 @@ above the 10,000-word L4 ceiling.
 
 ## Arcs
 
-| Parts | Arc | Purpose |
-|---|---|---|
-| 1–4 | Foundations | Where the numbers come from, how a statistic varies, what makes an estimator good, and the likelihood most later parts run on. A ladder. |
-| 5–7 | Tests and intervals | What a p-value and power are, what 95% coverage means, and the bootstrap for when no formula exists. A ladder. |
-| 8–10 | Choosing a method | Picking a test from the design, controlling error across many tests, and the permutation and rank methods. Spokes from Part 5. |
-| 11–12 | Bayesian inference | Priors and posteriors in closed form, then a sampler and the diagnostics that say when to trust it. |
-| 13–14 | The linear model | Regression as an inferential model, every number in its output, and the diagnostics that say when to distrust them. |
-| 15–16 | Generalized linear models | The GLM machinery and logistic regression, then counts, exposure and overdispersion. |
-| 17–18 | Multilevel models | Mixed-effects models and partial pooling, then the Bayesian hierarchical model and its geometry. |
+| Parts  | Arc                       | Purpose                                                                                                                                  |
+| ------ | ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| 1–4   | Foundations               | Where the numbers come from, how a statistic varies, what makes an estimator good, and the likelihood most later parts run on. A ladder. |
+| 5–7   | Tests and intervals       | What a p-value and power are, what 95% coverage means, and the bootstrap for when no formula exists. A ladder.                           |
+| 8–10  | Choosing a method         | Picking a test from the design, controlling error across many tests, and the permutation and rank methods. Spokes from Part 5.           |
+| 11–12 | Bayesian inference        | Priors and posteriors in closed form, then a sampler and the diagnostics that say when to trust it.                                      |
+| 13–14 | The linear model          | Regression as an inferential model, every number in its output, and the diagnostics that say when to distrust them.                      |
+| 15–16 | Generalized linear models | The GLM machinery and logistic regression, then counts, exposure and overdispersion.                                                     |
+| 17–18 | Multilevel models         | Mixed-effects models and partial pooling, then the Bayesian hierarchical model and its geometry.                                         |
 
 ## Reading paths
 
@@ -106,53 +106,53 @@ above the 10,000-word L4 ceiling.
 
 ## Reader objectives
 
-| # | After this the reader can ... | Part |
-|---|---|---|
-| 1 | write the generative story behind a dataset and derive the distribution family from it, not from the histogram | 1 |
-| 2 | explain overdispersion as heterogeneity, by deriving the negative binomial as a gamma–Poisson mixture | 1 |
-| 3 | say why a straight log–log tail is not evidence of a power law | 1 |
-| 4 | simulate the sampling distribution of any statistic and report every simulated rate with its Monte Carlo standard error | 2 |
-| 5 | judge how fast the CLT works for a given population, and recognise the infinite-variance cases where it never does | 2 |
-| 6 | separate the standard error from the standard deviation, and say why Student's t replaces z when σ is estimated | 2 |
-| 7 | compute an estimator's bias, variance and MSE by formula and by simulation, and choose between estimators on MSE | 3 |
-| 8 | solve the German tank problem with the MLE and the minimum-variance unbiased estimator, and compare their errors | 3 |
-| 9 | explain why the James–Stein estimator beats separate means in total squared error | 3 |
-| 10 | derive an MLE and its standard error from the observed or expected Fisher information | 4 |
-| 11 | compute the Wald, score and likelihood-ratio statistics for one hypothesis, and say when they disagree | 4 |
-| 12 | build a profile-likelihood interval, and use the delta method for a function of parameters | 4 |
-| 13 | say why the likelihood-ratio test's χ² reference fails on a parameter boundary, and what replaces it | 4 |
-| 14 | state what a p-value is and is not, and describe its distribution under the null and under an alternative | 5 |
-| 15 | compute power analytically and by simulation, and the type M and type S errors of a low-powered design | 5 |
-| 16 | test for equivalence instead of reading a non-significant result as "no effect" | 5 |
-| 17 | explain coverage as a property of a procedure, and measure an interval's actual coverage | 6 |
-| 18 | choose a binomial interval from its exact coverage curve | 6 |
-| 19 | read two overlapping intervals correctly | 6 |
-| 20 | compute percentile, studentised and BCa bootstrap intervals by hand, including BCa's bias correction and acceleration | 7 |
-| 21 | say when the bootstrap fails: extremes, infinite variance and dependence | 7 |
-| 22 | choose a test from the study design and the hypothesis rather than from how the data look | 8 |
-| 23 | say why Welch's t-test should be the default, and measure Student's t-test's error under unequal variances | 8 |
-| 24 | choose between the chi-squared test, Fisher's exact test and their alternatives for a 2×2 table | 8 |
-| 25 | control the family-wise error rate (Bonferroni, Holm) or the false discovery rate (Benjamini–Hochberg, Benjamini–Yekutieli), and say which question each answers | 9 |
-| 26 | find the multiplicity in a forking-paths analysis that no table of p-values shows | 9 |
-| 27 | run an exact permutation test, state its exchangeability condition, and recognise when that fails | 10 |
-| 28 | say what the Wilcoxon and Mann–Whitney tests actually test, and estimate a Hodges–Lehmann shift | 10 |
-| 29 | update a conjugate prior by hand, report a credible interval, and say what it claims that a confidence interval does not | 11 |
-| 30 | reproduce a published Bayesian analysis (the Pfizer–BioNTech efficacy interval) from its stated prior | 11 |
-| 31 | write a Metropolis sampler and verify it against a closed-form posterior | 12 |
-| 32 | diagnose a chain with rank-normalised R̂, bulk and tail ESS and MCSE, and name what those diagnostics cannot see | 12 |
-| 33 | recompute every number in a regression summary table from the design matrix | 13 |
-| 34 | reproduce NIST's certified regression results, and say why the normal equations lose digits | 13 |
-| 35 | read a coefficient as a conditional association, and state the omitted-variable bias | 13 |
-| 36 | find the observations driving a fit with leverage, studentised residuals and Cook's distance | 14 |
-| 37 | repair inference under non-constant variance with HC3 standard errors, and measure the repair | 14 |
-| 38 | fit a GLM by iteratively reweighted least squares, and read its deviance, Wald and likelihood-ratio tests | 15 |
-| 39 | interpret logistic coefficients as odds ratios without reading them as risk ratios, and handle separation | 15 |
-| 40 | model counts with an exposure offset, diagnose overdispersion, and choose between quasi-Poisson, robust standard errors and the negative binomial | 16 |
-| 41 | choose between zero-inflated and hurdle models from the generative story | 16 |
-| 42 | fit a linear mixed model, explain partial pooling and REML, and test a variance component correctly | 17 |
-| 43 | choose between a mixed model, cluster-robust standard errors and GEE from whether the question is conditional or marginal | 17 |
-| 44 | fit a Bayesian hierarchical model, diagnose divergences, and remove them with a non-centred parameterisation | 18 |
-| 45 | choose a prior for a group-level standard deviation, and compare pooling structures with PSIS-LOO | 18 |
+| #  | After this the reader can ...                                                                                                                                      | Part |
+| -- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---- |
+| 1  | write the generative story behind a dataset and derive the distribution family from it, not from the histogram                                                     | 1    |
+| 2  | explain overdispersion as heterogeneity, by deriving the negative binomial as a gamma–Poisson mixture                                                             | 1    |
+| 3  | say why a straight log–log tail is not evidence of a power law                                                                                                    | 1    |
+| 4  | simulate the sampling distribution of any statistic and report every simulated rate with its Monte Carlo standard error                                            | 2    |
+| 5  | judge how fast the CLT works for a given population, and recognise the infinite-variance cases where it never does                                                 | 2    |
+| 6  | separate the standard error from the standard deviation, and say why Student's t replaces z when σ is estimated                                                   | 2    |
+| 7  | compute an estimator's bias, variance and MSE by formula and by simulation, and choose between estimators on MSE                                                   | 3    |
+| 8  | solve the German tank problem with the MLE and the minimum-variance unbiased estimator, and compare their errors                                                   | 3    |
+| 9  | explain why the James–Stein estimator beats separate means in total squared error                                                                                 | 3    |
+| 10 | derive an MLE and its standard error from the observed or expected Fisher information                                                                              | 4    |
+| 11 | compute the Wald, score and likelihood-ratio statistics for one hypothesis, and say when they disagree                                                             | 4    |
+| 12 | build a profile-likelihood interval, and use the delta method for a function of parameters                                                                         | 4    |
+| 13 | say why the likelihood-ratio test's χ² reference fails on a parameter boundary, and what replaces it                                                             | 4    |
+| 14 | state what a p-value is and is not, and describe its distribution under the null and under an alternative                                                          | 5    |
+| 15 | compute power analytically and by simulation, and the type M and type S errors of a low-powered design                                                             | 5    |
+| 16 | test for equivalence instead of reading a non-significant result as "no effect"                                                                                    | 5    |
+| 17 | explain coverage as a property of a procedure, and measure an interval's actual coverage                                                                           | 6    |
+| 18 | choose a binomial interval from its exact coverage curve                                                                                                           | 6    |
+| 19 | read two overlapping intervals correctly                                                                                                                           | 6    |
+| 20 | compute percentile, studentised and BCa bootstrap intervals by hand, including BCa's bias correction and acceleration                                              | 7    |
+| 21 | say when the bootstrap fails: extremes, infinite variance and dependence                                                                                           | 7    |
+| 22 | choose a test from the study design and the hypothesis rather than from how the data look                                                                          | 8    |
+| 23 | say why Welch's t-test should be the default, and measure Student's t-test's error under unequal variances                                                         | 8    |
+| 24 | choose between the chi-squared test, Fisher's exact test and their alternatives for a 2×2 table                                                                   | 8    |
+| 25 | control the family-wise error rate (Bonferroni, Holm) or the false discovery rate (Benjamini–Hochberg, Benjamini–Yekutieli), and say which question each answers | 9    |
+| 26 | find the multiplicity in a forking-paths analysis that no table of p-values shows                                                                                  | 9    |
+| 27 | run an exact permutation test, state its exchangeability condition, and recognise when that fails                                                                  | 10   |
+| 28 | say what the Wilcoxon and Mann–Whitney tests actually test, and estimate a Hodges–Lehmann shift                                                                  | 10   |
+| 29 | update a conjugate prior by hand, report a credible interval, and say what it claims that a confidence interval does not                                           | 11   |
+| 30 | reproduce a published Bayesian analysis (the Pfizer–BioNTech efficacy interval) from its stated prior                                                             | 11   |
+| 31 | write a Metropolis sampler and verify it against a closed-form posterior                                                                                           | 12   |
+| 32 | diagnose a chain with rank-normalised R̂, bulk and tail ESS and MCSE, and name what those diagnostics cannot see                                                  | 12   |
+| 33 | recompute every number in a regression summary table from the design matrix                                                                                        | 13   |
+| 34 | reproduce NIST's certified regression results, and say why the normal equations lose digits                                                                        | 13   |
+| 35 | read a coefficient as a conditional association, and state the omitted-variable bias                                                                               | 13   |
+| 36 | find the observations driving a fit with leverage, studentised residuals and Cook's distance                                                                       | 14   |
+| 37 | repair inference under non-constant variance with HC3 standard errors, and measure the repair                                                                      | 14   |
+| 38 | fit a GLM by iteratively reweighted least squares, and read its deviance, Wald and likelihood-ratio tests                                                          | 15   |
+| 39 | interpret logistic coefficients as odds ratios without reading them as risk ratios, and handle separation                                                          | 15   |
+| 40 | model counts with an exposure offset, diagnose overdispersion, and choose between quasi-Poisson, robust standard errors and the negative binomial                  | 16   |
+| 41 | choose between zero-inflated and hurdle models from the generative story                                                                                           | 16   |
+| 42 | fit a linear mixed model, explain partial pooling and REML, and test a variance component correctly                                                                | 17   |
+| 43 | choose between a mixed model, cluster-robust standard errors and GEE from whether the question is conditional or marginal                                          | 17   |
+| 44 | fit a Bayesian hierarchical model, diagnose divergences, and remove them with a non-centred parameterisation                                                       | 18   |
+| 45 | choose a prior for a group-level standard deviation, and compare pooling structures with PSIS-LOO                                                                  | 18   |
 
 ## Parts
 

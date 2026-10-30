@@ -67,8 +67,8 @@ DS-1 owns the inferential core; the siblings apply it. Each seam names the owner
 | 1 | distributions-as-generative-stories | ready 2026-10-24, not published | which distribution, chosen from the process | sampling to 2; MLE, the Poisson-vs-NB test and CSN fitting to 4; count regression to 16 |
 | 2 | sampling-distribution-central-limit-theorem | ready 2026-10-26, not published | how a statistic varies; when the CLT fails | estimator quality to 3; tests and intervals to 5 and 6; skewness-corrected intervals to 7; dependent data to DS-4 |
 | 3 | estimator-bias-variance-mse | ready 2026-10-28, not published | what makes an estimator good; when bias pays | likelihood to 4; bootstrap on the maximum to 7; partial pooling to 17 and 18; prediction error to ML-2 |
-| 4 | likelihood-mle-fisher-information | planned | MLE, information, Wald/score/LR, boundaries | — |
-| 5 | hypothesis-testing-p-values-power | planned | what a p-value and power are; type M/S | — |
+| 4 | likelihood-mle-fisher-information | ready 2026-10-28, not published | MLE, information, Wald/score/LR, boundaries | p-values to 5; coverage to 6; variance-component boundary to 17; Bayes (11) and Fisher scoring (15) not previewed |
+| 5 | hypothesis-testing-p-values-power | ready 2026-10-29, not published | what a p-value and power are; type M/S | coverage to 6; test choice to 8; multiplicity to 9; sequential designs to DS-2 |
 | 6 | confidence-intervals-coverage | planned | what 95% coverage means, measured | — |
 | 7 | bootstrap-confidence-intervals | planned | intervals with no formula; where they fail | — |
 | 8 | choosing-a-statistical-test | planned | the design picks the test | — |
@@ -90,41 +90,47 @@ broken condition, corrected claim, terms), reused rather than re-derived.
 
 ### Part 1 — Distributions as Generative Stories
 
-- **Data** (CSVs with provenance in its `lab/data/`): Clarke 1946, 537 bombs on 576 squares,
-  229/211/93/35/7/1, mean 0.9323, variance 0.9711 (n − 1). Greenwood & Yule 1920, 647 women,
-  447/132/42/21/3/2, mean 0.4652, variance 0.6919. Also Bortkiewicz's 280 corps-years, `boot::coal`.
-- **NB by moments:** k̂ = 0.955; χ² 103.1 (Poisson) against 4.20 (NB); Part 4 refits by ML. A Pólya
-  (contagion) process gives the same one-period NB as proneness.
-- **Tails, corrected claim:** unit-variance t₅ beyond 4σ is ×56.4 the normal; a straight log–log line
-  is not a power law (lognormal: R² ≥ 0.98 in 91.4% of R = 1,000).
+- **Data** (CSVs with provenance): Clarke 1946, 537 bombs on 576 squares, 229/211/93/35/7/1, mean 0.9323;
+  Greenwood & Yule 1920, 647 women, 447/132/42/21/3/2, mean 0.4652, variance 0.6919; Bortkiewicz's corps.
+- **NB by moments:** k̂ = 0.955. **Tails:** unit-variance t₅ beyond 4σ is ×56.4 the normal; a straight
+  log–log line is not a power law.
 
 ### Part 2 — The Sampling Distribution
 
-- **Data:** UCI Online Retail (CC BY 4.0), net spend of 4,317 customers: mean £1,925.71, σ £8,266.70
-  (divisor N), γ 21.58. Student's ten patients equal R's `sleep` (t 4.0621).
-- **Core** (R = 100,000): one-sided 5% t-test, lower/upper: n = 30, 39.82%/0.05%; n = 1,000,
-  17.69/0.94; n = 10,000, 7.86/2.99; corr(x̄, s) 0.972; s < σ in 88.1%, though s² is unbiased.
-- **Pace:** lower tail ≈ 5% + 11.02 points × γ/√n, so ±10% of 5% needs n ≥ 486γ². Berry–Esseen
-  (C₀ ≤ 0.469) guarantees distance 0.01 from n = 1,025,322; the exact distance gets there at 20,652.
-- **Infinite variance:** Cauchy mean IQR 2.00 at every n; Pareto (index 1.5) lower tail stuck at
-  26.4%.
-- **Corrected:** "the CLT kicks in at n = 30": needed n grows like γ².
+- **Data:** UCI Online Retail spend of 4,317 customers (CC BY 4.0), γ 21.58; Student's ten patients equal
+  R's `sleep` (t 4.0621).
+- **Core:** one-sided 5% t-test at n = 30 errs 39.82%/0.05% (lower/upper); needed n grows like γ²
+  ("the CLT kicks in at n = 30" corrected).
 
 ### Part 3 — Estimators and Their Errors
 
-- **Data:** Efron & Morris's 1975 table of 18 players (equals Rdatasets `pscl::EfronMorris`); Ruggles &
-  Brodie's three months via two reproductions (the 1947 paper not read).
-- **Tanks** (N = 342, k = 5): MSE 5,448 for the MLE m (bias −56.17), 3,303 for the MVUE
-  m(1 + 1/k) − 1, 3,212 for the biased m(k + 2)/(k + 1) − 1, 38,988 for one tank's serial.
-  Rao–Blackwell: Var(2x̄ − 1) 7,706 = 4,403 + 3,303.
-- **Rates:** maximum-based RMSE falls like 1/k, mean-based like 1/√k. The tank MLE is non-regular
-  (support depends on N), outside Part 4's asymptotics.
-- **Divisors** (n = 10, normal): MSE 0.2222 with n − 1, 0.1818 with n + 1; the best divisor
-  n + 1 + (n − 1)κ/n is never n − 1 (16.4 for exponential data).
-- **1970:** c 0.2117; total squared error 0.0753 against 0.0213 (the 1977 article's 0.077 and 0.022 do
-  not reproduce); 79% of the spread was noise; hindsight slope 0.190. Replayed, James–Stein wins 96.2%
-  of seasons (efficiency 2.66); exact risk for 18 means runs from 3 to 18, 6.81 at the batters' spread.
-- **Corrected:** "unbiased estimators are the best ones": unbiasedness does not rank estimators.
+- **Tanks** (N = 342, k = 5): MSE 5,448 (MLE m), 3,303 (MVUE). **Divisors** (n = 10, normal): MSE 0.2222
+  with n − 1, 0.1818 with n + 1. **1970 batting:** James–Stein wins 96.2% of replayed seasons.
+- **Corrected:** "unbiased estimators are the best ones".
+
+### Part 4 — Likelihood: The MLE, Three Tests, and Where χ² Fails
+
+- **Poisson (Clarke):** λ̂ 0.9323, information 617.8, SE 0.0402; Wald, LR, score at 0.85: 4.18, 4.45, 4.59.
+  Exact sizes at nλ₀ = 12.2: 8.84%, 6.57%, 4.26%.
+- **NB by ML** (Greenwood–Yule): k̂ 0.865 (statsmodels needs `method="newton"`); profile 95% for k
+  0.585–1.383 against Wald 0.500–1.230.
+- **Boundary:** LR = 0 in 52.61%; χ²₁ rejects 2.17%, the mixture's 2.71 rejects 4.40%; V-1 p 0.52 → 0.26.
+- **Corrected:** "the LR statistic is χ²": only for an interior null.
+
+### Part 5 — p-Values and Power: How Wrong Can a Significant Result Be?
+
+- **Data:** Durante et al. 2013 as Gelman & Carlin report it (17 points, SE 8.1, plausible 2);
+  OSC 2015's `rpp_data.csv` (OSF fgjvw, CC0 1.0), 100 rows in the lab CSV.
+- **Design analysis** (Lu–Qiu–Deng closed form): power 0.0570, type S 0.2396, exaggeration 9.537, bar
+  ±15.88; Gelman & Carlin's simulated 9.7 is a high draw (SD 0.059).
+- **Power:** 16 per group at d = 1 is 0.781398 (integral = `nct` = statsmodels = R `strict = TRUE`).
+- **False positive risk** (not FDR, Part 9's): p = .03 gives 16.7% at even odds, 64.3% at prior 0.1;
+  p ≤ .05 at prior 0.1 and 80% power, 36%.
+- **Replication:** 97 → 36 significant, mean r 0.396 → 0.197. **TOST:** 16 per group shows only ±1.06
+  SD at 80% power. **Peeking:** 8.31%, 37.36%, 52.99% after 2, 100, 1,000 looks.
+- **Tool trap:** SciPy 1.18.1 `nct.cdf(-c, df, λ)` can return NaN past λ ≈ 8, statsmodels power `nan`;
+  use `nct.sf(c, df, -λ)`.
+- **Corrected:** "p = 0.03 means a 3% chance of a fluke" (true only at a prior of 0.87).
 
 ## Decisions to preserve
 
@@ -145,36 +151,35 @@ broken condition, corrected claim, terms), reused rather than re-derived.
   owner adds links. Later parts are "later in this series", with no number or title.
 - Prose and social-card numbers are rounded once from the captures and rechecked by script before
   the gate. Plain-fact claims quote the exact value where one exists.
-- Assets: copy Part 3's toolchain (`_build.py`, `_figs.py` helpers, `_social.py`, `_cover.py`,
-  `_overlap.py`) and Part 1's `_mermaid.py`; labs follow Part 3's `lab/estimators.py`. Bin a discrete
-  estimator's histogram on its own support.
+- Assets: copy Part 5's toolchain (`_build.py`, `_figs.py` helpers, `_social.py`, `_cover.py`,
+  `_overlap.py`) and Part 1's `_mermaid.py`; labs follow Part 5's `lab/testing.py`. Bin a discrete
+  estimator's histogram on its own support. Geist Mono has no combining hat: write "MLE", not λ̂.
+  Assert no plotted curve holds a NaN: the browser drops a polyline with one.
+- Social: feed cards only, no Stories (owner, 2026-10-30); `--social` then fails exactly its four
+  Story checks, as expected.
 - A real population is sampled with replacement, so draws are independent; the finite-population
   correction is named, not applied.
 
 ## Open threads
 
 - Checkpoint S not formally passed: part count (18, or 16 with 10 and 18 optional), survival
-  placement, title, and the optional smoothing part await the owner. Parts 1 to 3 were built on the
-  owner's build requests of 2026-10-24, 2026-10-26 and 2026-10-28; none of the four decisions touches them.
+  placement, title, and the optional smoothing part await the owner. Parts 1 to 5 were built on the
+  owner's requests (2026-10-24 to 10-29); none of the four decisions touches them.
 - `data-science` category: in the validator and `frontmatter.md` since 2026-10-24, still missing
-  from the live DB (a production write at publish, the owner's).
-- Read second-hand (each ledger lists them): Greenwood & Yule 1920, Berry 1941, Ruggles & Brodie 1947,
-  Goodman 1952, Blackwell 1947, Stigler 1990. Project Euclid serves a bot check to curl and WebFetch.
+  from the live DB (the owner's write at publish).
+- Sources read second-hand or as abstracts only are listed in each ledger. Project Euclid, Taylor &
+  Francis and the Royal Society serve bot pages; Tilburg's repository a Cloudflare check.
 - blog-forge's `subject-playbooks.md` has no statistics entry (the owner's change to make).
 - Dataset choices still open: prostate versus Hedenfalk for Part 9 (licence), the heteroskedastic
   dataset for Part 14, and the `sleepstudy` source for Part 17 (`lme4` or Rdatasets).
-- Available RAM has been 2 to 6 GiB (`access.md`): keep the PyMC runs in Parts 12 and 18 small.
+- Available RAM has been 2 to 7 GiB (`access.md`): keep the PyMC runs in Parts 12 and 18 small.
 
 ## Next part brief
 
-- **Part:** 4, *Likelihood: The MLE, Fisher Information, and the Wald, Score and Likelihood-Ratio Tests*
-  (`likelihood-mle-fisher-information`).
-- **Can assume:** Parts 1 to 3, named by title: Part 1's V-1 and Greenwood–Yule counts and moment fits;
-  Part 2's standard error and MCSE; Part 3's MSE = bias² + variance, consistency, sufficiency and the
-  tank MLE (likelihood 1/C(N, k), biased, converging like 1/k).
-- **Must teach:** `plan.md`'s Part 4 block, as written. Name the regularity conditions and use the tank
-  MLE as the case outside them (Part 3 promised "likelihood in general" here).
-- **Must not repeat:** the bias–variance decomposition, Rao–Blackwell, James–Stein; point to Part 3.
-- **Evidence still needed:** Fisher 1922, Wilks 1938, Buse 1982, Efron & Hinkley 1978, Self & Liang
-  1987, Pawitan. Project Euclid blocks curl and WebFetch: look for author, archive or Berkeley copies.
-- **Handoff:** as `plan.md` states for Part 4.
+- **Part:** 6, *Confidence Intervals: What 95% Means, Measured* (`confidence-intervals-coverage`).
+- **Can assume:** Part 5 by title: tests, α, power, the p-value as a random variable, TOST's 90%
+  interval, and van Zwet & Cator's undercoverage after the significance filter below 50% power.
+- **Must teach:** `plan.md`'s Part 6 block, as written.
+- **Must not repeat:** the Fisher/Neyman–Pearson readings or the false positive risk; point to Part 5.
+- **Evidence still needed:** the plan's six key sources, Neyman 1937 to Hoekstra et al. 2014.
+- **Handoff:** as `plan.md` states for Part 6.
