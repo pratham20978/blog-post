@@ -3,7 +3,7 @@
 import math
 import sys
 
-from _build import (ACCENT, ACCENT_TINT, INK, LINK, MONO, MUTED, PAPER, RULE,
+from _build import (ACCENT, ACCENT_TINT, HERE, INK, LINK, MONO, MUTED, PAPER, RULE,
                     RULE_SOLID, SOFT, alabel, box, cell, elbow, emit, eyebrow,
                     elbow_hvh, hline, legend, masked, mono, node, tag, txt, vline)
 
@@ -244,27 +244,107 @@ def fig05():
                 "stage 1 — sample", vw, vh, s)
 
 
+# ------------------------------------------------------------------ FIG 05, lower half
+def fig05b():
+    """Two Wikimedia Commons copies of one photograph by Cburnett (CC BY-SA 3.0), embedded
+    byte-for-byte and scaled to one height for display. Nothing is computed on the pixels."""
+    import base64
+    srcs = [("_src-bricks-commons-250.jpg", 250, 304, "a 250-pixel copy",
+             "fine brick texture, no bands", INK),
+            ("_src-bricks-small-205.jpg", 205, 250, "a 205-pixel copy, badly downsampled",
+             "broad diagonal bands that are not on the wall", ACCENT)]
+    vw, ph, gap, y0 = 1016, 500, 64, 112
+    widths = [ph * w / h for _, w, h, *_ in srcs]
+    x = (vw - sum(widths) - gap) / 2
+    s = eyebrow(32, 44, "the same wall, resampled twice")
+    for (name, w, h, label, note, colour), pw in zip(srcs, widths):
+        data = base64.b64encode((HERE / name).read_bytes()).decode("ascii")
+        s += mono(x + pw / 2, y0 - 16, label, size=9, fill=colour, weight="500", track="0.04em")
+        s += (f'<image x="{x:.1f}" y="{y0}" width="{pw:.1f}" height="{ph}" '
+              f'href="data:image/jpeg;base64,{data}"/>')
+        s += (f'<rect x="{x:.1f}" y="{y0}" width="{pw:.1f}" height="{ph}" fill="none" '
+              f'stroke="{RULE_SOLID}" stroke-width="0.8"/>')
+        s += mono(x + pw / 2, y0 + ph + 24, f"{w} × {h} pixels — {note}", size=8, fill=colour,
+                  track="0.04em")
+        x += pw + gap
+    s += mono(vw / 2, y0 + ph + 60, "photographs: Cburnett, Wikimedia Commons, CC BY-SA 3.0 · "
+              "both scaled to one height for display", size=8, fill=SOFT, track="0.04em")
+    stem = emit("05", "moire-bricks", "What the overlap looks like",
+                "One photograph of a brick wall, resampled twice: once cleanly, once badly.",
+                "stage 1 — sample", vw, y0 + ph + 84, s,
+                credit="photographs by Cburnett, Wikimedia Commons, CC BY-SA 3.0; "
+                       "scaled and set side by side, so this figure is CC BY-SA 3.0")
+    # Photographic content makes a 1.7 MB PNG; ship a 4:4:4 JPEG instead (about 430 KB).
+    from PIL import Image
+    png = HERE / f"{stem}.png"
+    Image.open(png).convert("RGB").save(HERE / f"{stem}.jpg", "JPEG", quality=90,
+                                         subsampling=0, optimize=True)
+    png.unlink()
+    print(f"  {stem}: png -> jpg")
+    return stem
+
+
 # ------------------------------------------------------------------ FIG 06
 def fig06():
-    vw, vh = 1016, 356
-    s = eyebrow(32, 44, "one 3x3 pass vs two 1-d passes")
-    s += node(32, 128, 112, 72, "Input", "row of pixels", kind="input")
+    vw, vh = 1016, 412
+    g = [math.exp(-1 / 1.28), 1.0, math.exp(-1 / 1.28)]          # sigma = 0.8, as in Figure 4
+    g = [v / sum(g) for v in g]
+    win = [row[0:3] for row in PATCH[1:4]]                      # the 3x3 window at (2, 1)
+    rows = [sum(w * v for w, v in zip(g, r)) for r in win]      # row pass, at column 1
+    sep = sum(w * v for w, v in zip(g, rows))                   # column pass
+    k2 = [[a * b for b in g] for a in g]
+    direct = sum(k2[i][j] * win[i][j] for i in range(3) for j in range(3))
+    assert abs(direct - sep) < 1e-9
+    assert round(sep, 1) == 98.6 and round(rows[1], 1) == 152.2 and rows[0] == rows[2] == 40
+    corner, edge, centre = k2[0][0], k2[0][1], k2[1][1]
+    taps = " ".join(f"{v:.3f}" for v in g)
 
-    s += node(232, 64, 200, 72, "3 × 3 stencil", "9 multiplies / pixel", kind="backend")
-    s += node(232, 216, 168, 72, "Row pass 1 × 3", "3 multiplies", kind="focal")
-    s += node(456, 216, 168, 72, "Column pass 3 × 1", "3 multiplies", kind="focal")
-    s += node(760, 128, 112, 72, "Output", "identical", kind="external")
+    s = eyebrow(32, 44, "one 3x3 pass vs two 1-d passes, at (2, 1)")
+    cw, gx, gy = 40, 40, 148
+    s += mono(gx + 1.5 * cw, gy - 14, "window at (2, 1)", size=8, fill=SOFT, track="0.06em")
+    for i in range(3):
+        for j in range(3):
+            hot = win[i][j] == 255
+            s += cell(gx + j * cw, gy + i * cw, cw, cw, str(win[i][j]),
+                      fill=ACCENT_TINT if hot else "#ffffff",
+                      stroke=ACCENT if hot else "rgba(45,49,66,0.30)",
+                      tcolor=ACCENT if hot else INK, size=11)
 
-    s += elbow(144, 164, 232, 100, stroke=MUTED)
-    s += hline(432, 752, 100, stroke=MUTED)
-    s += elbow(144, 164, 232, 252, stroke=ACCENT, marker="arrow-accent")
-    s += hline(400, 452, 252, stroke=ACCENT, marker="arrow-accent")
-    s += elbow(624, 252, 756, 176, stroke=ACCENT, marker="arrow-accent")
+    # upper route: one 2-D stencil
+    s += box(248, 84, 324, 88, fill="#ffffff", stroke=INK)
+    s += txt(410, 112, "One 3 × 3 stencil", size=12, weight="600")
+    s += mono(410, 134, f"4({corner:.4f}·40) + 4({edge:.4f}·40) + {centre:.4f}·255",
+              size=9, fill=MUTED, track="0.02em")
+    s += mono(410, 154, "9 multiplies per pixel", size=8, fill=SOFT, track="0.06em")
 
-    s += alabel(592, 100, "9 mults", fill=MUTED, gap=18, w=56)
-    s += alabel(692, 252, "6 mults", fill=ACCENT, gap=18, w=56)
+    # lower route: a row pass, then a column pass
+    for x, title, line1, line2 in (
+            (248, "Row pass, 1 × 3", f"[{taps}] along rows 1–3",
+             f"gives {rows[0]:.0f}, {rows[1]:.1f}, {rows[2]:.0f}"),
+            (528, "Column pass, 3 × 1", f"[{taps}] down column 1",
+             f"{g[0]:.3f}·{rows[0]:.0f} + {g[1]:.3f}·{rows[1]:.1f} + {g[2]:.3f}·{rows[2]:.0f}")):
+        s += box(x, 236, 232, 100, fill=ACCENT_TINT, stroke=ACCENT)
+        s += txt(x + 116, 262, title, size=12, weight="600", fill=ACCENT)
+        s += mono(x + 116, 283, line1, size=8, fill=MUTED, track="0.02em")
+        s += mono(x + 116, 302, line2, size=9, fill=INK, track="0.02em")
+        s += mono(x + 116, 322, "3 multiplies per pixel", size=8, fill=SOFT, track="0.06em")
 
-    s += mono(508, 316, "k × k costs k² one way and 2k the other: 9 vs 6 at k = 3, 225 vs 30 at k = 15",
+    # the shared output
+    s += box(824, 150, 152, 120, fill="#ffffff", stroke=INK)
+    s += txt(900, 208, f"{sep:.1f}", size=24, weight="600")
+    s += mono(900, 232, "same value,", size=8, fill=SOFT, track="0.06em")
+    s += mono(900, 246, "both routes", size=8, fill=SOFT, track="0.06em")
+
+    # wiring: one fork out of the window, each route into the output's left edge
+    s += elbow_hvh(gx + 3 * cw, 208, 200, 128, 244, stroke=MUTED)
+    s += elbow_hvh(gx + 3 * cw, 208, 200, 286, 244, stroke=ACCENT, marker="arrow-accent")
+    s += hline(480, 524, 286, stroke=ACCENT, marker="arrow-accent")
+    s += elbow_hvh(572, 128, 796, 186, 821, stroke=MUTED)
+    s += elbow_hvh(760, 286, 796, 234, 821, stroke=ACCENT, marker="arrow-accent")
+
+    s += mono(508, 362, "the row pass runs once over the whole image, and each of its values "
+              "is reused by three column-pass outputs", size=8, fill=SOFT, track="0.04em")
+    s += mono(508, 386, "k × k costs k² one way and 2k the other: 9 vs 6 at k = 3, 225 vs 30 at k = 15",
               size=9, fill=SOFT, track="0.04em")
     return emit("06", "separability", "Separability",
                 "A kernel that factors runs as two 1-D passes for the same result.",
@@ -274,18 +354,24 @@ def fig06():
 # ------------------------------------------------------------------ FIG 07
 def fig07():
     vw, vh = 1016, 420
-    s = eyebrow(32, 44, "five rules, five answers, same pixel")
-    rows = [
-        ("BORDER_CONSTANT", ["0", "0"], "invents zeros", MUTED),
-        ("BORDER_REPLICATE", ["40", "40"], "repeats the edge value", MUTED),
-        ("BORDER_REFLECT", ["40", "40"], "mirrors, edge duplicated", MUTED),
-        ("BORDER_REFLECT_101", ["40", "40"], "mirrors, edge not duplicated", ACCENT),
-        ("BORDER_WRAP", ["200", "200"], "pulls from the far side", MUTED),
+    s = eyebrow(32, 44, "five rules, five inventions, one row")
+    row = [40, 255, 40, 200, 200]      # row 2: on row 0 three of the five rules invent the same 40s
+    n = len(row)
+    rules = [                          # where column j < 0 reads from, as in OpenCV's BorderTypes
+        ("BORDER_CONSTANT", None, "invents zeros", MUTED),
+        ("BORDER_REPLICATE", lambda j: 0, "repeats the edge value", MUTED),
+        ("BORDER_REFLECT", lambda j: -j - 1, "mirrors, edge duplicated", MUTED),
+        ("BORDER_REFLECT_101", lambda j: -j, "mirrors, edge not duplicated", ACCENT),
+        ("BORDER_WRAP", lambda j: j % n, "pulls from the far side", MUTED),
     ]
-    real = ["40", "40", "40", "200", "200"]
+    rows = [(name, [str(0 if f is None else row[f(j)]) for j in (-2, -1)], note, colour)
+            for name, f, note, colour in rules]
+    assert [inv for _, inv, _, _ in rows] == [["0", "0"], ["40", "40"], ["255", "40"],
+                                               ["40", "255"], ["200", "200"]]
+    real = [str(v) for v in row]
     cw, y0, x0 = 64, 104, 344
     s += mono(x0 - 68, y0 - 16, "invented", size=8, fill=SOFT, track="0.10em")
-    s += mono(x0 + 160, y0 - 16, "real pixels of row 0", size=8, fill=SOFT, track="0.10em")
+    s += mono(x0 + 160, y0 - 16, "real pixels of row 2", size=8, fill=SOFT, track="0.10em")
     for i, (name, inv, note, colour) in enumerate(rows):
         y = y0 + i * 56
         s += mono(32, y + 34, name, size=9, fill=colour, anchor="start", track="0.04em")
@@ -309,23 +395,39 @@ def fig07():
 
 # ------------------------------------------------------------------ FIG 08
 def fig08():
+    import cmath
     vw, vh = 1016, 460
     s = eyebrow(32, 44, "four points, two routes, one answer")
+    x = [40, 40, 200, 200]
+    h = [0.5, 0.25, 0, 0.25]                       # centre tap at index 0, left tap wrapped to 3
+
+    def dft(v, sign=-1):
+        return [sum(v[n] * cmath.exp(sign * 2j * math.pi * k * n / 4) for n in range(4))
+                for k in range(4)]
+
+    X, H = dft(x), dft(h)
+    y = [(v / 4).real for v in dft([a * b for a, b in zip(H, X)], sign=1)]
+    direct = [sum(h[m] * x[(n - m) % 4] for m in range(4)) for n in range(4)]
+    assert all(abs(a - b) < 1e-9 for a, b in zip(y, direct))
+    assert [round(v) for v in y] == [80, 80, 160, 160]
+    mags = [round(abs(v), 1) for v in X]
     panels = [
-        (32, "x[n]", [40, 40, 200, 200], 200, INK, "the step"),
-        (280, "|X[k]|", [480, 226.3, 0, 226.3], 480, MUTED, "its spectrum"),
-        (528, "H[k]", [1, 0.5, 0, 0.5], 1, ACCENT, "the filter's gain"),
-        (776, "y[n]", [80, 80, 160, 160], 200, INK, "the result"),
+        ("x[n]", x, 200, INK, "the step"),
+        ("|X[k]|", mags, 480, MUTED, "its spectrum"),
+        ("H[k]", [round(v.real, 2) for v in H], 1, ACCENT, "the filter's gain"),
+        ("y[n]", [round(v) for v in y], 200, INK, "the result"),
     ]
-    bw, base, top = 44, 296, 128
-    for x0, name, vals, vmax, colour, note in panels:
-        s += mono(x0 + 104, 92, name, size=10, fill=colour, track="0.08em", weight="500")
-        s += mono(x0 + 104, 108, note, size=8, fill=SOFT, track="0.04em")
-        s += (f'<line x1="{x0}" y1="{base}" x2="{x0 + 208}" y2="{base}" '
+    pw, gap = 190, 64                 # a 64-px gutter between panels holds each operator label
+    bw, step, base, top = 40, 46, 296, 128
+    for p, (name, vals, vmax, colour, note) in enumerate(panels):
+        x0 = 32 + p * (pw + gap)
+        s += mono(x0 + pw / 2, 92, name, size=10, fill=colour, track="0.08em", weight="500")
+        s += mono(x0 + pw / 2, 108, note, size=8, fill=SOFT, track="0.04em")
+        s += (f'<line x1="{x0}" y1="{base}" x2="{x0 + pw}" y2="{base}" '
               f'stroke="{RULE_SOLID}" stroke-width="0.8"/>')
         for i, v in enumerate(vals):
             hgt = (v / vmax) * (base - top)
-            bx = x0 + 12 + i * (bw + 8)
+            bx = x0 + 6 + i * step
             if hgt > 0:
                 s += (f'<rect x="{bx}" y="{base - hgt}" width="{bw}" height="{hgt}" '
                       f'fill="{colour}" fill-opacity="0.18" stroke="{colour}" stroke-width="1"/>')
@@ -333,14 +435,15 @@ def fig08():
             s += mono(bx + bw / 2, base - hgt - 8 if hgt > 0 else base - 8, lbl,
                       size=8, fill=colour, track="0.04em")
             s += mono(bx + bw / 2, base + 16, str(i), size=8, fill=SOFT)
-    for x, lab, colour in ((256, "dft", MUTED), (504, "× H[k]", ACCENT),
-                           (752, "inverse", MUTED)):
-        s += mono(x, 208, "→", size=14, fill=colour)
-        s += mono(x, 228, lab.upper(), size=8, fill=colour, track="0.10em")
-    s += mono(508, 352, "route A — nine multiplies in space: 0.5(40) + 0.25(200) + 0.25(40) = 80",
+    for p, lab, colour in ((0, "DFT", MUTED), (1, "× H[k]", ACCENT), (2, "IDFT", MUTED)):
+        gx = 32 + p * (pw + gap) + pw + gap / 2
+        s += mono(gx, 208, "→", size=14, fill=colour)
+        s += mono(gx, 228, lab, size=8, fill=colour, track="0.10em")
+    s += mono(508, 352, f"route A — in space, three multiplies per output: "
+              f"y[0] = 0.5(40) + 0.25(200) + 0.25(40) = {direct[0]:g}",
               size=9, fill=MUTED, track="0.04em")
-    s += mono(508, 372, "route B — one multiply per frequency, then invert: same [80, 80, 160, 160]",
-              size=9, fill=ACCENT, track="0.04em")
+    s += mono(508, 372, "route B — transform, one multiply per frequency, transform back: "
+              f"the same {[round(v) for v in y]}", size=9, fill=ACCENT, track="0.04em")
     s += legend(412, vw, [("signal", INK, "box"),
                           ("spectrum", MUTED, "box"),
                           ("transfer function", ACCENT, "box")])
@@ -421,7 +524,7 @@ def fig09():
 
 
 FIGS = {"01": fig01, "02": fig02, "03": fig03, "04": fig04, "05": fig05,
-        "06": fig06, "07": fig07, "08": fig08, "09": fig09}
+        "05b": fig05b, "06": fig06, "07": fig07, "08": fig08, "09": fig09}
 
 if __name__ == "__main__":
     want = sys.argv[1:] or sorted(FIGS)

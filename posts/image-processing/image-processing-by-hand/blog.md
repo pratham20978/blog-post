@@ -1,8 +1,9 @@
+
 ---
 title: "Image Processing by Hand: Sample, Filter, Transform, Decide"
 slug: image-processing-by-hand
 date: 2026-09-10
-updated: 2026-09-10
+updated: 2026-10-31
 summary: "An image is a 2-D signal, and almost every classical operation on it is one weighted sum over a neighbourhood. Four stages, worked by hand on real integers."
 tags: [algorithms, image-processing, convolution, signal-processing, opencv, fourier-transform]
 category: algorithms
@@ -12,29 +13,28 @@ difficulty: advanced
 series: image-processing
 series_position: 1
 prerequisites: ["basic calculus", "complex exponentials", "matrix notation", "reading Python signatures"]
-reading_minutes: 40
-cover_image_url: "https://minio.canery.in/media/cover.png"
+reading_minutes: 50
+cover_image_url: "https://minio.canery.in/media/cover-image-processing-by-hand.png"
 cover_image_alt: "Four-stage image processing pipeline: sample, filter, transform, decide, over a 2-D signal"
 canonical_url: "https://canery.in/blogs/image-processing-by-hand"
 ---
-
 > [!NOTE]
 > **Insights** — An image is a 2-D signal that was already damaged before your code opened it, and almost every classical operation you then apply is one arithmetic move: lay a small grid of weights over a neighbourhood, multiply, add. Gaussian blur, Sobel, sharpening and the Laplacian are that same sum with different weights. So the useful question is never *which filter* — it is what a given set of weights does to the signal, and where the arithmetic stops being linear. Image processing is four stages, and three of them are that sum.
 
-**Level:** advanced · **You need:** basic calculus, complex exponentials, matrix notation, and enough Python to read a function signature · **Time:** ~40 min
+**Level:** advanced · **You need:** basic calculus, complex exponentials, matrix notation, and enough Python to read a function signature · **Time:** ~50 min
 
 This is the parent post of a series. It builds the frame and the shared math and then stops: where an area deserves a full treatment, it is named and handed to a child post rather than half-taught here.
 
 **Jump to:** [The problem](#the-problem) · [Worked example](#worked-example) · [Intuition](#intuition) · [Stage 1: sample](#stage-1--sample-the-grid-is-already-lossy) · [Stage 2: filter](#stage-2--filter-every-linear-filter-is-one-weighted-sum) · [Stage 3: transform](#stage-3--transform-what-frequency-shows-that-pixels-hide) · [Stage 4: decide](#stage-4--decide-where-linearity-stops) · [Assembling a detector](#assembling-a-detector-from-the-four-stages) · [Scale](#scale-the-parameter-nobody-sets-on-purpose) · [The math](#the-math) · [Implementation](#implementation-the-tooling-map) · [Limitations](#limitations-and-common-mistakes)
 
 > [!IMPORTANT]
-> Nothing in this post was executed. No packages were installed, no notebook was run, no image was loaded. Every number below is worked by hand on integers you can check on paper, or it carries a citation. There are consequently no timings, no benchmarks, and no measured curves — the two figures that show curves are plotted from closed-form expressions and say so in the caption.
+> Nothing in this post was executed. No packages were installed, no notebook was run, and no image was processed: the photographs in Figure 5 are reproduced from Wikimedia Commons, only scaled for display. Every number below is worked by hand on integers you can check on paper, or it carries a citation; the arithmetic added in the October 2026 revision was cross-checked with plain Python and nothing else. There are consequently no timings, no benchmarks, and no measured curves — the two figures that show curves are plotted from closed-form expressions and say so in the caption.
 
 ## Why this matters
 
 Your edge detector works on the test image and finds lace everywhere on the production one. You raise the threshold and it stops finding the actual edge. You try a different detector and get the same behaviour with different artefacts. Nothing in that loop converges, because the problem is not the detector.
 
-Here is the specific version of that. In the 5×5 patch this post uses throughout, one single bad pixel — one sensor hot spot, one dead element, one compression artefact — changes the Sobel horizontal gradient at a neighbouring position from 640 to 210. That is a 67% error in the quantity your threshold is being compared against, produced by a pixel three columns away from the edge you care about.
+Here is the specific version of that. In the 5×5 patch this post uses throughout, one single bad pixel — one sensor hot spot, one dead element, one compression artefact — changes the Sobel horizontal gradient at a neighbouring position from 640 to 210. That is a 67% error in the quantity your threshold is being compared against, produced by a pixel that is not on the edge you care about.
 
 No threshold value fixes that. The fix is one stage earlier. That is the recurring shape of image-processing bugs: the symptom appears at the decision, the cause lives at the sampling or the filtering, and enough math separates them that people stop tracing and start guessing parameters.
 
@@ -56,7 +56,7 @@ Two things then happen to $f$, and both are irreversible. **Sampling** replaces 
 
 Figure 1 shows the four stages that follow, and marks which can be undone.
 
-![Four-stage pipeline diagram: a continuous scene enters a sample stage marked irreversible, then a filter stage, a transform stage marked invertible, and a decide stage marked irreversible, with the array representation shown between each stage](https://minio.canery.in/media/fig-01-four-stages.png)
+![Four-stage pipeline diagram: a continuous scene enters a sample stage marked irreversible, then a filter stage, a transform stage marked invertible, and a decide stage marked irreversible, with the array representation shown between each stage](https://minio.canery.in/media/fig-01-four-stages-image-processing-by-hand.png)
 
 *Figure 1 — The only stage that destroys information is the first one. Filtering is usually not invertible in practice, the transform is invertible by construction, and the decision throws away everything except the answer.*
 
@@ -64,7 +64,7 @@ Read Figure 1 backwards and the structure of every bug becomes visible. The deci
 
 So your code holds a table of integers, but the object you have to *reason* about is the signal that table was taken from, because the operators are all defined against the signal. Figure 2 puts the two side by side.
 
-![The same 5 by 5 patch shown twice: on the left a labelled grid of integers with the value 255 highlighted, on the right row 2 drawn as a step profile where 40 is a plateau, 255 a narrow spike, and 200 a wide step](https://minio.canery.in/media/fig-02-grid-and-surface.png)
+![The same 5 by 5 patch shown twice: on the left a labelled grid of integers with the value 255 highlighted, on the right row 2 drawn as a step profile where 40 is a plateau, 255 a narrow spike, and 200 a wide step](https://minio.canery.in/media/fig-02-grid-and-surface-image-processing-by-hand.png)
 
 *Figure 2 — Same data twice: the array you index and the signal you reason about. The spike is one cell on the left and a discontinuity on the right.*
 
@@ -78,13 +78,13 @@ Every stage below answers one of those. Scale chooses $\sigma$. Corruption decid
 
 One patch carries this entire post. It is 5 rows by 5 columns, 8-bit grayscale, with a flat dark region on the left, a flat bright region on the right, a step between column 2 and column 3, and a single bad pixel of value 255 at row 2, column 1.
 
-|       | c0 | c1  | c2 | c3  | c4  |
-|-------|----|-----|----|-----|-----|
-| **r0**| 40 | 40  | 40 | 200 | 200 |
-| **r1**| 40 | 40  | 40 | 200 | 200 |
-| **r2**| 40 | **255** | 40 | 200 | 200 |
-| **r3**| 40 | 40  | 40 | 200 | 200 |
-| **r4**| 40 | 40  | 40 | 200 | 200 |
+|              | c0 | c1            | c2 | c3  | c4  |
+| ------------ | -- | ------------- | -- | --- | --- |
+| **r0** | 40 | 40            | 40 | 200 | 200 |
+| **r1** | 40 | 40            | 40 | 200 | 200 |
+| **r2** | 40 | **255** | 40 | 200 | 200 |
+| **r3** | 40 | 40            | 40 | 200 | 200 |
+| **r4** | 40 | 40            | 40 | 200 | 200 |
 
 Three operators, all of which "remove noise", all applied to the *same nine numbers*. The nine are the 3×3 neighbourhood centred on the bad pixel at (2, 1):
 
@@ -102,7 +102,7 @@ $$
 8 \times 40 + 255 = 320 + 255 = 575, \qquad \frac{575}{9} = 63.9
 $$
 
-Rounded to an integer, the centre pixel becomes **64**. The impulse is not removed. It is spread: the centre went from 255 down to 64, and — because this same window slides over every position — each of the eight neighbours also rises from 40 to 64 when its own window contains the 255. One bad pixel became nine mediocre ones.
+Rounded to an integer, the centre pixel becomes **64**. The impulse is not removed. It is spread: the centre went from 255 down to 64, and — because this same window slides over every position — each of the eight neighbours also takes a share of the 255 when its own window contains it: (1, 1) and (3, 1) rise from 40 to 64. One bad pixel became nine mediocre ones.
 
 ### The median
 
@@ -112,21 +112,21 @@ The impulse is gone exactly, and the neighbours are untouched: any window that c
 
 ### The Gaussian
 
-The Gaussian is the weighted sum people reach for by default, so it is worth using the exact weights OpenCV would use rather than a textbook approximation. Its documented kernel is
+The Gaussian is the weighted sum people reach for by default, so it is worth computing its weights exactly rather than quoting a textbook approximation. Its documented kernel is
 
 $$
 G_i = \alpha \exp\!\left(-\frac{\left(i - \tfrac{k-1}{2}\right)^2}{2\sigma^2}\right)
 $$
 
-with $i = 0 \ldots k-1$ over a kernel of size $k$, and $\alpha$ chosen so the coefficients sum to 1. <!-- L13 --> When you pass a non-positive $\sigma$, OpenCV derives one from the kernel size as $\sigma = 0.3\big((k-1) \cdot 0.5 - 1\big) + 0.8$. <!-- L14 -->
+with $i = 0 \ldots k-1$ over a kernel of size $k$, and $\alpha$ chosen so the coefficients sum to 1.  When you pass a non-positive $\sigma$, the documentation derives one from the kernel size as $\sigma = 0.3\big((k-1) \cdot 0.5 - 1\big) + 0.8$.
 
-For $k = 3$ that gives $\sigma = 0.3(1 - 1) + 0.8 = 0.8$ exactly. So the default 3×3 Gaussian blur has $\sigma = 0.8$, and its three coefficients are computable by hand. The unnormalised values are $e^{-1/1.28}$, $e^{0}$, $e^{-1/1.28}$, that is $0.4578$, $1$, $0.4578$, summing to $1.9157$. Dividing through:
+For $k = 3$ that gives $\sigma = 0.3(1 - 1) + 0.8 = 0.8$ exactly. This post's Gaussian uses that $\sigma$, and its three coefficients are computable by hand. The unnormalised values are $e^{-1/1.28}$, $e^{0}$, $e^{-1/1.28}$, that is $0.4578$, $1$, $0.4578$, summing to $1.9157$. Dividing through:
 
 $$
 G = \begin{bmatrix} 0.239 & 0.522 & 0.239 \end{bmatrix}
 $$
 
-Those three numbers are the 1-D Gaussian at $\sigma = 0.8$, normalised so a flat region keeps its brightness. Note they are *not* the familiar $\tfrac{1}{4}[1\ 2\ 1] = [0.25, 0.5, 0.25]$ — the binomial kernel is a different filter that people call by the same name.
+Those three numbers are the 1-D Gaussian at $\sigma = 0.8$, normalised so a flat region keeps its brightness. Note they are *not* the familiar $\tfrac{1}{4}[1\ 2\ 1] = [0.25, 0.5, 0.25]$ — the binomial kernel is a different filter that people call by the same name. OpenCV does too: for $\sigma \le 0$ and $k$ = 3, 5, 7 or 9, `getGaussianKernel` returns a hard-coded table instead of evaluating either formula above, and at $k = 3$ the table is this binomial. The documentation does not mention it.  `GaussianBlur(img, (3, 3), 0)` is therefore not the $\sigma = 0.8$ kernel, which is why this post passes $\sigma$ explicitly.
 
 The 2-D weights are the outer product $G^{\top}G$, which gives three distinct values: the centre $0.522^2 = 0.2725$, the four edge-adjacent cells $0.239 \times 0.522 = 0.1248$, and the four corners $0.239^2 = 0.0571$.
 
@@ -136,13 +136,13 @@ $$
 0.2725 \times 255 \;+\; (1 - 0.2725) \times 40 \;=\; 69.5 + 29.1 \;=\; 98.6
 $$
 
-The centre becomes **99**.
+The centre becomes **99**. The binomial default puts 0.25 on the centre and gives $0.25 \times 255 + 0.75 \times 40 = 93.75$, which is 94 in an 8-bit image.
 
 That result is worth stopping on, because it is the opposite of the Gaussian's reputation. Against a single impulse it performs *worse* than the box mean — 99 versus 64 — for a mechanical reason: it puts 27% of the total weight on the one pixel that is wrong. Its smoothness buys good behaviour against noise spread across many pixels and nothing against noise concentrated in one.
 
 Figure 3 shows the three answers next to the window that produced them.
 
-![The 3 by 3 window over the impulse pixel, with three outputs branching from it: box mean 64, Gaussian 99, and median 40, each annotated with the arithmetic that produced it](https://minio.canery.in/media/fig-03-three-answers.png)
+![The 3 by 3 window over the impulse pixel, with three outputs branching from it: box mean 64, Gaussian 99, and median 40, each annotated with the arithmetic that produced it](https://minio.canery.in/media/fig-03-three-answers-image-processing-by-hand.png)
 
 *Figure 3 — Box 64, Gaussian 99, median 40, from the identical nine numbers. The operator, not the data, decides.*
 
@@ -150,7 +150,7 @@ Figure 3 shows the three answers next to the window that produced them.
 
 Two of the three are the same operation: the box and the Gaussian both multiply each of nine neighbours by a fixed number and add, differing only in the nine numbers. Figure 4 shows them alongside a third stencil that nobody calls a smoother.
 
-![Three 3 by 3 weight stencils side by side with their numeric values: a box filter of nine equal ninths, a Gaussian with corner 0.0571, edge 0.1248, centre 0.2725, and a Sobel x-derivative with minus one, zero, one across the top row and minus two, zero, two across the middle](https://minio.canery.in/media/fig-04-weight-stencils.png)
+![Three 3 by 3 weight stencils side by side with their numeric values: a box filter of nine equal ninths, a Gaussian with corner 0.0571, edge 0.1248, centre 0.2725, and a Sobel x-derivative with minus one, zero, one across the top row and minus two, zero, two across the middle](https://minio.canery.in/media/fig-04-weight-stencils-image-processing-by-hand.png)
 
 *Figure 4 — Box, Gaussian at σ = 0.8, and the Sobel x-derivative. One operation, three weight sets. The third one sums to zero, which is what makes it a derivative rather than an average.*
 
@@ -190,33 +190,65 @@ The analogy breaks at three points, and each break is a section of this post. It
 
 Sampling is the only unconditionally irreversible stage in Figure 1, and it runs before your code does. What it costs is governed by one theorem.
 
-Shannon's statement: a function containing no frequency higher than $W$ is completely determined by its ordinates spaced $1/(2W)$ apart. <!-- L01 --> The paper was received in 1940 and held until 1949 by the war. <!-- L02 -->
+Shannon's statement: a function containing no frequency higher than $W$ is completely determined by its ordinates spaced $1/(2W)$ apart.  The paper was received in 1940 and held until 1949 by the war.
 
 Concretely: if the finest detail in the scene oscillates at most $W$ times per unit distance, then samples taken more than twice that often lose nothing at all, and the continuous signal can be reconstructed exactly. Two samples per cycle of the fastest thing present.
 
-The frequency-domain mechanism is what makes the failure mode predictable. Ideal sampling multiplies the signal by an impulse train, and multiplication by an impulse train in space becomes *replication* in frequency: the signal's spectrum is copied at every multiple of the sampling frequency. <!-- L03 --> If the copies do not overlap, you can isolate the original and reconstruction is exact. If they do overlap, high frequencies land on top of low frequencies and become indistinguishable from them. That overlap is aliasing, and Figure 5 shows it.
+The frequency-domain mechanism is what makes the failure mode predictable. Ideal sampling multiplies the signal by an impulse train, and multiplication by an impulse train in space becomes *replication* in frequency: the signal's spectrum is copied at every multiple of the sampling frequency.  If the copies do not overlap, you can isolate the original and reconstruction is exact. If they do overlap, high frequencies land on top of low frequencies and become indistinguishable from them. That overlap is aliasing, and Figure 5 shows it twice: as spectra, and as a photograph.
 
-![Frequency-domain diagram showing a signal spectrum replicated at multiples of the sampling frequency, with a well-separated case above and an overlapping case below where the tails of adjacent copies sum into the passband](https://minio.canery.in/media/fig-05-spectral-replication.png)
+![Frequency-domain diagram showing a signal spectrum replicated at multiples of the sampling frequency, with a well-separated case above and an overlapping case below where the tails of adjacent copies sum into the passband](https://minio.canery.in/media/fig-05-spectral-replication-image-processing-by-hand.png)
 
-*Figure 5 — The copies overlap before the sample is taken, which is why the fix cannot come after. Redrawn from the standard spectral-replication argument (Torralba, Isola & Freeman, ch. 20).*
+![The same brick wall shown twice at one height: on the left a 250-pixel-wide copy with even brick texture, on the right a 205-pixel-wide copy, badly downsampled, crossed by broad diagonal bands that are not on the wall](https://minio.canery.in/media/fig-05-moire-bricks.jpg)
 
-The condition for non-overlap is a strict inequality — the sampling frequency must *exceed* twice the maximum signal frequency, not merely equal it. <!-- L04 -->
+*Figure 5 — Top: the copies overlap before the sample is taken, which is why the fix cannot come after; redrawn from the standard spectral-replication argument (Torralba, Isola & Freeman, ch. 20). Bottom: what the overlap looks like. Two copies of one photograph of a brick wall, a 250-pixel copy and a 205-pixel copy that the photograph's Commons page calls badly downsampled; the diagonal bands in the second are aliasing. Photographs by Cburnett, [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Moire_pattern_of_bricks_small.jpg), licensed [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/); scaled and set side by side, so the bottom panel is CC BY-SA 3.0 too.*
+
+The condition for non-overlap is a strict inequality — the sampling frequency must *exceed* twice the maximum signal frequency, not merely equal it.
 
 ### The theorem never actually applies to your image
 
-Here is the part that textbook treatments state and tutorials drop. A signal of finite extent cannot be band-limited: Fourier duality makes finite support and finite bandwidth mutually exclusive. <!-- L05 --> Your image is finite. Therefore its spectrum extends to infinity, therefore the replicated copies overlap at *every* sampling rate, therefore some aliasing is always present and exact reconstruction is never available even in principle.
+Here is the part that textbook treatments state and tutorials drop. A signal of finite extent cannot be band-limited: Fourier duality makes finite support and finite bandwidth mutually exclusive.
 
-This is not pedantry. It changes what you can promise. "Sample above Nyquist and you are fine" is false for images; the true statement is "sample fast enough that the aliased energy is small relative to what you care about". The first version implies a correctness threshold. The second implies a budget, which is what you actually manage.
+One multiplication shows why. A photograph is the scene multiplied by its frame, a window that is 1 inside the sensor's edges and 0 outside. Multiplication in space is convolution in frequency, so the image's spectrum is the scene's spectrum smeared by the window's: for a frame of width $L$, the sinc $\sin(\pi L f)/(\pi f)$, whose ripples shrink only as $1/f$ and never die out. A scene with no detail above $W$ acquires detail at every frequency the moment it is cropped.
+
+Your image is finite. Therefore its spectrum extends to infinity, therefore the replicated copies overlap at *every* sampling rate, therefore some aliasing is always present and exact reconstruction is never available even in principle.
+
+What the overlap does to a single frequency takes two lines. Sample once per pixel, so the grid can hold at most 0.5 cycles per pixel, and take stripes at 0.9 cycles per pixel, a period of 1.11 pixels. At every integer position $n$,
+
+$$
+\cos(2\pi \cdot 0.9\,n) = \cos(2\pi n - 2\pi \cdot 0.1\,n) = \cos(2\pi \cdot 0.1\,n)
+$$
+
+The samples of the 1.11-pixel stripes are identical, value for value, to those of 10-pixel stripes. In general a frequency above the limit is recorded as its distance to the nearest whole multiple of the sampling rate: it folds back below 0.5 cycles per pixel and lands on top of whatever genuinely lives there. Fine detail is not lost; it is relabelled as coarse detail, and nothing in the samples says which is which.
+
+In two dimensions the relabelled detail keeps a direction as well as a frequency, so a fine regular texture — brick courses, a striped shirt, a window screen — can come out as broad bands at an angle of its own. That is a moiré pattern, and the bottom of Figure 5 is one. The diagonal bands are not on the wall: they are brick-scale detail that the 205-pixel grid could not hold, relabelled as low frequencies.
+
+This is not pedantry. It changes what you can promise. "Sample above Nyquist and you are fine" is false for images; the true statement is "sample fast enough that the aliased energy is small relative to what you care about". The first version implies a correctness threshold. The second implies a budget, which is what you actually manage — and because aliased energy cannot be told apart from real content once it is sampled, the budget is spent before sampling, on how much energy above the limit reaches the grid.
 
 ### The operational consequence
 
-Because information is destroyed at sample time, the anti-aliasing filter has to run *before* the samples are taken. <!-- L06 --> That ordering is the entire practical content of this stage:
+Because information is destroyed at sample time, the anti-aliasing filter has to run *before* the samples are taken.  Where it runs depends on who does the sampling.
+
+**In a camera, the filter is glass.** The sensor is the sampler, so the blur has to happen to the light. A lens can be designed to blur away detail above the Nyquist frequency, but making that blur hold across the frame and at every aperture is very hard, so many cameras add a fixed blur directly in front of the sensor: the optical low-pass filter.  The common kind is a sandwich of birefringent quartz. Quartz refracts two polarisations of light by different amounts, so a plate of it turns each incoming ray into two parallel rays a small, fixed distance apart. A retarder layer between two such plates re-mixes the polarisation so that the second plate, turned 90°, can split each ray again.  One point of light arrives as four spots on the corners of a square about one pixel across, and this four-spot filter is the most common design.
+
+Why one pixel is the right spacing is a short calculation. Two equal spots a distance $d$ apart are the kernel $\tfrac12\big[\delta(x - d/2) + \delta(x + d/2)\big]$, and its transfer function is
+
+$$
+H(f) = \cos(\pi f d)
+$$
+
+With $d$ equal to the pixel pitch $p$, the first zero sits at $f = 1/(2p)$ — exactly the grid's Nyquist frequency. Stripes at that frequency put the two spots of each pair half a cycle apart, one as far above the mean brightness as the other is below it, so every pair averages to the same grey.
+
+The same cosine shows what the filter costs. At half the Nyquist frequency it passes $\cos(\pi/4) = 0.71$ of the contrast, so it softens detail the sensor could have recorded faithfully; and past Nyquist it climbs back to full transmission at the sampling frequency, leaving the lens to attenuate what lies beyond.  On a colour sensor the filter is usually matched to the green pixels, so red and blue, sampled more sparsely, can still alias.  The filter shrinks the aliasing budget; it does not close it.
+
+That cost is why the filter became optional. With small enough pixels the lens's own blur does the job: Palum's 2006 analysis puts the crossover near 2 µm, below which an ideal, diffraction-limited lens suppresses aliasing by itself — at f/3 for pixels a little over 1 µm, at f/8 for 2 µm — with the system's response falling to about 20%, not to zero.  At the other end, Nikon's 36.3-megapixel D800E (2012) disabled the aliasing and moiré reduction of its optical low-pass filter "for even greater resolution", and Nikon's announcement conceded that aliasing and moiré "may be more noticeable".  Dropping the filter spends the budget differently: sharper fine detail, paid for in moiré on exactly the subjects with fine, regular texture.
+
+**In code, the filter is a blur before every resample.** That ordering is the entire practical content of this stage for software:
 
 - **Downscaling an image is resampling.** You are choosing a new, coarser grid, so you must low-pass filter first. Blurring after you downscale removes nothing, because the aliased energy is already sitting in the low frequencies, indistinguishable from real content.
 - **A filter that only interpolates does not prefilter.** This is a real trap with a documented default, and it appears again in [Limitations](#limitations-and-common-mistakes).
 - **Rotation and warping are resampling too**, and the same ordering applies along whichever axis is being compressed.
 
-The reconstruction half of this — which interpolation kernel to use when you resample, and what "third-order accurate" buys you <!-- L50 --> — is a child post: *Resampling and aliasing: interpolation kernels in practice*.
+The reconstruction half of this — which interpolation kernel to use when you resample, and what "third-order accurate" buys you  — is a child post: *Resampling and aliasing: interpolation kernels in practice*.
 
 ## Stage 2 — Filter: every linear filter is one weighted sum
 
@@ -228,7 +260,21 @@ $$
 
 For each output pixel, lay the weight grid over the input centred at that pixel, multiply each weight by the value underneath it, add the products. That is the whole operation: the box mean is this with every $K[i,j] = 1/9$, the Gaussian with the nine numbers from Figure 4, the Sobel derivative with weights summing to zero.
 
-**Linear** means the sum of two inputs filters to the sum of their outputs; **shift-invariant** means the weights do not depend on position. Together they are exactly the conditions under which stage 3 becomes available.
+The offsets $i, j$ run over the kernel's support, $-1$ to $1$ for a 3×3 with $K[0,0]$ the centre weight, and the sum is in the correlation form the libraries implement; the next subsection separates it from convolution. At (2, 1) the offsets reach rows 1 to 3 and columns 0 to 2, which is why the box returns the worked example's $575/9 = 63.9$.
+
+Two properties of this sum carry the rest of the post.
+
+**Linear** means superposition holds. For any images $A$ and $B$ and any numbers $\alpha$ and $\beta$, the filter $F$ satisfies
+
+$$
+F(\alpha A + \beta B) = \alpha F(A) + \beta F(B)
+$$
+
+It holds because multiplication distributes over addition, and it is the most useful fact about the worked example. Split the patch into the clean step $S$, 40 on the left and 200 on the right, plus a defect image $D$ that is zero except for 215 at (2, 1). Filter the parts separately and add: at (2, 1) the box gives $40 + 215/9 = 63.9$ and the Gaussian $40 + 0.2725 \times 215 = 98.6$ — the worked example's answers, with the defect's share now visible on its own. At (2, 2) the Sobel derivative gives 640 for the step, and the defect sits under a weight of $-2$, so it adds $-2 \times 215 = -430$: the 210 from [Why this matters](#why-this-matters) is $640 - 430$, and the 67% error is entirely the defect's term. Strictly, linearity holds for the real-valued sum. Storing the result in 8 bits adds rounding and clipping at 0 and 255, which are not linear — the trap behind writing derivatives into an 8-bit destination, in [Limitations](#limitations-and-common-mistakes).
+
+**Shift-invariant** means the same weights are used at every position, so shifting the input shifts the output by the same amount and changes nothing else: if $I'[r,c] = I[r-a,\, c-b]$, then $J'[r,c] = J[r-a,\, c-b]$. On the patch, rows 1 to 3 of column 3 see identical neighbourhoods, and all three get the Sobel response 640. The defect, too, leaves the same footprint wherever it sits two or more pixels in from every edge: through the box filter, 23.9 on each of the nine pixels whose window contains it. At (2, 1) it sits one pixel in, so the windows of column 0 hang off the array and the border rule decides: OpenCV's default reflects column 1 into column −1, so (1, 0), (2, 0) and (3, 0) count the defect twice: 47.8.  That footprint, the response to a single impulse, is the whole filter — the kernel itself, mirrored through its centre under the correlation form above.
+
+Together, linearity and shift invariance are exactly the conditions under which stage 3 becomes available, and [stage 3 shows why](#why-linearity-and-shift-invariance-make-this-work). The median is shift-invariant but not linear, which is why stage 3 has nothing to say about it.
 
 ### Correlation is not convolution, and OpenCV computes the first one
 
@@ -240,9 +286,9 @@ $$
 
 The kernel is mirrored through its centre before being applied. For any kernel with 180° rotational symmetry — the box, the Gaussian, the Laplacian — the two expressions give identical results and the distinction is invisible. For an asymmetric kernel, they give mirror-image answers.
 
-OpenCV's `filter2D` is documented under the summary line "Convolves an image with the kernel", and then states plainly that it computes correlation, not convolution, and that the kernel is not mirrored around the anchor. <!-- L10 --> The documented remedy is to flip the kernel yourself and move the anchor to `(cols - anchor.x - 1, rows - anchor.y - 1)`. <!-- L11 -->
+One row of the patch shows the difference. Apply the 1-D difference kernel $[-1, 0, 1]$ at column 2 of row 0, where the left neighbour is 40 and the right one is 200. Correlation lays the kernel down as written: $-1 \times 40 + 1 \times 200 = +160$, positive because brightness rises to the right. Convolution flips it to $[1, 0, -1]$ first: $40 - 200 = -160$. Same kernel, same pixels, opposite sign.
 
-This is the cleanest example in the library of the gap this post is about: the name encodes the math, the implementation does something adjacent, and every symmetric kernel you test with agrees with both — so the bug survives until you pass a derivative or a motion blur and the result comes out backwards.
+OpenCV's `filter2D` computes the first. Its documentation's one-line summary says "Convolves an image with the kernel", but the description underneath says the function actually computes correlation, with the kernel not mirrored.  A symmetric kernel gives the same answer either way, so the mismatch stays invisible until you pass an asymmetric one, such as a derivative or a motion blur, and the result comes out mirrored, or with its sign flipped as above. For true convolution, flip the kernel in both directions first with `cv2.flip(kernel, -1)`. For an odd-sized kernel with the default centred anchor that is the whole fix; the anchor correction the documentation also gives, `(cols - anchor.x - 1, rows - anchor.y - 1)`, changes something only for an even-sized or off-centre kernel.
 
 ### Separability halves the work
 
@@ -250,27 +296,27 @@ Some 2-D kernels factor into a column vector times a row vector, $K = g^{\top} h
 
 The Gaussian from the worked example factors exactly, which is why its three distinct weights were products of $[0.239, 0.522, 0.239]$ with itself. One 3×3 stencil costs nine multiplies per pixel; two 1-D passes cost three plus three. For a $k \times k$ kernel that is $k^2$ against $2k$, so the saving grows: nine versus six at $k = 3$, and 225 versus 30 at $k = 15$. Figure 6 shows both routes producing the same output.
 
-![Two routes from input to output: the upper path applies one 3 by 3 stencil with nine multiplies, the lower path applies a 1 by 3 row kernel then a 3 by 1 column kernel with three multiplies each, both arriving at the same output value](https://minio.canery.in/media/fig-06-separability.png)
+![Two routes from the 3 by 3 window over the impulse to one output: the upper path applies the 3 by 3 Gaussian stencil with nine multiplies, the lower path applies a 1 by 3 row pass that gives 40, 152.2 and 40, then a 3 by 1 column pass, three multiplies each, and both arrive at 98.6](https://minio.canery.in/media/fig-06-separability-image-processing-by-hand.png)
 
-*Figure 6 — Nine multiplies become six, and the result is identical. OpenCV's separable filters auto-detect symmetric kernels that sum to one and handle them accordingly.* <!-- L60 -->
+*Figure 6 — Nine multiplies become six, and the result is identical: 98.6 either way. OpenCV's separable filters auto-detect symmetric kernels that sum to one and handle them accordingly.*
 
-The Sobel operator is separable too, and factoring it reveals what it actually is: $[1, 2, 1]^{\top}$ times $[-1, 0, 1]$ — a smoothing pass and a differencing pass. OpenCV's documentation makes the same point, that the Sobel operators combine smoothing with differentiation, which is why they resist noise better than a bare difference. <!-- L20 --> With `ksize=1` you get the bare $3 \times 1$ difference and no smoothing at all. <!-- L21 --> The library's other 3×3 aperture, `FILTER_SCHARR`, comes from a different objective again: its coefficients were optimised for rotation invariance rather than derived as an approximation to a continuous derivative. <!-- L23 -->
+The Sobel operator is separable too, and factoring it reveals what it actually is: $[1, 2, 1]^{\top}$ times $[-1, 0, 1]$ — a smoothing pass and a differencing pass. OpenCV's documentation makes the same point, that the Sobel operators combine smoothing with differentiation, which is why they resist noise better than a bare difference.  With `ksize=1` you get the bare $3 \times 1$ difference and no smoothing at all.  The library's other 3×3 aperture, `FILTER_SCHARR`, comes from a different objective again: its coefficients were optimised for rotation invariance rather than derived as an approximation to a continuous derivative.
 
 ### Borders are a decision, not a detail
 
-At the boundary the window hangs off the array and the sum has no values to use. Every implementation invents them, and the invention is a parameter. Figure 7 shows the options producing different answers at the same pixel.
+At the boundary the window hangs off the array and the sum has no values to use. Every implementation invents them, and the invention is a parameter. Figure 7 shows what five rules invent beside row 2, the impulse's row. A 3×3 window at column 0 reaches only column −1, where REPLICATE and REFLECT agree, so the box filter at (2, 0) gives four answers: 50.6 with zeros, 63.9 under REPLICATE or REFLECT, 87.8 under REFLECT_101, which copies the impulse into column −1, and 117.2 under WRAP. OpenCV's linear filters do not accept WRAP.
 
-![One row of pixels at the left boundary shown five times, each with a different border extrapolation filling the missing positions: constant zero, replicated edge value, reflected, reflected without duplicating the edge, and wrapped from the opposite side](https://minio.canery.in/media/fig-07-border-modes.png)
+![One row of pixels at the left boundary shown five times, each with a different border extrapolation filling the missing positions: constant zero, replicated edge value, reflected, reflected without duplicating the edge, and wrapped from the opposite side](https://minio.canery.in/media/fig-07-border-modes-image-processing-by-hand.png)
 
-*Figure 7 — Five rules, five answers, same pixel. OpenCV's linear filters default to `BORDER_DEFAULT`, while its morphology defaults to `BORDER_CONSTANT` with a magic value that becomes −DBL_MAX for dilation.* <!-- L43 -->
+*Figure 7 — Five rules, five inventions beside row 2. OpenCV's linear filters default to `BORDER_DEFAULT`, which is REFLECT_101, while its morphology defaults to `BORDER_CONSTANT` with a value that becomes the type's minimum for dilation and its maximum for erosion: 0 and 255 on an 8-bit image.*
 
-Two library facts worth carrying: the linear filters and the morphological operators do not share a default border rule, and `filter2D` silently switches to a DFT-based algorithm for kernels around 11×11 or larger. <!-- L12 --> The second is stage 3 arriving as an implementation detail.
+Two library facts worth carrying: the linear filters and the morphological operators do not share a default border rule, and `filter2D` silently switches to a DFT-based algorithm for kernels around 11×11 or larger.  The second is stage 3 arriving as an implementation detail.
 
 Kernel design proper — how the Scharr coefficients are chosen, what "optimal" means for a derivative filter, how truncation interacts with $\sigma$ — is a child post: *Kernel design: separability, borders, and optimised derivative filters*.
 
 ## Stage 3 — Transform: what frequency shows that pixels hide
 
-The pixel view tells you what a filter computes. It does not tell you what a filter *does*. For that you change basis — and the standard textbook treatment organises the field around exactly this pairing, spatial and frequency-domain filtering as two views of one operation. <!-- L59 -->
+The pixel view tells you what a filter computes. It does not tell you what a filter *does*. For that you change basis — and the standard textbook treatment organises the field around exactly this pairing, spatial and frequency-domain filtering as two views of one operation.
 
 The discrete Fourier transform rewrites a signal as a sum of complex exponentials:
 
@@ -282,16 +328,16 @@ $X[k]$ measures how much of a length-$N$ sequence is a wave completing $k$ cycle
 
 ### A 4-point DFT by hand
 
-Take the middle four samples of row 0 of the patch: $x = [40, 40, 200, 200]$, a clean step.
+Take the last four samples of row 0 of the patch: $x = [40, 40, 200, 200]$, a clean step.
 
 For $N = 4$ the exponentials collapse to powers of $-i$, so the basis is just four sign-and-swap patterns:
 
-| $k$ | pattern | means |
-|---|---|---|
-| 0 | $1, 1, 1, 1$ | the average |
-| 1 | $1, -i, -1, i$ | one cycle across the four samples |
-| 2 | $1, -1, 1, -1$ | two cycles: alternating pixels, the fastest representable |
-| 3 | $1, i, -1, -i$ | one cycle the other way |
+| $k$ | pattern          | means                                                     |
+| ----- | ---------------- | --------------------------------------------------------- |
+| 0     | $1, 1, 1, 1$   | the average                                               |
+| 1     | $1, -i, -1, i$ | one cycle across the four samples                         |
+| 2     | $1, -1, 1, -1$ | two cycles: alternating pixels, the fastest representable |
+| 3     | $1, i, -1, -i$ | one cycle the other way                                   |
 
 Now evaluate. Each coefficient is four multiplications and an addition:
 
@@ -299,31 +345,71 @@ $$
 X[0] = 40 + 40 + 200 + 200 = 480
 $$
 
-The zeroth coefficient is the plain sum, so $X[0]/4 = 120$ is the mean of the four samples — check it against the numbers. The other three use the sign patterns from the table:
+The zeroth coefficient is the plain sum, so $X[0]/4 = 120$ is the mean of the four samples — check it against the numbers. The other three multiply the samples by the sign patterns from the table, term by term:
 
 $$
-X[1] = -160 + 160i, \qquad X[2] = 40 - 40 + 200 - 200 = 0, \qquad X[3] = -160 - 160i
+\begin{aligned}
+X[1] &= 40(1) + 40(-i) + 200(-1) + 200(i) = -160 + 160i \\
+X[2] &= 40 - 40 + 200 - 200 = 0 \\
+X[3] &= 40(1) + 40(i) + 200(-1) + 200(-i) = -160 - 160i
+\end{aligned}
 $$
 
-The magnitudes are $480$, $226.3$, $0$, $226.3$: a step has a large mean, substantial energy at the lowest non-zero frequency, and — because this step is symmetric about its midpoint — exactly nothing at the alternating frequency.
+The magnitudes are $480$, $226.3$, $0$, $226.3$: a step has a large mean, substantial energy at the lowest non-zero frequency, and — because its samples come in equal adjacent pairs, which the alternating pattern cancels pair by pair — exactly nothing at the alternating frequency.
 
 ### The convolution theorem, on those same numbers
 
-Now filter that row with the binomial kernel $\tfrac{1}{4}[1, 2, 1]$. As a length-4 sequence with its centre tap at position 0 and wrapping, that is $h = [0.5, 0.25, 0, 0.25]$. Transform it the same way:
+Now filter that row with the binomial kernel $\tfrac{1}{4}[1, 2, 1] = [0.25, 0.5, 0.25]$. The DFT works on sequences indexed 0 to 3, so the kernel first has to become one, and the circular convolution the theorem describes fixes the layout:
 
 $$
-H = \begin{bmatrix} 1 & 0.5 & 0 & 0.5 \end{bmatrix}
+y[n] = \sum_{m=0}^{3} h[m]\, x[(n - m) \bmod 4]
 $$
+
+so $h[m]$ weights the sample $m$ places back, modulo 4. The centre tap goes to $h[0]$, the left neighbour's to $h[1]$, and the right neighbour's, at offset $-1$, wraps to $h[3]$:
+
+$$
+h = \begin{bmatrix} 0.5 & 0.25 & 0 & 0.25 \end{bmatrix}
+$$
+
+The centre has to sit at index 0. Written as $[0.25, 0.5, 0.25, 0]$, the same three weights would centre on index 1, and the output would come out shifted one place to the right. Transform $h$ with the same sign patterns:
+
+$$
+\begin{aligned}
+H[0] &= 0.5 + 0.25 + 0 + 0.25 = 1 \\
+H[1] &= 0.5(1) + 0.25(-i) + 0(-1) + 0.25(i) = 0.5 \\
+H[2] &= 0.5 - 0.25 + 0 - 0.25 = 0 \\
+H[3] &= 0.5(1) + 0.25(i) + 0(-1) + 0.25(-i) = 0.5
+\end{aligned}
+$$
+
+The imaginary parts cancel because the kernel is symmetric about index 0: $h[1]$ and $h[3]$ are equal and meet $-i$ and $+i$. That is why a symmetric kernel's transfer function is real.
 
 Those four numbers are the filter's **transfer function**, the factor by which it scales each frequency. $H[0] = 1$ means the average passes untouched; $H[2] = 0$ means the alternating-pixel component is annihilated — not attenuated, multiplied by zero. That is what "low-pass" means as arithmetic, and here it has a closed form: $H[k] = \cos^2(\pi k / 4)$.
 
-The convolution theorem says filtering in space is multiplication in frequency. <!-- L09 --> So multiply term by term:
+The convolution theorem says filtering in space is multiplication in frequency.  So multiply term by term:
 
 $$
 Y = H \cdot X = \begin{bmatrix} 480 & -80 + 80i & 0 & -80 - 80i \end{bmatrix}
 $$
 
-Each input frequency has been scaled by its own gain, and nothing else has happened. Inverting gives
+Each input frequency has been scaled by its own gain, and nothing else has happened. To get back to samples, run the inverse transform — the same sum with the sign of the exponent flipped, divided by $N$:
+
+$$
+y[n] = \frac{1}{4} \sum_{k=0}^{3} Y[k]\, i^{kn}
+$$
+
+so position $n$ multiplies $Y[0], Y[1], Y[2], Y[3]$ by $1, i^n, (-1)^n, (-i)^n$:
+
+$$
+\begin{aligned}
+y[0] &= \tfrac14\big(480 + (-80 + 80i) + 0 + (-80 - 80i)\big) = \tfrac14(320) = 80 \\
+y[1] &= \tfrac14\big(480 + i(-80 + 80i) - 0 - i(-80 - 80i)\big) = \tfrac14\big(480 + (-80 - 80i) + (-80 + 80i)\big) = 80 \\
+y[2] &= \tfrac14\big(480 - (-80 + 80i) + 0 - (-80 - 80i)\big) = \tfrac14(640) = 160 \\
+y[3] &= \tfrac14\big(480 - i(-80 + 80i) - 0 + i(-80 - 80i)\big) = \tfrac14\big(480 + (80 + 80i) + (80 - 80i)\big) = 160
+\end{aligned}
+$$
+
+In every row the imaginary parts cancel, because $Y[3]$ is the complex conjugate of $Y[1]$ — the signature of a real signal. So
 
 $$
 y = \begin{bmatrix} 80 & 80 & 160 & 160 \end{bmatrix}
@@ -333,25 +419,35 @@ Now check it the other way. Circular convolution of $x$ with $h$ directly: $y[0]
 
 Figure 8 lays the whole computation out.
 
-![The four-point computation in four panels: the input step and its DFT magnitudes, the kernel and its transfer function shaped like cosine squared, the term-by-term product, and the output row with the two agreeing routes marked](https://minio.canery.in/media/fig-08-dft-four-point.png)
+![The four-point computation in four panels: the input step, its DFT magnitudes 480, 226.3, 0 and 226.3, the filter's gain per frequency 1, 0.5, 0 and 0.5, and the output 80, 80, 160 and 160, with the route in space and the route through frequency written beneath](https://minio.canery.in/media/fig-08-dft-four-point-image-processing-by-hand.png)
 
-*Figure 8 — Two routes to [80, 80, 160, 160]: nine multiplies in space, or one multiply per frequency. Both are shown because the agreement is the point.*
+*Figure 8 — Two routes to [80, 80, 160, 160]: three multiplies per output in space, or one multiply per frequency once both are transformed. Both are shown because the agreement is the point.*
 
 Two things fall out of that output. The step softened, as expected. And the first value went from 40 up to 80 — a large change — because circular convolution wrapped around and pulled in the 200 from the far end. That is stage 2's border question reappearing as a mathematical necessity rather than an implementation choice: the DFT's convolution is inherently circular, and spatial filters use border extrapolation precisely to avoid this.
+
+### Why linearity and shift invariance make this work
+
+Stage 2 said these two properties are what make this stage available. The same four numbers show why.
+
+Shift invariance means a wave goes through the filter as the same wave, only scaled. Each output of $h$ is 0.5 times its own sample plus 0.25 times each of its two neighbours, so push three patterns through it. The constant $[1, 1, 1, 1]$ comes out unchanged: $0.5 + 0.25 + 0.25 = 1$. In the alternating $[1, -1, 1, -1]$ both neighbours of every sample have the opposite sign, so every output is $0.5 - 0.25 - 0.25 = 0$. The one-cycle wave $[1, 0, -1, 0]$ comes out as $[0.5, 0, -0.5, 0]$, itself at half height. Those factors, 1, 0 and 0.5, are $H[0]$, $H[2]$ and $H[1]$. In general, shifting the wave $e^{2\pi i k n/4}$ by one place only multiplies it by the constant $e^{-2\pi i k/4}$. A filter that applies the same weights everywhere is a weighted sum of shifted copies of its input, so it returns the same wave times $\sum_m h[m]\, e^{-2\pi i k m/4}$, which is exactly $H[k]$.
+
+Linearity lets you use that one wave at a time. The DFT writes the step $x$ as a sum of the four waves, $X[k]/4$ of each; linearity says the filtered sum is the sum of the filtered waves; and each wave was only scaled by its gain. So the output contains $H[k]\,X[k]/4$ of wave $k$, which is $Y[k] = H[k]\,X[k]$ — the convolution theorem.
+
+Remove either property and the argument fails at its step. Without shift invariance the gain depends on where the wave sits, so no single $H[k]$ exists. Without linearity the filtered sum is not the sum of the filtered parts: a 3-sample median gives 0 for $[0, 0, 1]$ and 0 for $[1, 0, 0]$, but 1 for their sum, $[1, 0, 1]$. That is why stage 4 has no transfer function.
 
 ### Why this basis is worth the change
 
 Once a filter is a list of per-frequency gains, opaque questions become arithmetic. Figure 9 puts three familiar kernels on one axis.
 
-![Transfer function curves for a box filter, a Gaussian, and a Laplacian plotted against normalised frequency: the box oscillates and goes negative, the Gaussian decays smoothly and monotonically, the Laplacian rises from zero](https://minio.canery.in/media/fig-09-transfer-functions.png)
+![Transfer function curves for a box filter, a Gaussian, and a Laplacian plotted against normalised frequency: the box oscillates and goes negative, the Gaussian decays smoothly and monotonically, the Laplacian rises from zero](https://minio.canery.in/media/fig-09-transfer-functions-image-processing-by-hand.png)
 
 *Figure 9 — **A model, not a measurement.** Plotted from the closed-form transfer functions, not from filtering an image. The box filter's negative lobes are why it is a poor smoother despite being an average.*
 
 The box filter's transfer function oscillates and goes negative, so it inverts some frequencies rather than merely reducing them. The Gaussian's decays monotonically and never changes sign, which is precisely what "well-behaved smoother" means. The Laplacian's rises from zero, which is what makes it a sharpener and equally what makes it a noise amplifier — noise lives at high frequencies, and that is where its gain is largest.
 
-The cost argument lives here too. Computing the DFT directly is a sum over every sample for every frequency; the Cooley–Tukey decomposition, published in 1965, gets the same result in far fewer operations by recursively splitting that sum. <!-- L07 --> <!-- L08 --> That is why `filter2D` switches strategies at large kernel sizes — past some size, transforming, multiplying and transforming back beats the direct sum.
+The cost argument lives here too. Computing the DFT directly is a sum over every sample for every frequency; the Cooley–Tukey decomposition, published in 1965, gets the same result in far fewer operations by recursively splitting that sum.   That is why `filter2D` switches strategies at large kernel sizes — past some size, transforming, multiplying and transforming back beats the direct sum.
 
-The 2-D transform, phase, and frequency-domain filter design are a child post: *The 2-D DFT: spectra, phase, and frequency-domain filtering*. Where Fourier stops being the right basis — image structure is local and non-stationary, which is what multiresolution wavelet decomposition addresses <!-- L58 --> — is another: *Wavelets and multiresolution*.
+The 2-D transform, phase, and frequency-domain filter design are a child post: *The 2-D DFT: spectra, phase, and frequency-domain filtering*. Where Fourier stops being the right basis — image structure is local and non-stationary, which is what multiresolution wavelet decomposition addresses  — is another: *Wavelets and multiresolution*.
 
 ## Stage 4 — Decide: where linearity stops
 
@@ -359,7 +455,7 @@ Everything so far has been sums. This stage sorts and compares, and none of it h
 
 Three families, distinguished by the set the ordering happens over. Figure 10 separates them.
 
-![Three nested groups of non-linear operators: threshold operators ordered on intensity against a global value, rank operators ordered on intensity within a neighbourhood, and morphological operators ordered on intensity within a structuring element with set semantics](https://minio.canery.in/media/fig-10-nonlinear-families.png)
+![Three nested groups of non-linear operators: threshold operators ordered on intensity against a global value, rank operators ordered on intensity within a neighbourhood, and morphological operators ordered on intensity within a structuring element with set semantics](https://minio.canery.in/media/fig-10-nonlinear-families-image-processing-by-hand.png)
 
 *Figure 10 — Threshold, rank, morphology: all three sort, none of them sums. What differs is the set the ordering happens over.*
 
@@ -367,7 +463,7 @@ Three families, distinguished by the set the ordering happens over. Figure 10 se
 
 One comparison per pixel. The only real question is where the constant comes from.
 
-Otsu's answer is to read it off the histogram: treat a candidate threshold $t$ as splitting the pixels into two classes, and choose the $t$ maximising the variance *between* those classes, which is algebraically the same as minimising the variance within them. <!-- L39 -->
+Otsu's answer is to read it off the histogram: treat a candidate threshold $t$ as splitting the pixels into two classes, and choose the $t$ maximising the variance *between* those classes, which is algebraically the same as minimising the variance within them.
 
 $$
 t^{\star} = \arg\max_{t} \; \omega_0(t)\,\omega_1(t)\,\big(\mu_0(t) - \mu_1(t)\big)^2
@@ -375,31 +471,31 @@ $$
 
 $\omega_0, \omega_1$ are the fractions of pixels in each class and $\mu_0, \mu_1$ their mean intensities, all functions of $t$. The product is largest when the two groups are both substantial and far apart in brightness.
 
-The notation hides something worth saying plainly: this is a **search**, not a formula. <!-- L40 --> An 8-bit image has 256 candidate thresholds, and the method evaluates the criterion at each and keeps the best.
+The notation hides something worth saying plainly: this is a **search**, not a formula.  An 8-bit image has 256 candidate thresholds, and the method evaluates the criterion at each and keeps the best.
 
-The patch's histogram is 16 pixels at 40, 8 at 200, and 1 at 255. Any threshold from 41 to 199 separates the flat regions perfectly and puts the impulse in the bright class, so the criterion is flat across that whole range. Otsu gives you *a* good threshold, not a unique one.
+The patch's histogram is 14 pixels at 40, 10 at 200, and 1 at 255. Any threshold from 41 to 199 separates the flat regions perfectly and puts the impulse in the bright class, so the criterion is flat across that whole range. Otsu gives you *a* good threshold, not a unique one.
 
 ### Rank filters: ordering within a neighbourhood
 
-The median is the general case at its midpoint. Sort the $n$ values in the window and take a chosen position: $n/2$ is the median, $n$ the local maximum, $1$ the local minimum.
+The median is the general case at its midpoint. Sort the $n$ values in the window and take a chosen position: $(n+1)/2$ is the median, $n$ the local maximum, $1$ the local minimum.
 
 There is no weight array, so there is nothing to transform, and superposition fails outright — the median of a sum is not the sum of the medians. Everything stage 3 offers is unavailable. In exchange you get the behaviour computed earlier: exact removal of an outlier without disturbing its neighbours, which no linear filter achieves at any $\sigma$.
 
 ### Morphology: ordering within a structuring element
 
-Erosion and dilation are the local minimum and maximum over a shape called the structuring element, formally Minkowski subtraction and addition — the infimum and supremum over translates of that shape. <!-- L41 --> Composing them both ways gives the operators actually used: opening is erosion then dilation, closing is dilation then erosion. <!-- L42 --> Opening removes structures smaller than the element; closing fills gaps smaller than it.
+Erosion and dilation are the local minimum and maximum over a shape called the structuring element, formally Minkowski subtraction and addition — the infimum and supremum over translates of that shape.  Composing them both ways gives the operators actually used: opening is erosion then dilation, closing is dilation then erosion.  Opening removes structures smaller than the element; closing fills gaps smaller than it.
 
 On the patch, a 3×3 erosion sets (2, 1) to the minimum of its neighbourhood, 40 — so erosion removes the impulse too, by a completely different argument from the median's. Dilation does the opposite and spreads the 255 across all nine positions.
 
-Morphology as an algebra rather than a pair of tricks — the lattice structure, adjunctions, idempotence — is a child post: *Mathematical morphology as lattice algebra*. Segmentation from Otsu through marker-based watershed, which floods the gradient surface by simulated immersion <!-- L57 -->, is another: *Thresholding and segmentation*.
+Morphology as an algebra rather than a pair of tricks — the lattice structure, adjunctions, idempotence — is a child post: *Mathematical morphology as lattice algebra*. Segmentation from Otsu through marker-based watershed, which floods the gradient surface by simulated immersion , is another: *Thresholding and segmentation*.
 
 ### The operators that break the split
 
 Two families sit across the boundary, and they are why this stage is called "decide" rather than "threshold".
 
-The bilateral filter is a weighted sum whose weights depend on the image — a spatial kernel times a range kernel on intensity difference, so a neighbour differing sharply in brightness gets little weight however close it is. <!-- L44 --> That makes it non-linear and shift-variant: it smooths within regions, not across boundaries. Non-local means goes further, matching *patches* by similarity anywhere in the image instead of averaging over a spatial neighbourhood at all. <!-- L46 --> Perona–Malik diffusion makes the same move in PDE form, letting the diffusion coefficient fall where the gradient is large. <!-- L47 -->
+The bilateral filter is a weighted sum whose weights depend on the image — a spatial kernel times a range kernel on intensity difference, so a neighbour differing sharply in brightness gets little weight however close it is.  That makes it non-linear and shift-variant: it smooths within regions, not across boundaries. Non-local means goes further, matching *patches* by similarity anywhere in the image instead of averaging over a spatial neighbourhood at all.  Perona–Malik diffusion makes the same move in PDE form, letting the diffusion coefficient fall where the gradient is large.
 
-That last one is the field's cautionary tale: the equation is formally ill-posed and generally admits no weak solution for non-analytic data near high gradients, yet simple discretisations are stable and useful, with staircasing as the visible signature of the pathology. <!-- L48 --> An operator can be effective and mathematically broken at once, and knowing which you rely on matters when it fails.
+That last one is the field's cautionary tale: the equation is formally ill-posed and generally admits no weak solution for non-analytic data near high gradients, yet simple discretisations are stable and useful, with staircasing as the visible signature of the pathology.  An operator can be effective and mathematically broken at once, and knowing which you rely on matters when it fails.
 
 These three are a child post: *Edge-preserving smoothing: bilateral, non-local means, anisotropic diffusion*.
 
@@ -415,7 +511,7 @@ $$
 K_x = \begin{bmatrix} -1 & 0 & 1 \\ -2 & 0 & 2 \\ -1 & 0 & 1 \end{bmatrix}
 $$
 
-for the $x$-derivative, and its transpose for $y$. <!-- L19 --> The centre column is zero because a symmetric difference does not use the pixel it sits on; the middle row is doubled because that is the $[1,2,1]$ smoothing factor from the separable decomposition. Worth knowing about the most-taught operator in the field: Sobel and Feldman presented it as a talk at the Stanford AI Lab in 1968 and never published it, which is why citations for it vary. <!-- L25 -->
+for the $x$-derivative, and its transpose for $y$.  The centre column is zero because a symmetric difference does not use the pixel it sits on; the middle row is doubled because that is the $[1,2,1]$ smoothing factor from the separable decomposition. Worth knowing about the most-taught operator in the field: Sobel and Feldman presented it as a talk at the Stanford AI Lab in 1968 and never published it, which is why citations for it vary.
 
 Evaluate it on the patch at (2, 3), a position sitting on the clean edge. The neighbourhood is columns 2 to 4, rows 1 to 3:
 
@@ -426,14 +522,22 @@ Evaluate it on the patch at (2, 3), a position sitting on the clean edge. The ne
 ```
 
 $$
-G_x = (-1)(40) + (1)(200) + (-2)(40) + (2)(200) + (-1)(40) + (1)(200) = 160 + 320 + 160 = 640
+G_x = (-1)(40) + (1)(200) + (-2)(40) + (2)(200) + (-1)(40) + (1)(200)
+$$
+
+$$
+G_x = 160 + 320 + 160 = 640
 $$
 
 And $G_y = 0$, because the three rows are identical and the top and bottom weights cancel. The operator reports a strong horizontal change and no vertical change, which is exactly right for a vertical edge.
 
+Why 640 and not 160: each of the three rows contributes the same 160 jump, with weights 1, 2 and 1, so the sum is $4 \times 160$. Sobel's output is unnormalised. On a linear ramp of slope $s$ per pixel it returns $8s$ — 4 from the row weights, 2 because the difference spans two pixels — so compare Sobel responses with each other, or with thresholds tuned on Sobel output, never with raw intensity differences.
+
 ### Why the filter stage has to come first
 
-Now evaluate the same operator at (2, 2), one column to the left, where the neighbourhood catches the impulse:
+The problem shows up before any kernel does. Row 2 of the patch reads 40, 255, 40, 200, 200, and its neighbour differences are $+215, -215, +160, 0$: one bad pixel produces two responses, each larger than the real edge's 160.
+
+The Sobel kernel inherits the problem. Evaluate it at (2, 2), one column to the left of (2, 3), where the neighbourhood catches the impulse:
 
 ```
 40   40  200
@@ -442,14 +546,18 @@ Now evaluate the same operator at (2, 2), one column to the left, where the neig
 ```
 
 $$
-G_x = (-40 + 200) + (-510 + 400) + (-40 + 200) = 160 - 110 + 160 = 210
+G_x = (-40 + 200) + (-510 + 400) + (-40 + 200)
 $$
 
-With the impulse replaced by its correct value of 40, the same position gives 640. So one bad pixel changes the gradient by 430, a **67% error**, and it does so at a position where the impulse is not even the centre pixel.
+$$
+G_x = 160 - 110 + 160 = 210
+$$
 
-That is the argument for the ordering in Figure 1. A derivative amplifies high frequencies — Figure 9 showed the Laplacian's gain rising with frequency — and noise is high frequency, so differentiating before smoothing amplifies exactly what you did not want. It is also why the Sobel kernel carries $[1,2,1]$ internally, and why that is not enough here: it is a linear filter, and the worked example showed what those do to impulses.
+With the impulse replaced by its correct value of 40, the same position gives 640. So one bad pixel changes the gradient by 430, a **67% error**, and it does so at a position where the impulse is not even the centre pixel. Linearity from stage 2 gives the error exactly: the impulse adds 215 under a weight of $-2$, so it contributes $-430$ whatever else is in the window.
 
-Marr and Hildreth formalised the pairing: the right operator for detecting intensity change at a given scale is the second derivative of a Gaussian, with edges at the zero crossings of $\nabla^2 G * I$. <!-- L27 --> Smoothing and differentiation are one operator, not two.
+That is the argument for the ordering in Figure 1. In frequency terms, differentiation multiplies the component at frequency $f$ by $i2\pi f$, a gain that grows in proportion to frequency — Figure 9 showed the Laplacian's gain rising the same way — and noise is high frequency, so differentiating before smoothing amplifies exactly what you did not want. It is also why the Sobel kernel carries $[1,2,1]$ internally, and why that is not enough here: it is a linear filter, and the worked example showed what those do to impulses.
+
+Marr and Hildreth formalised the pairing: the right operator for detecting intensity change at a given scale is the second derivative of a Gaussian, with edges at the zero crossings of $\nabla^2 G * I$.  Since differentiation commutes with convolution, $\nabla^2(G * I) = (\nabla^2 G) * I$: smoothing and differentiation are one operator, not two. On row 0 the second differences $I[c-1] - 2I[c] + I[c+1]$ are $0$, $+160$ and $-160$ at columns 1, 2 and 3, so the zero crossing falls between columns 2 and 3, exactly at the step.
 
 ### Step 2: combine the two derivatives
 
@@ -461,33 +569,35 @@ $$
 
 The magnitude is how fast brightness changes at that point; the angle is the direction of steepest increase, which is perpendicular to the edge.
 
-At (2, 3) this is trivial: $G_x = 640$, $G_y = 0$, magnitude 640, $\theta = 0$. For the interesting case, rotate the same step onto the diagonal — background 40 below the anti-diagonal, foreground 200 above — and evaluate at the centre. Both derivatives now read 480, so
+At (2, 3) this is trivial: $G_x = 640$, $G_y = 0$, magnitude 640, $\theta = 0$. For the interesting case, rotate the same step onto the diagonal — background 40 above the anti-diagonal, foreground 200 below — and evaluate at the centre. Both derivatives now read 480, so
 
 $$
 \|\nabla I\| = \sqrt{480^2 + 480^2} = 480\sqrt{2} \approx 678.8, \qquad \theta = 45^{\circ}
 $$
 
-Here the library and the math part company. OpenCV's `Canny` defaults to the $L_1$ magnitude $|G_x| + |G_y|$ and computes the Euclidean one only if you pass `L2gradient=True`. <!-- L31 --> On this diagonal edge $L_1$ gives $480 + 480 = 960$ against a true 678.8 — larger by exactly $\sqrt{2}$, or 41% — while on the axis-aligned edge, where $G_y = 0$, the two agree. So the default overstates diagonal edges relative to axis-aligned ones, and a threshold tuned on one orientation is miscalibrated on the other. Figure 11 shows the two lengths as the geometry they are.
+Here the library and the math part company. OpenCV's `Canny` defaults to the $L_1$ magnitude $|G_x| + |G_y|$ and computes the Euclidean one only if you pass `L2gradient=True`.  On this diagonal edge $L_1$ gives $480 + 480 = 960$ against a true 678.8 — larger by exactly $\sqrt{2}$, or 41% — while on the axis-aligned edge, where $G_y = 0$, the two agree. So the default overstates diagonal edges relative to axis-aligned ones, and a threshold tuned on one orientation is miscalibrated on the other. Figure 11 shows the two lengths as the geometry they are.
 
-![The gradient vector with components Gx equals 480 and Gy equals 480 drawn on axes, with the Euclidean hypotenuse of 678.8 marked against the L1 path of 960 traced along the two legs](https://minio.canery.in/media/fig-11-l1-vs-l2.png)
+![The gradient vector with components Gx equals 480 and Gy equals 480 drawn on axes, with the Euclidean hypotenuse of 678.8 marked against the L1 path of 960 traced along the two legs](https://minio.canery.in/media/fig-11-l1-vs-l2-image-processing-by-hand.png)
 
 *Figure 11 — At 45° the default L1 magnitude is √2 times the true one. The two agree only where one component is zero.*
 
 ### Steps 3 and 4: localise and commit
 
-The magnitude map is broad — an edge produces large values over several columns, not one. Canny's contribution was to make the criteria explicit: he defined detection and localisation as functionals on the operator's impulse response and added a single-response constraint. <!-- L28 --> The resulting optimal operator is closely approximated by the first derivative of a Gaussian. <!-- L29 -->
+The magnitude map is broad — an edge produces large values over several columns, not one. Canny's contribution was to make the criteria explicit: he defined detection and localisation as functionals on the operator's impulse response and added a single-response constraint.  The resulting optimal operator is closely approximated by the first derivative of a Gaussian.
 
-The single-response constraint is delivered by **non-maximum suppression**: at each pixel, compare the magnitude against its two neighbours along the gradient direction $\theta$ and zero it unless it is the largest of the three. A broad ridge becomes a one-pixel line. Note the dependency — this step needs the *direction*, which is why step 2 computes both quantities.
+Even the patch's clean step is two pixels wide in magnitude. With the impulse replaced by 40, row 2 reads 0, 640 and 640 at columns 1, 2 and 3, because a three-pixel kernel straddles a step from either side.
 
-Then **hysteresis** replaces one threshold with two: pixels above the high threshold are edges, and pixels above the low one are edges only if they connect to a high one. That fixes the failure mode from [Why this matters](#why-this-matters), where a single threshold on a noisy magnitude map either fragments real edges or admits noise — connectivity is the extra information separating them. In OpenCV the smaller argument is used for linking and the larger for seeding, so the order you pass them does not decide which is which. <!-- L32 -->
+The single-response constraint is delivered by **non-maximum suppression**: keep a pixel $p$ only if its magnitude is at least that of both neighbours along the gradient direction, $M(p) \ge M(p_1)$ and $M(p) \ge M(p_2)$, and set it to zero otherwise. A broad ridge becomes a one-pixel line. Note the dependency — this step needs the *direction*, which is why step 2 computes both quantities. On the patch $\theta = 0$, so the neighbours are left and right, and columns 2 and 3 tie at 640: the rule needs a tie-break before it returns one line rather than two, and which column carries the edge is a convention.
+
+Then **hysteresis** replaces one threshold with two. A pixel above the high threshold $T_H$ is a strong edge; one between the low threshold $T_L$ and $T_H$ is weak; anything below $T_L$ is discarded. A weak pixel survives only if it connects to a strong one, directly or through a chain of other weak pixels: the high threshold says where an edge certainly is, the low one how far it may be followed. That fixes the failure mode from [Why this matters](#why-this-matters), where a single threshold on a noisy magnitude map either fragments real edges, whose magnitude rises and falls along their length, or admits noise — connectivity is the extra information separating them. In OpenCV the smaller argument is used for linking and the larger for seeding, so the order you pass them does not decide which is which.
 
 Figures 12 and 13 show the assembled chain and the two steps that are not filters.
 
-![Flowchart of the Canny chain: Gaussian smooth, then Sobel gradient, then non-maximum suppression along the gradient direction, then double-threshold hysteresis, with the first two boxes labelled as stage 2 operators and the last two as stage 4](https://minio.canery.in/media/fig-12-canny-chain.png)
+![Flowchart of the Canny chain: Gaussian smooth, then Sobel gradient, then non-maximum suppression along the gradient direction, then double-threshold hysteresis, with the first two boxes labelled as stage 2 operators and the last two as stage 4](https://minio.canery.in/media/fig-12-canny-chain-image-processing-by-hand.png)
 
 *Figure 12 — Three of the four steps are earlier stages reused. Only hysteresis is new, and it exists to repair the threshold.*
 
-![A one-dimensional brightness profile across an edge with its gradient magnitude below, showing a broad ridge reduced to a single peak by non-maximum suppression, and the high and low thresholds marked with a connected weak segment retained](https://minio.canery.in/media/fig-13-nms-hysteresis.png)
+![A one-dimensional brightness profile across an edge with its gradient magnitude below, showing a broad ridge reduced to a single surviving column by non-maximum suppression, with the high and low hysteresis thresholds marked](https://minio.canery.in/media/fig-13-nms-hysteresis-image-processing-by-hand.png)
 
 *Figure 13 — **A model profile**, drawn from the closed forms, not measured. The thin edge is produced by the suppression step, not by the gradient.*
 
@@ -501,23 +611,25 @@ $$
 
 $M$ accumulates products of derivatives already computed, so its eigenvalues $\lambda_1, \lambda_2$ say how much brightness varies along the window's two principal directions. Both small means flat, one large means edge, both large means corner.
 
-Harris and Stephens wanted that test without computing eigenvalues, so they built a response from the cheap determinant and trace instead. <!-- L34 --> OpenCV's `cornerHarris` implements it as documented:
+The sum over the window is essential. One pixel's matrix has determinant $G_x^2 G_y^2 - (G_x G_y)^2 = 0$, so one of its eigenvalues is always zero: a single gradient always looks like an edge, because it has only one direction. Two large eigenvalues need gradients pointing different ways inside the same window, which is what a corner is.
+
+Harris and Stephens wanted that test without computing eigenvalues, so they built a response from the cheap determinant and trace instead.  OpenCV's `cornerHarris` implements it as documented:
 
 $$
 R = \det M - k \, (\operatorname{tr} M)^2
 $$
 
-$R$ is large and positive at corners, negative at edges, and near zero on flat regions, with $k$ a free parameter. <!-- L33 --> That parameter is the honest weak point: empirical, conventionally 0.04 to 0.06, and given no default by OpenCV. <!-- L34 --> Figure 14 shows what it controls.
+$R$ is large and positive at corners, negative at edges, and near zero on flat regions, with $k$ a free parameter.  That parameter is the honest weak point: empirical, conventionally 0.04 to 0.06, and given no default by OpenCV.  Figure 14 shows what it controls.
 
-![The lambda-1 versus lambda-2 plane divided into flat, edge, and corner regions, with the Harris response contours overlaid and an arrow showing how changing k moves the boundary between edge and corner](https://minio.canery.in/media/fig-14-eigenvalue-plane.png)
+![The lambda-1 versus lambda-2 plane divided into flat, edge, and corner regions, with the Harris response contours overlaid and an arrow showing how changing k moves the boundary between edge and corner](https://minio.canery.in/media/fig-14-eigenvalue-plane-image-processing-by-hand.png)
 
 *Figure 14 — The free parameter k is the position of one boundary in this plane. Redrawn from the eigenvalue argument in Harris & Stephens (1988).*
 
-OpenCV also ships the version without it: `cornerMinEigenVal` returns $\min(\lambda_1, \lambda_2)$ directly, the same test with nothing to tune. <!-- L35 --> When one formulation has a magic constant and an equivalent one does not, that is worth knowing before you spend an afternoon tuning the constant.
+OpenCV also ships the version without it: `cornerMinEigenVal` returns $\min(\lambda_1, \lambda_2)$ directly, the same test with nothing to tune.  When one formulation has a magic constant and an equivalent one does not, that is worth knowing before you spend an afternoon tuning the constant.
 
 ### And once more, by voting: lines
 
-A third construction reuses the same edge map and changes only what comes after it. The Hough transform lets every surviving edge pixel vote for every line that could pass through it, then reads lines off the accumulator's peaks. Hough's 1962 patent parameterised lines by slope and intercept, leaving the accumulator unbounded because the slope diverges for vertical lines. <!-- L36 --> Duda and Hart replaced it with the normal's length $\rho$ and angle $\theta$, which bounds it. <!-- L37 --> That is what OpenCV implements, with $\rho$ from the top-left corner and $\theta = 0$ meaning vertical — a convention differing from most textbook figures. <!-- L38 -->
+A third construction reuses the same edge map and changes only what comes after it. The Hough transform lets every surviving edge pixel vote for every line that could pass through it, then reads lines off the accumulator's peaks. Hough's 1962 patent parameterised lines by slope and intercept, leaving the accumulator unbounded because the slope diverges for vertical lines.  Duda and Hart replaced it with the normal's length $\rho$ and angle $\theta$, which bounds it.  In that form a line is every point satisfying $\rho = x\cos\theta + y\sin\theta$. The lines through one pixel trace a sinusoid in the $(\rho, \theta)$ plane, and pixels on a common line give sinusoids that cross at that line's $(\rho, \theta)$. If suppression keeps column 3 of the patch, its five pixels all satisfy $\rho = 3$ at $\theta = 0$, and the accumulator's peak is the vertical line $x = 3$. That is what OpenCV implements, with $\rho$ from the top-left corner and $\theta = 0$ meaning vertical — a convention differing from most textbook figures.
 
 The structure tensor as a general tool — the same matrix drives optical flow and texture orientation — is a child post: *The structure tensor: Harris, Shi–Tomasi, and optical flow*. Canny's suppression and hysteresis in implementation detail are another: *Canny, line by line*.
 
@@ -527,19 +639,19 @@ $\sigma$ has appeared in almost every section as a smoothing amount. It is not a
 
 The reason is in the worked example. At $\sigma = 0.8$ the Gaussian's centre weight is 0.27, so a one-pixel feature substantially survives — which is why the impulse only fell to 99. At larger $\sigma$ that centre weight shrinks, one-pixel features vanish entirely, and features spanning several pixels blend into each other. Choosing $\sigma$ chooses which structures exist in the image your operator sees, and Figure 15 shows the consequence: there is no single correct value, so the principled move is to treat it as an axis and work across it.
 
-![A stack of increasingly blurred versions of one signal along a scale axis, with differences between adjacent levels shown as a second stack, and a feature appearing as an extremum at one specific scale](https://minio.canery.in/media/fig-15-scale-axis.png)
+![A stack of increasingly blurred versions of one signal along a scale axis, with differences between adjacent levels shown as a second stack, and a feature appearing as an extremum at one specific scale](https://minio.canery.in/media/fig-15-scale-axis-image-processing-by-hand.png)
 
 *Figure 15 — σ chooses which structures exist, so it is part of the question asked. Redrawn from the scale-space construction.*
 
-Lowe made scale a search dimension, locating features as extrema of differences of Gaussians across octaves of a pyramid — a feature is not just at a position but *at a scale*, and finding it means searching both. <!-- L56 --> OpenCV's Laplacian implements the discrete second derivative directly: with `ksize=1` it filters with $[0\ 1\ 0;\ 1\ -4\ 1;\ 0\ 1\ 0]$, and for larger apertures it sums second Sobel derivatives. <!-- L26 --> That stencil sums to zero, like every derivative operator.
+Lowe made scale a search dimension, locating features as extrema of differences of Gaussians across octaves of a pyramid — a feature is not just at a position but *at a scale*, and finding it means searching both.  OpenCV's Laplacian implements the discrete second derivative directly: with `ksize=1` it filters with $[0\ 1\ 0;\ 1\ -4\ 1;\ 0\ 1\ 0]$, and for larger apertures it sums second Sobel derivatives.  That stencil sums to zero, like every derivative operator.
 
 ### The theory OpenCV does not implement
 
 There is a genuine gap here, and it is the most interesting disagreement in this post.
 
-OpenCV builds Gaussian kernels by evaluating the continuous Gaussian at integer points and normalising — exactly what the $\alpha$ in the documented formula does. <!-- L16 --> Scale-space theory says that is not the right discrete object. Lindeberg showed the discrete analogue is uniquely determined by four axioms — no new local extrema as scale increases, a semi-group property, spatial symmetry, and unit $\ell^1$ norm — and the sampled Gaussian does not satisfy them. <!-- L17 --> Later work reports that sampled and locally integrated Gaussians degrade badly at very fine scales, roughly below one pixel of standard deviation. <!-- L18 -->
+OpenCV builds Gaussian kernels by evaluating the continuous Gaussian at integer points and normalising — exactly what the $\alpha$ in the documented formula does.  Scale-space theory says that is not the right discrete object. Lindeberg showed the discrete analogue is uniquely determined by four axioms — no new local extrema as scale increases, a semi-group property, spatial symmetry, and unit $\ell^1$ norm — and the sampled Gaussian does not satisfy them.  Later work reports that sampled and locally integrated Gaussians degrade badly at very fine scales, roughly below one pixel of standard deviation.
 
-So at $\sigma = 0.8$ — the default for a 3×3 kernel, the most common blur call in the library — you are in the regime where the approximation is documented to be worst. The practical consequence is bounded: for most tasks it does not matter. But if you rely on scale-space *properties* — that structures only ever disappear as you blur, that two successive blurs compose into one — the kernel you are actually using does not guarantee them.
+So at the worked example's $\sigma = 0.8$ you are in the regime where the approximation is documented to be worst. The practical consequence is bounded: for most tasks it does not matter. But if you rely on scale-space *properties* — that structures only ever disappear as you blur, that two successive blurs compose into one — the kernel you are actually using does not guarantee them.
 
 Scale space proper is a child post: *Scale space and SIFT: why σ is a search dimension*.
 
@@ -547,17 +659,17 @@ Scale space proper is a child post: *Scale space and SIFT: why σ is a search di
 
 This section is the compression. Every form here has already been evaluated on the patch, so it should read as shorthand for arithmetic you have done rather than as new material.
 
-| Symbol | Meaning | Range or units |
-|---|---|---|
-| $f(x,y)$ | continuous pre-sample brightness | real, unbounded |
-| $`I[r,c]`$ | sampled, quantised image | integer, 0–255 for 8-bit |
-| $K$ | kernel, the weight array | real, often summing to 1 or 0 |
-| $\sigma$ | Gaussian standard deviation | pixels |
-| $X[k]$ | $k$-th DFT coefficient | complex |
-| $H[k]$ | transfer function, gain at frequency $k$ | complex, real for symmetric kernels |
-| $G_x, G_y$ | image derivatives | same units as intensity per pixel |
-| $M$ | gradient covariance matrix | 2×2, positive semi-definite |
-| $\lambda_1, \lambda_2$ | eigenvalues of $M$ | real, non-negative |
+| Symbol                   | Meaning                                    | Range or units                      |
+| ------------------------ | ------------------------------------------ | ----------------------------------- |
+| $f(x,y)$               | continuous pre-sample brightness           | real, unbounded                     |
+| $`I[r,c]`$             | sampled, quantised image                   | integer, 0–255 for 8-bit           |
+| $K$                    | kernel, the weight array                   | real, often summing to 1 or 0       |
+| $\sigma$               | Gaussian standard deviation                | pixels                              |
+| $X[k]$                 | $k$-th DFT coefficient                   | complex                             |
+| $H[k]$                 | transfer function, gain at frequency $k$ | complex, real for symmetric kernels |
+| $G_x, G_y$             | image derivatives                          | same units as intensity per pixel   |
+| $M$                    | gradient covariance matrix                 | 2×2, positive semi-definite        |
+| $\lambda_1, \lambda_2$ | eigenvalues of $M$                       | real, non-negative                  |
 
 ### The four stages as four expressions
 
@@ -575,7 +687,7 @@ $$
 J[r,c] = \sum_i \sum_j K[i,j] \, I[r+i, c+j]
 $$
 
-Slide the weights, multiply, add — the computation done three times by hand in the worked example.
+Slide the weights, multiply, add — the computation done twice by hand in the worked example, for the box and the Gaussian.
 
 **Transform.** A change of basis, and the multiplication that replaces convolution in it:
 
@@ -604,19 +716,19 @@ The value of the frame is that each general expression reproduces a number alrea
 
 Four expressions, four numbers you can check. The abstraction is not a separate thing to trust; it is a compression of arithmetic already done.
 
-One consequence is worth stating because it makes the whole zoo sortable: apply any kernel to a constant region of value $v$ and the output is $v \sum_{i,j} K[i,j]$. Weights summing to 1 leave a flat region unchanged, which is what an average must do — and is exactly what the normaliser $\alpha$ in the documented Gaussian formula enforces. <!-- L13 --> Weights summing to 0 produce exactly zero there, which is what a derivative must do. Check $K_x$: $(-1+0+1) + (-2+0+2) + (-1+0+1) = 0$.
+One consequence is worth stating because it makes the whole zoo sortable: apply any kernel to a constant region of value $v$ and the output is $v \sum_{i,j} K[i,j]$. Weights summing to 1 leave a flat region unchanged, which is what an average must do — and is exactly what the normaliser $\alpha$ in the documented Gaussian formula enforces.  Weights summing to 0 produce exactly zero there, which is what a derivative must do. Check $K_x$: $(-1+0+1) + (-2+0+2) + (-1+0+1) = 0$.
 
 ### Canny's optimality, stated with its conditions
 
-Canny's result is widely cited as "the optimal edge detector", and the qualification matters more than the claim. The derivation is for a **step edge in additive white Gaussian noise, in one dimension**. <!-- L30 --> Real edges are not steps, real noise is not white, and images are not one-dimensional.
+Canny's result is widely cited as "the optimal edge detector", and the qualification matters more than the claim. The derivation is for a **step edge in additive white Gaussian noise, in one dimension**.  Real edges are not steps, real noise is not white, and images are not one-dimensional.
 
-The approximation by a first derivative of Gaussian carries a cost of roughly 20% against the true optimum <!-- L29 --> — but that figure is a cost measured against Canny's own analytic criteria, not an accuracy measurement on images, and this post does not restate it as one. What survives the qualifications is the useful part: the *decomposition* into respond, localise, and commit, and the argument that those three objectives trade off against each other and cannot all be maximised at once.
+The approximation by a first derivative of Gaussian carries a cost of roughly 20% against the true optimum  — but that figure is a cost measured against Canny's own analytic criteria, not an accuracy measurement on images, and this post does not restate it as one. What survives the qualifications is the useful part: the *decomposition* into respond, localise, and commit, and the argument that those three objectives trade off against each other and cannot all be maximised at once.
 
 ## Implementation: the tooling map
 
 Every function below is named for the piece of math it implements. **None of this was executed for this post** — nothing was installed and nothing was run, so the code is illustrative and the mapping comes from documented behaviour. Figure 16 is the same map in one picture.
 
-![A four-column map with each pipeline stage above the specific NumPy and OpenCV calls that implement it, with the math expression each call corresponds to written beneath it](https://minio.canery.in/media/fig-16-tooling-map.png)
+![A four-column map with each pipeline stage above the specific NumPy and OpenCV calls that implement it, with the math expression each call corresponds to written beneath it](https://minio.canery.in/media/fig-16-tooling-map-image-processing-by-hand.png)
 
 *Figure 16 — The map from math to call site. None of it was executed for this post.*
 
@@ -628,27 +740,27 @@ Every function below is named for the piece of math it implements. **None of thi
 
 ### Stage 1 — sample
 
-| Math | Call | Note |
-|---|---|---|
-| Resample to a coarser grid | `cv2.resize(img, dsize, interpolation=...)` | defaults to `INTER_LINEAR`; no prefilter <!-- L51 --> |
-| Prefilter then decimate | `cv2.pyrDown(img)` | blurs then downsamples — the correct ordering |
-| Area-averaged shrink | `cv2.resize(..., interpolation=cv2.INTER_AREA)` | documented for shrinking <!-- L51 --> |
-| Cubic reconstruction | `cv2.resize(..., interpolation=cv2.INTER_CUBIC)` | the Keys kernel; for enlarging <!-- L50 --> |
+| Math                       | Call                                               | Note                                           |
+| -------------------------- | -------------------------------------------------- | ---------------------------------------------- |
+| Resample to a coarser grid | `cv2.resize(img, dsize, interpolation=...)`      | defaults to `INTER_LINEAR`; no prefilter     |
+| Prefilter then decimate    | `cv2.pyrDown(img)`                               | blurs then downsamples — the correct ordering |
+| Area-averaged shrink       | `cv2.resize(..., interpolation=cv2.INTER_AREA)`  | documented for shrinking                       |
+| Cubic reconstruction       | `cv2.resize(..., interpolation=cv2.INTER_CUBIC)` | the Keys kernel; for enlarging                 |
 
 ### Stage 2 — filter
 
-| Math | Call | Note |
-|---|---|---|
-| $\sum K[i,j] I[r+i,c+j]$ | `cv2.filter2D(src, ddepth, kernel)` | correlation, not convolution <!-- L10 --> |
-| True convolution | `cv2.filter2D(src, ddepth, cv2.flip(kernel, -1), anchor=...)` | flip and move the anchor <!-- L11 --> |
-| Two 1-D passes | `cv2.sepFilter2D(src, ddepth, kx, ky)` | the separable form from Figure 6 |
-| Gaussian coefficients | `cv2.getGaussianKernel(ksize, sigma)` | the $\alpha$-normalised sampled Gaussian <!-- L13 --> |
-| Gaussian smoothing | `cv2.GaussianBlur(src, ksize, sigmaX, sigmaY)` | specify all three; defaulting runs both ways <!-- L15 --> |
-| Box mean | `cv2.blur(src, ksize)` | the nine-ninths stencil |
-| Median | `cv2.medianBlur(src, ksize)` | a rank filter — stage 4 |
-| Derivative | `cv2.Sobel(src, ddepth, dx, dy, ksize)` | `ksize=1` means no smoothing <!-- L21 --> |
-| Optimised derivative | `cv2.Scharr(src, ddepth, dx, dy)` | equivalent to `Sobel(..., ksize=cv2.FILTER_SCHARR)` <!-- L22 --> |
-| Second derivative | `cv2.Laplacian(src, ddepth, ksize)` | `ksize=1` uses the 5-point aperture <!-- L26 --> |
+| Math                       | Call                                                            | Note                                                           |
+| -------------------------- | --------------------------------------------------------------- | -------------------------------------------------------------- |
+| $\sum K[i,j] I[r+i,c+j]$ | `cv2.filter2D(src, ddepth, kernel)`                           | correlation, not convolution                                   |
+| True convolution           | `cv2.filter2D(src, ddepth, cv2.flip(kernel, -1), anchor=...)` | flip and move the anchor                                       |
+| Two 1-D passes             | `cv2.sepFilter2D(src, ddepth, kx, ky)`                        | the separable form from Figure 6                               |
+| Gaussian coefficients      | `cv2.getGaussianKernel(ksize, sigma)`                         | the $\alpha$-normalised sampled Gaussian when $\sigma > 0$ |
+| Gaussian smoothing         | `cv2.GaussianBlur(src, ksize, sigmaX, sigmaY)`                | specify all three; defaulting runs both ways                   |
+| Box mean                   | `cv2.blur(src, ksize)`                                        | the nine-ninths stencil                                        |
+| Median                     | `cv2.medianBlur(src, ksize)`                                  | a rank filter — stage 4                                       |
+| Derivative                 | `cv2.Sobel(src, ddepth, dx, dy, ksize)`                       | `ksize=1` means no smoothing                                 |
+| Optimised derivative       | `cv2.Scharr(src, ddepth, dx, dy)`                             | equivalent to `Sobel(..., ksize=cv2.FILTER_SCHARR)`          |
+| Second derivative          | `cv2.Laplacian(src, ddepth, ksize)`                           | `ksize=1` uses the 5-point aperture                          |
 
 The full-precision derivative call, since the depth argument is where this stage goes wrong:
 
@@ -664,39 +776,39 @@ ang = cv2.phase(gx, gy, angleInDegrees=True)       # the direction NMS needs
 
 ### Stage 3 — transform
 
-| Math | Call | Note |
-|---|---|---|
-| $X[k] = \sum x[n] e^{-2\pi ikn/N}$ | `cv2.dft(src, flags=cv2.DFT_COMPLEX_OUTPUT)` | real input, complex output |
-| Inverse | `cv2.idft(...)` | pair it with `DFT_SCALE` to normalise |
-| Efficient size | `cv2.getOptimalDFTSize(n)` | pad to a size the FFT factors well <!-- L08 --> |
-| Same, in NumPy | `np.fft.fft2` / `np.fft.ifft2` | different normalisation convention; check before comparing |
-| Spectrum for inspection | `np.fft.fftshift(np.abs(F))` | moves DC to the centre |
+| Math                                 | Call                                           | Note                                                       |
+| ------------------------------------ | ---------------------------------------------- | ---------------------------------------------------------- |
+| $X[k] = \sum x[n] e^{-2\pi ikn/N}$ | `cv2.dft(src, flags=cv2.DFT_COMPLEX_OUTPUT)` | real input, complex output                                 |
+| Inverse                              | `cv2.idft(...)`                              | pair it with `DFT_SCALE` to normalise                    |
+| Efficient size                       | `cv2.getOptimalDFTSize(n)`                   | pad to a size the FFT factors well                         |
+| Same, in NumPy                       | `np.fft.fft2` / `np.fft.ifft2`             | different normalisation convention; check before comparing |
+| Spectrum for inspection              | `np.fft.fftshift(np.abs(F))`                 | moves DC to the centre                                     |
 
 ### Stage 4 — decide
 
-| Math | Call | Note |
-|---|---|---|
-| $J > t$ | `cv2.threshold(src, t, maxval, cv2.THRESH_BINARY)` | one comparison per pixel |
-| Otsu's search | `cv2.threshold(src, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)` | the criterion of <!-- L39 -->, searched over 256 candidates <!-- L40 --> |
-| Local minimum | `cv2.erode(src, kernel)` | Minkowski subtraction <!-- L41 --> |
-| Local maximum | `cv2.dilate(src, kernel)` | Minkowski addition <!-- L41 --> |
-| Opening / closing | `cv2.morphologyEx(src, cv2.MORPH_OPEN, kernel)` | erosion then dilation <!-- L42 --> |
-| Structuring element | `cv2.getStructuringElement(cv2.MORPH_ELLIPSE, ksize)` | the shape the ordering happens over |
-| Edge-preserving smooth | `cv2.bilateralFilter(src, d, sigmaColor, sigmaSpace)` | `d=5` real-time, `d=9` offline per the docs <!-- L45 --> |
-| Patch-based denoise | `cv2.fastNlMeansDenoising(src, h, ...)` | non-local means <!-- L46 --> |
+| Math                   | Call                                                                | Note                                            |
+| ---------------------- | ------------------------------------------------------------------- | ----------------------------------------------- |
+| $J > t$              | `cv2.threshold(src, t, maxval, cv2.THRESH_BINARY)`                | one comparison per pixel                        |
+| Otsu's search          | `cv2.threshold(src, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)` | the criterion of , searched over 256 candidates |
+| Local minimum          | `cv2.erode(src, kernel)`                                          | Minkowski subtraction                           |
+| Local maximum          | `cv2.dilate(src, kernel)`                                         | Minkowski addition                              |
+| Opening / closing      | `cv2.morphologyEx(src, cv2.MORPH_OPEN, kernel)`                   | erosion then dilation                           |
+| Structuring element    | `cv2.getStructuringElement(cv2.MORPH_ELLIPSE, ksize)`             | the shape the ordering happens over             |
+| Edge-preserving smooth | `cv2.bilateralFilter(src, d, sigmaColor, sigmaSpace)`             | `d=5` real-time, `d=9` offline per the docs |
+| Patch-based denoise    | `cv2.fastNlMeansDenoising(src, h, ...)`                           | non-local means                                 |
 
 ### Assembled detectors
 
-| Math | Call | Note |
-|---|---|---|
-| Respond, localise, commit | `cv2.Canny(img, t1, t2, apertureSize=3, L2gradient=True)` | pass `L2gradient=True` for the Euclidean magnitude <!-- L31 --> |
-| $\det M - k(\operatorname{tr} M)^2$ | `cv2.cornerHarris(src, blockSize, ksize, k)` | `k` has no default <!-- L33 --> |
-| $\min(\lambda_1, \lambda_2)$ | `cv2.cornerMinEigenVal(src, blockSize, ksize)` | the same test with no free parameter <!-- L35 --> |
-| Corner list | `cv2.goodFeaturesToTrack(...)` | wraps the min-eigenvalue response with suppression |
-| $(\rho, \theta)$ accumulator | `cv2.HoughLines(edges, rho, theta, threshold)` | Duda–Hart parameterisation <!-- L37 --> |
-| Scale-space keypoints | `cv2.SIFT_create()` | difference-of-Gaussian extrema across octaves <!-- L56 --> |
-| Marker-based flooding | `cv2.watershed(img, markers)` | simulated immersion <!-- L57 --> |
-| Local contrast | `cv2.createCLAHE(clipLimit, tileGridSize)` | clipping bounds the noise amplification <!-- L49 --> |
+| Math                                  | Call                                                        | Note                                                 |
+| ------------------------------------- | ----------------------------------------------------------- | ---------------------------------------------------- |
+| Respond, localise, commit             | `cv2.Canny(img, t1, t2, apertureSize=3, L2gradient=True)` | pass `L2gradient=True` for the Euclidean magnitude |
+| $\det M - k(\operatorname{tr} M)^2$ | `cv2.cornerHarris(src, blockSize, ksize, k)`              | `k` has no default                                 |
+| $\min(\lambda_1, \lambda_2)$        | `cv2.cornerMinEigenVal(src, blockSize, ksize)`            | the same test with no free parameter                 |
+| Corner list                           | `cv2.goodFeaturesToTrack(...)`                            | wraps the min-eigenvalue response with suppression   |
+| $(\rho, \theta)$ accumulator        | `cv2.HoughLines(edges, rho, theta, threshold)`            | Duda–Hart parameterisation                          |
+| Scale-space keypoints                 | `cv2.SIFT_create()`                                       | difference-of-Gaussian extrema across octaves        |
+| Marker-based flooding                 | `cv2.watershed(img, markers)`                             | simulated immersion                                  |
+| Local contrast                        | `cv2.createCLAHE(clipLimit, tileGridSize)`                | clipping bounds the noise amplification              |
 
 To reproduce the worked example, if you do run it yourself:
 
@@ -707,10 +819,10 @@ patch = np.array([[ 40,  40,  40, 200, 200],
                   [ 40,  40,  40, 200, 200],
                   [ 40,  40,  40, 200, 200]], dtype=np.uint8)
 
-cv2.blur(patch, (3, 3))[2, 1]              # expect 64
-cv2.medianBlur(patch, 3)[2, 1]             # expect 40
-cv2.GaussianBlur(patch, (3, 3), 0)[2, 1]   # expect 99, sigma defaults to 0.8
-cv2.getGaussianKernel(3, 0)                # expect [0.239, 0.522, 0.239]
+cv2.blur(patch, (3, 3))[2, 1]                # expect 64
+cv2.medianBlur(patch, 3)[2, 1]               # expect 40
+cv2.GaussianBlur(patch, (3, 3), 0.8)[2, 1]   # expect 99; sigma 0 would give 94
+cv2.getGaussianKernel(3, 0.8)                # expect [0.239, 0.522, 0.239]
 ```
 
 Those four values are the ones computed by hand in the [worked example](#worked-example). At (2, 1) the window sits fully inside the array, so the border mode cannot explain a disagreement — which makes any disagreement informative.
@@ -720,31 +832,31 @@ Those four values are the ones computed by hand in the [worked example](#worked-
 Six specific traps, each with the condition that triggers it and the symptom it produces. All six are documented behaviour, not folklore.
 
 > [!WARNING]
-> **Common mistake:** treating `cv2.filter2D` as convolution because its summary line says "Convolves an image with the kernel". It computes correlation — the kernel is not mirrored around the anchor. <!-- L10 --> Every symmetric kernel you test with agrees under both conventions, so the bug is invisible until you pass an asymmetric one: a derivative, a motion blur, or a hand-designed directional filter comes out mirrored, and the sign of your gradient flips. Flip the kernel and move the anchor if you need true convolution. <!-- L11 -->
+> **Common mistake:** treating `cv2.filter2D` as convolution because its summary line says "Convolves an image with the kernel". It computes correlation — the kernel is not mirrored around the anchor.  Every symmetric kernel you test with agrees under both conventions, so the bug is invisible until you pass an asymmetric one: a derivative, a motion blur, or a hand-designed directional filter comes out mirrored, and the sign of your gradient flips. Flip the kernel and move the anchor if you need true convolution.
 
-**Writing derivatives into an 8-bit destination.** Passing `cv2.CV_8U` as `ddepth` to `Sobel` truncates the result, which the docs state for 8-bit input. <!-- L24 --> Derivatives are signed, and an unsigned destination clips every negative value to zero — so half your edges, the ones where brightness falls rather than rises, silently disappear. Use `CV_16S` or `CV_32F` and convert afterwards.
+**Writing derivatives into an 8-bit destination.** Passing `cv2.CV_8U` as `ddepth` to `Sobel` truncates the result, which the docs state for 8-bit input.  Derivatives are signed, and an unsigned destination clips every negative value to zero — so half your edges, the ones where brightness falls rather than rises, silently disappear. Use `CV_16S` or `CV_32F` and convert afterwards.
 
-**Tuning a threshold against the L1 gradient magnitude.** `Canny` defaults to `L2gradient=False`. <!-- L31 --> The worked numbers show the consequence: at 45° the reported magnitude is 960 where the true one is 678.8, so diagonal edges clear a fixed threshold that axis-aligned edges of the same real strength do not. The symptom is an edge map that over-detects diagonals and looks orientation-biased for no visible reason.
+**Tuning a threshold against the L1 gradient magnitude.** `Canny` defaults to `L2gradient=False`.  The worked numbers show the consequence: at 45° the reported magnitude is 960 where the true one is 678.8, so diagonal edges clear a fixed threshold that axis-aligned edges of the same real strength do not. The symptom is an edge map that over-detects diagonals and looks orientation-biased for no visible reason.
 
-**Calling `BGR2GRAY` output "luminance".** OpenCV documents it as $Y \leftarrow 0.299R + 0.587G + 0.114B$. <!-- L52 --> Those are the BT.601 luma weights, standardised for gamma-corrected signals and inherited from the 1953 NTSC primaries. <!-- L53 --> Applied to gamma-encoded values they give luma $Y'$, related to brightness but not CIE luminance. <!-- L55 --> The proof is on the same page: its RGB→XYZ matrix gives the luminance row as $0.212671, 0.715160, 0.072169$ <!-- L54 --> — a green weight of 0.715 against 0.587, for the quantity also written $Y$. Two numbers, one letter, one page. If a threshold depends on physical brightness, linearise first.
+**Calling `BGR2GRAY` output "luminance".** OpenCV documents it as $Y \leftarrow 0.299R + 0.587G + 0.114B$.  Those are the BT.601 luma weights, standardised for gamma-corrected signals and inherited from the 1953 NTSC primaries.  Applied to gamma-encoded values they give luma $Y'$, related to brightness but not CIE luminance.  The proof is on the same page: its RGB→XYZ matrix gives the luminance row as $0.212671, 0.715160, 0.072169$  — a green weight of 0.715 against 0.587, for the quantity also written $Y$. Two numbers, one letter, one page. If a threshold depends on physical brightness, linearise first.
 
-**Downscaling with the default interpolation.** `resize` defaults to `INTER_LINEAR`, while the docs recommend `INTER_AREA` for shrinking. <!-- L51 --> Bilinear interpolation reads a fixed handful of source pixels however far you shrink, so it does not prefilter — and stage 1 says the prefilter must precede the resample. <!-- L06 --> The symptom is moiré on textures and a threshold that moves when you change input resolution.
+**Downscaling with the default interpolation.** `resize` defaults to `INTER_LINEAR`, while the docs recommend `INTER_AREA` for shrinking.  Bilinear interpolation reads a fixed handful of source pixels however far you shrink, so it does not prefilter — and stage 1 says the prefilter must precede the resample.  The symptom is moiré on textures and a threshold that moves when you change input resolution.
 
-**Assuming scale-space guarantees from a sampled Gaussian.** OpenCV's Gaussian is the continuous kernel evaluated at integer points and normalised. <!-- L16 --> The discrete analogue satisfying the scale-space axioms is a different kernel, and the sampled version does not satisfy them. <!-- L17 --> Sampled kernels are reported to degrade worst at very fine scales <!-- L18 --> — including $\sigma = 0.8$, the default for a 3×3 window. If your algorithm depends on structures never being created as scale increases, or on two blurs composing into one, that is an assumption about a kernel that does not provide it.
+**Assuming scale-space guarantees from a sampled Gaussian.** OpenCV's Gaussian is the continuous kernel evaluated at integer points and normalised.  The discrete analogue satisfying the scale-space axioms is a different kernel, and the sampled version does not satisfy them.  Sampled kernels are reported to degrade worst at very fine scales  — including the worked example's $\sigma = 0.8$. If your algorithm depends on structures never being created as scale increases, or on two blurs composing into one, that is an assumption about a kernel that does not provide it.
 
-**One non-mistake worth stating**, because the parameter looks like a bug and is not: `Canny`'s two thresholds may be passed in either order. The smaller is used for linking and the larger for seeding regardless. <!-- L32 -->
+**One non-mistake worth stating**, because the parameter looks like a bug and is not: `Canny`'s two thresholds may be passed in either order. The smaller is used for linking and the larger for seeding regardless.
 
 ## Key takeaways
 
-- **The four stages are ordered, and only the first destroys information.** Sampling runs before your code does, so every downstream fix is damage limitation. A prefilter must precede a resample; applied afterwards it removes nothing, because the aliased energy is already indistinguishable from signal. <!-- L06 -->
+- **The four stages are ordered, and only the first destroys information.** Sampling runs before your code does, so every downstream fix is damage limitation. A prefilter must precede a resample; applied afterwards it removes nothing, because the aliased energy is already indistinguishable from signal.
 - **Three of the four stages are one operation.** Filtering, the transform that explains it, and the response step of every detector are all a weighted sum over a neighbourhood. Weights summing to 1 give an average, weights summing to 0 give a derivative, and the frequency view says which frequencies survive either.
 - **An operator is a hypothesis about structure, and the median is a different kind of hypothesis.** Linear filters sum, so they can be transformed and analysed by frequency — and can never delete an impulse without disturbing its neighbours. Rank and morphological operators sort, so none of that analysis applies and the impulse goes exactly. Choosing between them is choosing what you claim about the corruption.
-- **Every "optimal" operator here is optimal under conditions its name does not carry.** Canny assumes a 1-D step edge in additive white Gaussian noise <!-- L30 -->; Harris carries an empirical constant while an equivalent formulation has none <!-- L34 --> <!-- L35 -->; Perona–Malik is formally ill-posed and works anyway <!-- L48 -->. The conditions are the part worth reading.
-- **The library is not the math, and the gaps are documented.** `filter2D` computes correlation <!-- L10 -->, `Canny` defaults to the L1 magnitude <!-- L31 -->, `BGR2GRAY` gives luma not luminance <!-- L52 --> <!-- L53 -->, and OpenCV's Gaussian is a sampled approximation missing the discrete scale-space axioms <!-- L17 -->. Each gap is in the official documentation, and each is invisible in the common case.
+- **Every "optimal" operator here is optimal under conditions its name does not carry.** Canny assumes a 1-D step edge in additive white Gaussian noise ; Harris carries an empirical constant while an equivalent formulation has none  ; Perona–Malik is formally ill-posed and works anyway . The conditions are the part worth reading.
+- **The library is not the math, and the gaps are documented.** `filter2D` computes correlation , `Canny` defaults to the L1 magnitude , `BGR2GRAY` gives luma not luminance  , and OpenCV's Gaussian is a sampled approximation missing the discrete scale-space axioms . Each gap is in the official documentation, and each is invisible in the common case.
 
 Figure 17 shows what this post covered and what it handed off.
 
-![Tree diagram with the pillar post at the root and its child posts branching by stage: resampling and interpolation, kernel design, the 2-D DFT, wavelets, thresholding and segmentation, morphology, edge-preserving smoothing, Canny in detail, the structure tensor, scale space and SIFT, and colour and gamma](https://minio.canery.in/media/fig-17-series-map.png)
+![Tree diagram with the pillar post at the root and its child posts branching by stage: resampling and interpolation, kernel design, the 2-D DFT, wavelets, thresholding and segmentation, morphology, edge-preserving smoothing, Canny in detail, the structure tensor, scale space and SIFT, and colour and gamma](https://minio.canery.in/media/fig-17-series-map-image-processing-by-hand.png)
 
 *Figure 17 — What this post deliberately does not cover. Each branch is a child post that goes deep on one area of the frame built here.*
 
@@ -791,3 +903,11 @@ Figure 17 shows what this post covered and what it handed off.
 28. OpenCV 4.13.0 documentation, Geometric Image Transformations. [Docs](https://docs.opencv.org/4.x/da/d54/group__imgproc__transform.html) — accessed 2026-09-10
 29. ITU-R Recommendation BT.601-7, *Studio encoding parameters of digital television*. [PDF](https://www.itu.int/dms_pubrec/itu-r/rec/bt/R-REC-BT.601-7-201103-I!!PDF-E.pdf)
 30. Poynton, C. *Colour FAQ* — luma versus luminance. Used for framing only. [Page](https://homepages.inf.ed.ac.uk/rbf/CVonline/LOCAL_COPIES/POYNTON1/ColorFAQ.html) — accessed 2026-09-10
+31. OpenCV source code at commit 802cf95: `smooth.dispatch.cpp`, `morph.dispatch.cpp`, `base.hpp` and `imgproc.hpp`. [Source](https://github.com/opencv/opencv/tree/802cf95aa3d42816995695bf68a86b3532f12760) — accessed 2026-10-31
+
+**Anti-aliasing filters and photographs**
+
+32. Palum, R. "Anti-Aliasing Filter Analysis for Digital Cameras." *ICIS '06 International Congress of Imaging Science*, Final Program and Proceedings, 25–28. IS&T, 2006. [PDF](<https://imaging.org/common/uploaded%20files/pdfs/Papers/2006/ICIS-0-736/33683.pdf>)
+33. Greivenkamp, J. E. "Color Dependent Optical Prefilter for the Suppression of Aliasing Artifacts." *Applied Optics* 29(5):676–684, 1990. [DOI](https://doi.org/10.1364/AO.29.000676)
+34. Nikon Corporation. "Digital SLR camera D800/D800E." News release, 7 February 2012. [Release](https://nikon.com/company/news/2012/0207_dslr_01.html) — accessed 2026-10-31
+35. Cburnett. "Moire pattern of bricks.jpg" and "Moire pattern of bricks small.jpg." Wikimedia Commons, CC BY-SA 3.0 and GFDL 1.2. [Photograph](https://commons.wikimedia.org/wiki/File:Moire_pattern_of_bricks.jpg) · [Downsampled copy](https://commons.wikimedia.org/wiki/File:Moire_pattern_of_bricks_small.jpg) — accessed 2026-10-31

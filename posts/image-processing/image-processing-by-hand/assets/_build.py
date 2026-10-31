@@ -66,8 +66,13 @@ def txt(x, y, s, size=12, fill=INK, family=SANS, weight="400", anchor="middle",
     return a + f">{esc(s)}</text>"
 
 
+def ascii_upper(s):
+    """Uppercase ASCII letters only, so Greek symbols (σ, ω) survive."""
+    return "".join(ch.upper() if ch.isascii() else ch for ch in str(s))
+
+
 def eyebrow(x, y, s, fill=SOFT, anchor="start", size=8):
-    return txt(x, y, str(s).upper(), size=size, fill=fill, family=MONO,
+    return txt(x, y, ascii_upper(s), size=size, fill=fill, family=MONO,
                weight="500", anchor=anchor, track="0.18em")
 
 
@@ -217,7 +222,7 @@ PAGE = """<!doctype html>
 <h1>{title}</h1>
 <p class="sub">{sub}</p>
 {svg}
-<footer>image-processing-by-hand &middot; figure {num} &middot; own redraw, not reproduced from any source</footer>
+<footer>image-processing-by-hand &middot; figure {num} &middot; {credit}</footer>
 </body></html>
 """
 
@@ -237,8 +242,14 @@ def rasterize(svg_path, png_path, vw, vh, scale=2, svg_markup=None):
     """
     body = svg_markup if svg_markup is not None else svg_path.read_text(encoding="utf-8")
     body = body.replace('<?xml version="1.0" encoding="UTF-8"?>\n', "")
+    fonts = f'<link href="{FONTS}" rel="stylesheet">'
+    if LOCAL_FONTS.exists():
+        # Rasterise from a local copy of the same Google Fonts files: a slow network made Chrome
+        # fall back to another monospace in some renders. The published SVG keeps its @import.
+        body = body.replace(f"@import url('{FONTS}');", "")
+        fonts = f"<style>{LOCAL_FONTS.read_text(encoding='utf-8')}</style>"
     shim = (f'<!doctype html><meta charset="utf-8">'
-            f'<link href="{FONTS}" rel="stylesheet">'
+            f'{fonts}'
             f'<style>html,body{{margin:0;padding:0;background:{PAPER};'
             f'width:{vw}px;height:{vh}px;overflow:hidden}}'
             f'svg{{display:block}}</style>'
@@ -248,7 +259,7 @@ def rasterize(svg_path, png_path, vw, vh, scale=2, svg_markup=None):
     with tempfile.TemporaryDirectory() as prof:
         subprocess.run(
             ["google-chrome", "--headless", "--disable-gpu", "--no-sandbox",
-             "--hide-scrollbars", "--virtual-time-budget=6000",
+             "--hide-scrollbars", "--virtual-time-budget=15000", "--force-color-profile=srgb",
              f"--user-data-dir={prof}",
              f"--force-device-scale-factor={scale}",
              f"--window-size={vw},{vh}",
@@ -258,12 +269,17 @@ def rasterize(svg_path, png_path, vw, vh, scale=2, svg_markup=None):
     shim_path.unlink(missing_ok=True)
 
 
-def emit(num, slug, title, sub, eyebrow_text, vw, vh, body):
+LOCAL_FONTS = pathlib.Path.home() / ".cache" / "blog-forge-fonts" / "fonts.local.css"
+
+
+def emit(num, slug, title, sub, eyebrow_text, vw, vh, body,
+         credit="own redraw, not reproduced from any source"):
     stem = f"fig-{num}-{slug}"
     svg = svg_doc(vw, vh, body)
-    html = PAGE.format(title=title, sub=sub, eyebrow=eyebrow_text.upper(), num=num,
+    html = PAGE.format(title=title, sub=sub, eyebrow=ascii_upper(eyebrow_text), num=num,
                        svg=svg, fonts=FONTS, paper=PAPER, ink=INK, muted=MUTED,
-                       soft=SOFT, rule=RULE, sans=SANS, mono=MONO, serif=SERIF)
+                       soft=SOFT, rule=RULE, sans=SANS, mono=MONO, serif=SERIF,
+                       credit=credit)
     (HERE / f"{stem}.html").write_text(html, encoding="utf-8")
     svg_path = HERE / f"{stem}.svg"
     svg_path.write_text('<?xml version="1.0" encoding="UTF-8"?>\n' + svg, encoding="utf-8")

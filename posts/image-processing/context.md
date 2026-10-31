@@ -132,11 +132,12 @@ All fourteen parts are built.
 
 ## Open threads
 
-- **Part 1 (published)** misstates OpenCV's default Gaussian (~lines 123, 712; 93.75), the patch's
-  histogram (16 and 8; it is 14 and 10) and, in Figure 7's caption, morphology's border value
-  (−DBL_MAX only for 64-bit floats; 0 and 255 for 8-bit); its reference 18 links the wrong PDF.
-  Part 2 (~line 189) credits 0.478 to sampling. Parts 1–2 lack `series` / `series_position` live;
-  Part 1's Figure 17 lacks the Laplacian branch. All reopen published posts.
+- **Part 1 (published)** was corrected locally on 2026-10-31 at the owner's request: the sigma-0
+  Gaussian (table, 94), histogram 14/10, Figure 7 (row 2; morphology's border value per type), the
+  footprint's border case (47.8) and seven smaller slips. Upload, purge and re-publish pending. Still
+  open: reference 18 links the wrong PDF; Figure 17 lacks the Laplacian branch; four `--` jump links
+  are dead. Part 2 (~line 189) credits 0.478 to sampling. Parts 1–2 lack `series` /
+  `series_position` live. All reopen published posts.
 - **Owner checks before publishing:** Part 7's `denoise_bilateral` offset; Part 8's three `cv2.Canny`
   predictions (and 8-bit rounding with the fixed-point blur); Part 9's five; Part 10's four SIFT;
   Part 11's six; Part 12's six (the 2×2 closing is load-bearing); Part 13's six (`BGR2GRAY` = 158 is

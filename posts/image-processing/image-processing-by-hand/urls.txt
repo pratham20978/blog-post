@@ -4,6 +4,7 @@ https://minio.canery.in/media/fig-02-grid-and-surface.png
 https://minio.canery.in/media/fig-03-three-answers.png
 https://minio.canery.in/media/fig-04-weight-stencils.png
 https://minio.canery.in/media/fig-05-spectral-replication.png
+https://minio.canery.in/media/fig-05-moire-bricks.jpg
 https://minio.canery.in/media/fig-06-separability.png
 https://minio.canery.in/media/fig-07-border-modes.png
 https://minio.canery.in/media/fig-08-dft-four-point.png

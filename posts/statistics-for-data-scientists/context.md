@@ -7,9 +7,7 @@
 - **Audience:** working data scientists, analysts and ML engineers who run tests and fit regressions
   and need to know what each number guarantees, and when. Expert standard; every part opens on its
   worked instance before any formula.
-- **Shape:** hybrid. Foundations ladder (1–4), tests and intervals (5–7), choosing a method (8–10),
-  Bayesian inference (11–12), the linear model (13–14), GLMs (15–16), multilevel models (17–18).
-  One parent per part; see `plan.md`.
+- **Shape:** hybrid, seven arcs, one parent per part (`plan.md`).
 - **Shared promise:** for any standard method the reader can compute it by hand, match it to the
   library, state the condition its guarantee needs, and measure what the guarantee becomes when
   the condition fails.
@@ -69,7 +67,7 @@ DS-1 owns the inferential core; the siblings apply it. Each seam names the owner
 | 3 | estimator-bias-variance-mse | ready 2026-10-28, not published | what makes an estimator good; when bias pays | likelihood to 4; bootstrap on the maximum to 7; partial pooling to 17 and 18; prediction error to ML-2 |
 | 4 | likelihood-mle-fisher-information | ready 2026-10-28, not published | MLE, information, Wald/score/LR, boundaries | p-values to 5; coverage to 6; variance-component boundary to 17; Bayes (11) and Fisher scoring (15) not previewed |
 | 5 | hypothesis-testing-p-values-power | ready 2026-10-29, not published | what a p-value and power are; type M/S | coverage to 6; test choice to 8; multiplicity to 9; sequential designs to DS-2 |
-| 6 | confidence-intervals-coverage | planned | what 95% coverage means, measured | — |
+| 6 | confidence-intervals-coverage | ready 2026-10-31, not published | what 95% coverage means, measured | skew-adapting intervals to 7; the trial's credible interval to 11; DS-6 not previewed |
 | 7 | bootstrap-confidence-intervals | planned | intervals with no formula; where they fail | — |
 | 8 | choosing-a-statistical-test | planned | the design picks the test | — |
 | 9 | multiple-comparisons-fwer-fdr | planned | error across many tests, counted and uncounted | — |
@@ -85,101 +83,110 @@ DS-1 owns the inferential core; the siblings apply it. Each seam names the owner
 
 ## Knowledge established
 
-Per completed part, at most eight durable bullets (data and numbers, reference and tolerance,
-broken condition, corrected claim, terms), reused rather than re-derived.
+At most eight durable bullets per completed part (numbers, tolerances, broken conditions, corrected
+claims, terms), reused rather than re-derived.
 
 ### Part 1 — Distributions as Generative Stories
 
-- **Data** (CSVs with provenance): Clarke 1946, 537 bombs on 576 squares, 229/211/93/35/7/1, mean 0.9323;
-  Greenwood & Yule 1920, 647 women, 447/132/42/21/3/2, mean 0.4652, variance 0.6919; Bortkiewicz's corps.
-- **NB by moments:** k̂ = 0.955. **Tails:** unit-variance t₅ beyond 4σ is ×56.4 the normal; a straight
-  log–log line is not a power law.
+- **Data** (CSVs with provenance): Clarke 1946, 537 bombs on 576 squares, mean 0.9323; Greenwood &
+  Yule 1920, 647 women, mean 0.4652, variance 0.6919; Bortkiewicz's corps.
+- **NB by moments:** k̂ = 0.955. **Tails:** a straight log–log line is not a power law.
 
 ### Part 2 — The Sampling Distribution
 
-- **Data:** UCI Online Retail spend of 4,317 customers (CC BY 4.0), γ 21.58; Student's ten patients equal
-  R's `sleep` (t 4.0621).
+- **Data:** UCI Online Retail spend of 4,317 customers (CC BY 4.0), γ 21.58; Student's ten patients
+  equal R's `sleep`.
 - **Core:** one-sided 5% t-test at n = 30 errs 39.82%/0.05% (lower/upper); needed n grows like γ²
   ("the CLT kicks in at n = 30" corrected).
 
 ### Part 3 — Estimators and Their Errors
 
-- **Tanks** (N = 342, k = 5): MSE 5,448 (MLE m), 3,303 (MVUE). **Divisors** (n = 10, normal): MSE 0.2222
-  with n − 1, 0.1818 with n + 1. **1970 batting:** James–Stein wins 96.2% of replayed seasons.
-- **Corrected:** "unbiased estimators are the best ones".
+- **Tanks** (N = 342, k = 5): MSE 5,448 (MLE m), 3,303 (MVUE). **1970 batting:** James–Stein wins
+  96.2% of replayed seasons. **Corrected:** "unbiased estimators are the best ones".
 
 ### Part 4 — Likelihood: The MLE, Three Tests, and Where χ² Fails
 
-- **Poisson (Clarke):** λ̂ 0.9323, information 617.8, SE 0.0402; Wald, LR, score at 0.85: 4.18, 4.45, 4.59.
-  Exact sizes at nλ₀ = 12.2: 8.84%, 6.57%, 4.26%.
-- **NB by ML** (Greenwood–Yule): k̂ 0.865 (statsmodels needs `method="newton"`); profile 95% for k
-  0.585–1.383 against Wald 0.500–1.230.
-- **Boundary:** LR = 0 in 52.61%; χ²₁ rejects 2.17%, the mixture's 2.71 rejects 4.40%; V-1 p 0.52 → 0.26.
-- **Corrected:** "the LR statistic is χ²": only for an interior null.
+- **Poisson (Clarke):** SE 0.0402; exact sizes at nλ₀ = 12.2: Wald 8.84%, LR 6.57%, score 4.26%.
+- **NB by ML** (Greenwood–Yule): k̂ 0.865; statsmodels needs `method="newton"`.
+- **Boundary:** χ²₁ rejects 2.17%, the 50:50 mixture's 2.71 rejects 4.40%. **Corrected:** "the LR
+  statistic is χ²": only for an interior null.
 
 ### Part 5 — p-Values and Power: How Wrong Can a Significant Result Be?
 
-- **Data:** Durante et al. 2013 as Gelman & Carlin report it (17 points, SE 8.1, plausible 2);
-  OSC 2015's `rpp_data.csv` (OSF fgjvw, CC0 1.0), 100 rows in the lab CSV.
-- **Design analysis** (Lu–Qiu–Deng closed form): power 0.0570, type S 0.2396, exaggeration 9.537, bar
-  ±15.88; Gelman & Carlin's simulated 9.7 is a high draw (SD 0.059).
-- **Power:** 16 per group at d = 1 is 0.781398 (integral = `nct` = statsmodels = R `strict = TRUE`).
-- **False positive risk** (not FDR, Part 9's): p = .03 gives 16.7% at even odds, 64.3% at prior 0.1;
-  p ≤ .05 at prior 0.1 and 80% power, 36%.
-- **Replication:** 97 → 36 significant, mean r 0.396 → 0.197. **TOST:** 16 per group shows only ±1.06
-  SD at 80% power. **Peeking:** 8.31%, 37.36%, 52.99% after 2, 100, 1,000 looks.
-- **Tool trap:** SciPy 1.18.1 `nct.cdf(-c, df, λ)` can return NaN past λ ≈ 8, statsmodels power `nan`;
-  use `nct.sf(c, df, -λ)`.
+- **Data:** Durante et al. 2013 via Gelman & Carlin; OSC 2015's `rpp_data.csv` (OSF fgjvw, CC0 1.0).
+- **Design analysis** (Lu–Qiu–Deng): power 0.0570, type S 0.2396, exaggeration 9.537. **Power:** 16
+  per group at d = 1 is 0.781398 in four tools.
+- **False positive risk** (not FDR, Part 9's): p = .03 gives 16.7% at even odds, 64.3% at prior 0.1.
+  **Peeking:** 52.99% after 1,000 looks.
+- **Tool trap:** SciPy 1.18.1 `nct.cdf(-c, df, λ)` returns NaN past λ ≈ 8; use `nct.sf(c, df, -λ)`.
 - **Corrected:** "p = 0.03 means a 3% chance of a fluke" (true only at a prior of 0.87).
+
+### Part 6 — Confidence Intervals: What 95% Means, Measured
+
+- **Exact coverage** at n = 20, p = 0.1: Wald 87.6%, Wilson 95.7%, Clopper–Pearson 98.9%; at n = 50
+  Wald is under 93% for 40% of p.
+- **Pfizer–BioNTech** (8 of 170): Clopper–Pearson gives VE 90.0–97.9, Table 3 to the digit; all 16
+  printed rows reproduce within rounding.
+- **Overlap:** non-overlap of two 95% intervals tests at 0.0056 (equal SEs); 83.4% intervals give 5%.
+- **t-interval, Part 2's spend:** 65.83% ± 0.11 at n = 30, 93.84% at 10,000; 0% to 100% across width
+  deciles at n = 30.
+- **Tool traps:** statsmodels 0.15.0 `proportion_confint` defaults to Wald; SciPy's and R's exact
+  two-sided p is minlike and does not invert to their Clopper–Pearson interval.
+- **Corrected:** "There is a 95% probability the true value is inside this interval."
 
 ## Decisions to preserve
 
 - Every part follows the four-point angle (reconcile, condition, measure, read the output) and
   corrects one circulating claim, or says which point it omits and why.
-- Every simulated number ships with its seed, replication count and MCSE; streams are
-  `SeedSequence([stage, sub, seed])` and R comes from a target MCSE, R = p(1 − p)/MCSE². Two
-  budgets are captured, the reader's `--quick` and the full one; the article quotes the full budget.
-  A noisy comparison is measured at full budget before any narrative or figure rests on it, and an
-  E4 fault is checked on the `--quick` budget, where it must still fail.
-- Python is the lab language, with versions pinned per part at research. R ships as an optional
-  `crosscheck.R` only in Parts 7, 13, 15, 16 and 17; elsewhere it is the author's private check, with
-  its output in the captures.
-- Data ship as small CSVs with a provenance header (source, citation, licence), or are fetched from
-  the public source with a checksum. Simulated data are always labelled simulated.
+- Seeded streams are `SeedSequence([stage, sub, seed])`; R = p(1 − p)/MCSE² from a target MCSE. Finite
+  outcome spaces are summed exactly, with one simulated check. Two budgets, `--quick` and full: the
+  article quotes full, a noisy comparison is settled at full budget before a figure rests on it,
+  and an E4 fault must still fail on `--quick`.
+- Python is the lab language, versions pinned per part. R ships as an optional `crosscheck.R` only
+  in Parts 7, 13, 15, 16 and 17; elsewhere it is the author's private check, output in the captures.
+- Data ship as small CSVs with a provenance header (source, citation, licence), or are fetched with
+  a checksum; simulated data are labelled. A CSV reused from an earlier part ships byte-identical
+  under one added `#` line naming that part's lab.
 - Results are stated with their conditions; proof sketches are labelled as sketches.
 - Earlier parts are named by title in plain text, live or not, and listed in each manifest; the
   owner adds links. Later parts are "later in this series", with no number or title.
-- Prose and social-card numbers are rounded once from the captures and rechecked by script before
-  the gate. Plain-fact claims quote the exact value where one exists.
-- Assets: copy Part 5's toolchain (`_build.py`, `_figs.py` helpers, `_social.py`, `_cover.py`,
-  `_overlap.py`) and Part 1's `_mermaid.py`; labs follow Part 5's `lab/testing.py`. Bin a discrete
-  estimator's histogram on its own support. Geist Mono has no combining hat: write "MLE", not λ̂.
-  Assert no plotted curve holds a NaN: the browser drops a polyline with one.
+- Prose and card numbers are rounded once from the captures and rechecked by script before the
+  gate; plain-fact claims quote the exact value.
+- Assets: copy Part 6's toolchain (`_build.py`, `_figs.py`, `_social.py`, `_cover.py`,
+  `_overlap.py`), Part 1's `_mermaid.py` and Part 6's `lab/intervals.py` layout; keep
+  `_figs.STYLE`, one style per interval method. Bin a discrete estimator's histogram on its own
+  support; write "MLE", not λ̂ (Geist Mono lacks the hat); `_figs.curve()` asserts no NaN, which
+  the browser silently drops.
 - Social: feed cards only, no Stories (owner, 2026-10-30); `--social` then fails exactly its four
-  Story checks, as expected.
-- A real population is sampled with replacement, so draws are independent; the finite-population
-  correction is named, not applied.
+  Story checks.
+- A real population is sampled with replacement; the finite-population correction is named, not
+  applied.
 
 ## Open threads
 
 - Checkpoint S not formally passed: part count (18, or 16 with 10 and 18 optional), survival
-  placement, title, and the optional smoothing part await the owner. Parts 1 to 5 were built on the
-  owner's requests (2026-10-24 to 10-29); none of the four decisions touches them.
-- `data-science` category: in the validator and `frontmatter.md` since 2026-10-24, still missing
-  from the live DB (the owner's write at publish).
-- Sources read second-hand or as abstracts only are listed in each ledger. Project Euclid, Taylor &
-  Francis and the Royal Society serve bot pages; Tilburg's repository a Cloudflare check.
-- blog-forge's `subject-playbooks.md` has no statistics entry (the owner's change to make).
-- Dataset choices still open: prostate versus Hedenfalk for Part 9 (licence), the heteroskedastic
-  dataset for Part 14, and the `sleepstudy` source for Part 17 (`lme4` or Rdatasets).
-- Available RAM has been 2 to 7 GiB (`access.md`): keep the PyMC runs in Parts 12 and 18 small.
+  placement, title and the optional smoothing part await the owner; Parts 1 to 6 were built on
+  request (2026-10-24 to 10-31) and none of the four touches them.
+- Part 6 promises two later parts: intervals that adapt to skew (7), and the trial's credible
+  interval, 90.3–97.6, rebuilt from its prior beta(0.700102, 1) adjusted for surveillance time (11).
+- `data-science` category: still missing from the live DB (the owner's write at publish).
+- Ledgers list second-hand and abstract-only sources. Project Euclid, Taylor & Francis, the Royal
+  Society and Penn's, Groningen's and Cardiff's repositories refuse scripts; Tilburg's shows a
+  Cloudflare check.
+- blog-forge's `subject-playbooks.md` has no statistics entry (the owner's change).
+- Datasets still open: prostate or Hedenfalk for Part 9 (licence), the heteroskedastic set for 14,
+  the `sleepstudy` source for 17.
+- Available RAM has been 2 to 7 GiB: keep Parts 12 and 18's PyMC runs small. PyPI was unreachable
+  on 2026-10-31; uv's `--offline` cache sufficed (`access.md`).
 
 ## Next part brief
 
-- **Part:** 6, *Confidence Intervals: What 95% Means, Measured* (`confidence-intervals-coverage`).
-- **Can assume:** Part 5 by title: tests, α, power, the p-value as a random variable, TOST's 90%
-  interval, and van Zwet & Cator's undercoverage after the significance filter below 50% power.
-- **Must teach:** `plan.md`'s Part 6 block, as written.
-- **Must not repeat:** the Fisher/Neyman–Pearson readings or the false positive risk; point to Part 5.
-- **Evidence still needed:** the plan's six key sources, Neyman 1937 to Hoekstra et al. 2014.
-- **Handoff:** as `plan.md` states for Part 6.
+- **Part:** 7, *The Bootstrap: From Percentile to BCa, and Where It Breaks* (`bootstrap-confidence-intervals`).
+- **Can assume:** Part 6 by title (coverage belongs to the procedure; actual coverage, confidence
+  coefficient, test inversion, relevant subsets); Part 3 by title for the sample maximum.
+- **Must teach:** `plan.md`'s Part 7 block, as written.
+- **Must not repeat:** what 95% means or the binomial intervals; point to Part 6.
+- **Evidence still needed:** the plan's six key sources; the 82-school population's provenance and
+  licence; BCa's coverage on the spend population at n = 30 against the t-interval's 65.83%, which
+  keeps Part 6's promise.
+- **Handoff:** as `plan.md` states for Part 7.

@@ -38,6 +38,11 @@ access date.
 | S28 | T2 | OpenCV 4.13.0 docs, Geometric Image Transformations | https://docs.opencv.org/4.x/da/d54/group__imgproc__transform.html | 2026-09-10 |
 | S29 | T4 | Poynton, *Colour FAQ* — luma vs luminance (framing only) | https://homepages.inf.ed.ac.uk/rbf/CVonline/LOCAL_COPIES/POYNTON1/ColorFAQ.html | 2026-09-10 |
 | S30 | T1 | Serra & Matheron, mathematical morphology — Serra's Ecole des Mines course notes, ch. 2 | https://smil.cmm.minesparis.psl.eu/publis/Cours-Serra/chap-02-en.pdf | 2026-09-10 |
+| S31 | T1 | Palum, "Anti-Aliasing Filter Analysis for Digital Cameras", ICIS '06 International Congress of Imaging Science, Final Program and Proceedings, IS&T, 2006, pp. 25–28 | https://imaging.org/common/uploaded%20files/pdfs/Papers/2006/ICIS-0-736/33683.pdf | 2026-10-31 |
+| S32 | T1 | Greivenkamp, "Color dependent optical prefilter for the suppression of aliasing artifacts", Applied Optics 29(5):676–684, 1990 | https://doi.org/10.1364/AO.29.000676 | 2026-10-31 |
+| S33 | T2 | Nikon Corporation, "Digital SLR camera D800/D800E", news release, 7 February 2012 | https://nikon.com/company/news/2012/0207_dslr_01.html | 2026-10-31 |
+| S34 | T4 | Cburnett, "Moire pattern of bricks.jpg" and "Moire pattern of bricks small.jpg", Wikimedia Commons, CC BY-SA 3.0 and GFDL 1.2 (image source, not a technical claim) | https://commons.wikimedia.org/wiki/File:Moire_pattern_of_bricks_small.jpg | 2026-10-31 |
+| S35 | T3 | OpenCV source code at commit 802cf95: `modules/imgproc/src/smooth.dispatch.cpp`, `modules/imgproc/src/morph.dispatch.cpp`, `modules/core/include/opencv2/core/base.hpp`, `modules/imgproc/include/opencv2/imgproc.hpp` (read, not run) | https://github.com/opencv/opencv/tree/802cf95aa3d42816995695bf68a86b3532f12760 | 2026-10-31 |
 
 ## Claims
 
@@ -56,7 +61,7 @@ access date.
 | L11 | To get true convolution from `filter2D` you must flip the kernel and move the anchor to (cols−anchor.x−1, rows−anchor.y−1) | S25 | documented remedy |
 | L12 | `filter2D` switches to a DFT-based algorithm for kernels around 11×11 or larger, and uses the direct sum below that | S25 | implementation detail, stated in the docs |
 | L13 | `getGaussianKernel` returns α·exp(−(i−(ksize−1)/2)²/(2σ²)) with α chosen so the coefficients sum to 1 | S25 | exact documented formula |
-| L14 | When σ is non-positive, OpenCV derives it as σ = 0.3·((ksize−1)·0.5 − 1) + 0.8 | S25 | so ksize=3 → σ=0.8, ksize=5 → σ=1.1, ksize=7 → σ=1.4 |
+| L14 | The documentation says that when σ is non-positive, OpenCV derives it as σ = 0.3·((ksize−1)·0.5 − 1) + 0.8 | S25 | the documented derivation only: at ksize 1, 3, 5, 7 and 9 the code reads a table instead (L69) |
 | L15 | `GaussianBlur` derives σ from ksize when both sigmas are zero, and derives ksize from σ when ksize is zero; the docs recommend specifying all three | S25 | the two-way defaulting is the reason to be explicit |
 | L16 | OpenCV builds Gaussian kernels by sampling the continuous Gaussian, then normalising | S25 (formula), S11 | the α-normalised point sample, not the discrete analogue |
 | L17 | The sampled Gaussian does not satisfy the discrete scale-space axioms that uniquely determine the discrete analogue of the Gaussian | S11, S12 | the discrete analogue is fixed by non-creation of local extrema, semi-group, symmetry, unit ℓ¹ norm |
@@ -85,7 +90,7 @@ access date.
 | L40 | Otsu's criterion is a discriminant-analysis objective evaluated over every candidate threshold, so it is a search, not a formula | S6 | — |
 | L41 | Erosion and dilation are Minkowski subtraction and addition — the infimum and supremum of translates of the structuring element | S30 | binary/lattice formulation |
 | L42 | Opening is erosion then dilation; closing is dilation then erosion | S25 | documented as MORPH_OPEN / MORPH_CLOSE |
-| L43 | OpenCV's morphology defaults to BORDER_CONSTANT with a "magic" border value that becomes −DBL_MAX for dilation | S25 | differs from the BORDER_DEFAULT used by the linear filters |
+| L43 | OpenCV's morphology defaults to BORDER_CONSTANT with a "magic" default border value | S25 | differs from the BORDER_DEFAULT used by the linear filters; the value per type is L70 |
 | L44 | The bilateral filter multiplies a spatial kernel by a range kernel on intensity difference, so weights depend on the image itself | S7 | which makes it non-linear and shift-variant |
 | L45 | OpenCV documents sigma values under 10 as having little effect and over 150 as producing a cartoon-like result, and recommends d=5 for real time, d=9 for offline | S25 | qualitative guidance from the docs, not a measurement |
 | L46 | Non-local means averages over patches matched by similarity anywhere in the image rather than over a spatial neighbourhood | S8 | introduced together with the "method noise" evaluation idea |
@@ -103,6 +108,17 @@ access date.
 | L58 | Mallat's multiresolution theory decomposes a signal on a wavelet orthonormal basis via a pyramid of quadrature-mirror-filter convolutions | S21 | the alternative to Fourier for non-stationary structure |
 | L59 | Gonzalez & Woods organise the field as spatial filtering and frequency-domain filtering treated as two views of one operation | S17 ch.3–4 | the textbook framing this post's four-stage map is built against |
 | L60 | A separable 2-D kernel factors into two 1-D passes, and OpenCV's separable filters auto-detect symmetric kernels summing to 1 | S25 | stated for `getGaussianKernel`/`sepFilter2D` |
+| L61 | One photograph of a brick wall by Cburnett on Wikimedia Commons: the full 622 × 756 file's page describes it as demonstrating a moiré pattern when badly downsampled and links the 205 × 250 copy as that case; the 250 × 304 copy is Commons' own thumbnail of the full file; both files are CC BY-SA 3.0 and GFDL 1.2 | S34 | Figure 5's lower panel; scaled for display, nothing computed on the pixels |
+| L62 | A lens can attenuate frequencies above Nyquist by enlarging its point spread function, but field- and f-number-independent control is very hard, so an anti-aliasing filter adds a fixed change to the point spread function | S31 p. 25 | camera optics |
+| L63 | The most common anti-aliasing filter is birefringent quartz; three-layer quartz filters give four, seven or eight spots; the four-spot filter is the most common and needs to be only one pixel wide in each direction to cut off at Nyquist | S31 p. 26 | — |
+| L64 | In one dimension a four-spot filter is two spots one pixel pitch apart, whose signal from a pattern at the Nyquist frequency always sums to a constant; its MTF is the modulus of a cosine that returns to one at the sampling frequency, so the lens must attenuate beyond Nyquist | S31 p. 26 | ideal spots; the post derives cos(πfd) itself |
+| L65 | Optical prefilters use the double refraction of crystalline quartz, with a polarization retarder placed between two quartz crystals | S32 abstract | Greivenkamp's own design is colour-dependent; the post uses only the structure |
+| L66 | In practice the filter is matched to the green channel, whose MTF goes to zero at the green Nyquist frequency; red and blue can still alias | S31 p. 26 | Bayer colour filter arrays |
+| L67 | Below about 2 µm pixels a diffraction-limited lens suffices to prevent aliasing: at f/3 for pixels a little over 1 µm, at f/8 for a 2 µm pitch; system MTF is about 20% at three pixels per point spread function | S31 p. 27 | a 2006 analysis of an ideal, diffraction-limited lens |
+| L68 | Nikon's 36.3-megapixel D800E (2012) disables the aliasing and moiré reduction of its optical low-pass filter for greater resolution, and Nikon states that aliasing and moiré may be more noticeable with some subjects | S33 | manufacturer's release wording |
+| L69 | With σ ≤ 0 and ksize 1, 3, 5, 7 or 9, `getGaussianKernel` returns a hard-coded table instead of sampling a Gaussian, and the 8-bit fixed-point `GaussianBlur` takes its kernel from the same function; at ksize 3 the table is [0.25, 0.5, 0.25]. The documentation gives only the σ formula | S35 smooth.dispatch.cpp `getGaussianKernelBitExact` L81–146 and `getGaussianKernel` L200–219; imgproc.hpp L1470–1471 | so the post's σ = 0.8 kernel needs σ passed explicitly; on the impulse the table gives 93.75, 94 in 8 bits |
+| L70 | When `erode` or `dilate` keeps the default border value, `createMorphologyFilter` replaces it with the type's maximum for erosion and its minimum for dilation: 255 and 0 for 8-bit, −DBL_MAX only for 64-bit float. The documentation says the value becomes −DBL_MAX for dilation | S35 morph.dispatch.cpp L112–128; imgproc.hpp L1515 | constant border with the default value |
+| L71 | `BORDER_DEFAULT` is `BORDER_REFLECT_101`, which mirrors about the edge pixel without repeating it; `BORDER_REFLECT` repeats it, `BORDER_REPLICATE` copies it, `BORDER_WRAP` reads from the far end. The linear filters default to `BORDER_DEFAULT`, and their documentation says `BORDER_WRAP` is not supported | S35 base.hpp L333–341, imgproc.hpp (`blur`, `GaussianBlur`, `filter2D`); S25 | — |
 
 ## Open questions
 

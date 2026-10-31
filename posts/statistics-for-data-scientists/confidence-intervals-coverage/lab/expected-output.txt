@@ -1,0 +1,95 @@
+Captured 2026-10-31T05:26:03Z on Linux 7.0.0-38-generic x86_64, AMD Ryzen 7 5825U with Radeon Graphics; Python 3.12.15, NumPy 2.5.4, SciPy 1.18.1, statsmodels 0.15.0; intervals.py 4cde398084f1; budget full, seed 20261031.
+
+[enumerate] 20 trials, true p = 0.1: P(X = x) for x = 0..9: 0.1216, 0.2702, 0.2852, 0.1901, 0.0898, 0.0319, 0.0089, 0.0020, 0.0004, 0.0001; P(X >= 10) = 7.15e-06
+[enumerate] Wald             contains 0.1 for x = 1..6: coverage 0.8760 (nominal 0.95)
+[enumerate] Wilson           contains 0.1 for x = 0..4: coverage 0.9568 (nominal 0.95)
+[enumerate] Agresti-Coull    contains 0.1 for x = 0..4: coverage 0.9568 (nominal 0.95)
+[enumerate] Clopper-Pearson  contains 0.1 for x = 0..5: coverage 0.9887 (nominal 0.95)
+[enumerate] Jeffreys         contains 0.1 for x = 0..4: coverage 0.9568 (nominal 0.95)
+[enumerate]   x = 0: P = 0.1216  Wald (+0.0000, 0.0000)  Wilson (0.0000, 0.1611)  Clopper-Pearson (0.0000, 0.1684)
+[enumerate]   x = 1: P = 0.2702  Wald (-0.0455, 0.1455)  Wilson (0.0089, 0.2361)  Clopper-Pearson (0.0013, 0.2487)
+[enumerate]   x = 2: P = 0.2852  Wald (-0.0315, 0.2315)  Wilson (0.0279, 0.3010)  Clopper-Pearson (0.0123, 0.3170)
+[enumerate]   x = 3: P = 0.1901  Wald (-0.0065, 0.3065)  Wilson (0.0524, 0.3604)  Clopper-Pearson (0.0321, 0.3789)
+[enumerate]   x = 4: P = 0.0898  Wald (+0.0247, 0.3753)  Wilson (0.0807, 0.4160)  Clopper-Pearson (0.0573, 0.4366)
+[enumerate]   x = 5: P = 0.0319  Wald (+0.0602, 0.4398)  Wilson (0.1119, 0.4687)  Clopper-Pearson (0.0866, 0.4910)
+[enumerate]   x = 6: P = 0.0089  Wald (+0.0992, 0.5008)  Wilson (0.1455, 0.5190)  Clopper-Pearson (0.1189, 0.5428)
+[enumerate]   x = 7: P = 0.0020  Wald (+0.1410, 0.5590)  Wilson (0.1812, 0.5671)  Clopper-Pearson (0.1539, 0.5922)
+[enumerate] simulated, R = 1,000,000: Wald 87.57% +- 0.03; Wilson 95.68% +- 0.02; Agresti-Coull 95.68% +- 0.02; Clopper-Pearson 98.89% +- 0.01; Jeffreys 95.68% +- 0.02
+
+[invert] 2 successes in 20: the 0.05 crossings of each test's p-value function
+[invert]   Wald test  (-0.031478, 0.231478)
+[invert]   score test (+0.027866, 0.301034)  closed form (0.027866, 0.301034), gap 5.6e-16
+[invert]   exact test (+0.012349, 0.316983)  closed form (0.012349, 0.316983), gap 5.2e-18
+[invert] largest gap to statsmodels proportion_confint over n = 1..100: Wald 0.0e+00, Wilson 0.0e+00, Agresti-Coull 0.0e+00, Clopper-Pearson 3.3e-16, Jeffreys 4.4e-16 (Jeffreys at 0 < x < n)
+[invert] statsmodels' Jeffreys at x = 0 of 20: lower limit 2.42e-05, not 0; ours sets 0, the convention of the exact interval
+[invert] largest gap to scipy.stats.binomtest(...).proportion_ci, n = 1, 2, 5, 10, 20, 50, 170 and every x: Clopper-Pearson 2.2e-15, Wilson 3.3e-16
+[invert] defaults: statsmodels proportion_confint method = 'normal', SciPy proportion_ci method = 'exact'
+
+[coverage] n = 50, exact over p in (0.0005, 0.9995): min, where, mean over a uniform p, share of p below 0.93, mean width
+[coverage]   Wald             min 0.0247 at p = 0.9995; mean 0.9006; below 0.93 on 40.0% of p; width 0.2113 (0.992 x Wilson)
+[coverage]   Wilson           min 0.8393 at p = 0.0035; mean 0.9518; below 0.93 on 1.3% of p; width 0.2129 (1.000 x Wilson)
+[coverage]   Agresti-Coull    min 0.9345 at p = 0.6885; mean 0.9580; below 0.93 on 0.0% of p; width 0.2175 (1.022 x Wilson)
+[coverage]   Clopper-Pearson  min 0.9508 at p = 0.9283; mean 0.9693; below 0.93 on 0.0% of p; width 0.2306 (1.083 x Wilson)
+[coverage]   Jeffreys         min 0.8839 at p = 0.9512; mean 0.9501; below 0.93 on 4.7% of p; width 0.2117 (0.994 x Wilson)
+[coverage] guarantee check: Clopper-Pearson covers at least 0.95 at every p on the grid: yes
+[coverage] Wald at p = 0.1, n = 10..1000: from 0.6497 (n = 10) to 0.9549; below 0.94 for 22.1% of n; biggest one-step drop n = 29 -> 30: 0.9467 -> 0.8085
+[coverage] Wald at p = 0.05, n = 10..1000: from 0.4002 (n = 10) to 0.9542; below 0.94 for 47.1% of n; biggest one-step drop n = 58 -> 59: 0.9467 -> 0.7984
+[coverage] Wald at p = 0.2, n = 10..1000: from 0.8148 (n = 15) to 0.9544; below 0.94 for 10.2% of n; biggest one-step drop n = 14 -> 15: 0.9444 -> 0.8148
+[coverage] Wald at p = 0.5, n = 10..1000: from 0.8540 (n = 12) to 0.9590; below 0.94 for 5.3% of n; biggest one-step drop n = 11 -> 12: 0.9346 -> 0.8540
+[coverage]   p = 0.1: n = 50 (np = 5, the textbook threshold) 0.8789; n = 100 0.9324; n = 1000 0.9528; Wilson across n = 10..1000 from 0.9198 to 0.9815
+[coverage] Wald under np >= 5 and n(1 - p) >= 5, n = 10..300: worst coverage 0.8538 at n = 12, p = 0.505
+[coverage] Agresti and Coull's Table 1 over a uniform p: 15 of 15 mean coverages reproduce to the printed digit; 9 of 15 root mean square errors do, the largest gap 0.0021 (computed here by exact integration)
+[coverage]   Wald             mean coverage at n = 5, 15, 30, 50, 100: 0.641, 0.819, 0.875, 0.901, 0.922
+[coverage]   Wilson           mean coverage at n = 5, 15, 30, 50, 100: 0.955, 0.953, 0.952, 0.952, 0.951
+[coverage]   Agresti-Coull    mean coverage at n = 5, 15, 30, 50, 100: 0.967, 0.963, 0.960, 0.958, 0.956
+[coverage]   Clopper-Pearson  mean coverage at n = 5, 15, 30, 50, 100: 0.990, 0.980, 0.973, 0.969, 0.965
+[coverage]   Jeffreys         mean coverage at n = 5, 15, 30, 50, 100: 0.958, 0.952, 0.951, 0.950, 0.950
+[coverage] add-two interval: minimum coverage 0.9168 at n = 10 and 0.9213 over n = 11..100; Wilson at n = 10,000: minimum 0.8387 at np = 0.176
+[coverage] simulated Wald coverage at n = 50, p = 0.1: 87.87% +- 0.07 (R = 200,000); exact 0.8789
+
+[pfizer] table 3 overall                     8 vs 162: VE  95.0 (  90.0,  97.9); printed  95.0 (  90.0,  97.9)
+[pfizer] table 3 age 16-55                   5 vs 114: VE  95.6 (  89.4,  98.6); printed  95.6 (  89.4,  98.6)
+[pfizer] table 3 age over 55                 3 vs  48: VE  93.7 (  80.5,  98.8); printed  93.7 (  80.6,  98.8)  <- differs; inside the rounding range
+[pfizer] table 3 age 65 or over              1 vs  19: VE  94.7 (  66.7,  99.9); printed  94.7 (  66.7,  99.9)
+[pfizer] table 3 age 75 or over              0 vs   5: VE 100.0 ( -13.4, 100.0); printed 100.0 ( -13.1, 100.0)  <- differs; inside the rounding range
+[pfizer] table 3 male                        3 vs  81: VE  96.3 (  88.9,  99.3); printed  96.4 (  88.9,  99.3)  <- differs; inside the rounding range
+[pfizer] table 3 female                      5 vs  81: VE  93.7 (  84.7,  98.0); printed  93.7 (  84.7,  98.0)
+[pfizer] table 3 white                       7 vs 146: VE  95.2 (  89.8,  98.1); printed  95.2 (  89.8,  98.1)
+[pfizer] table 3 black or african american   0 vs   7: VE 100.0 (  31.0, 100.0); printed 100.0 (  31.2, 100.0)  <- differs; inside the rounding range
+[pfizer] table 3 all others                  1 vs   9: VE  89.2 (  22.3,  99.8); printed  89.3 (  22.6,  99.8)  <- differs; inside the rounding range
+[pfizer] table 3 hispanic or latinx          3 vs  53: VE  94.4 (  82.7,  98.9); printed  94.4 (  82.7,  98.9)
+[pfizer] table 3 non-hispanic non-latinx     5 vs 109: VE  95.4 (  88.9,  98.5); printed  95.4 (  88.9,  98.5)
+[pfizer] table 3 argentina                   1 vs  35: VE  97.2 (  83.2,  99.9); printed  97.2 (  83.3,  99.9)  <- differs; inside the rounding range
+[pfizer] table 3 brazil                      1 vs   8: VE  87.7 (   8.3,  99.7); printed  87.7 (   8.1,  99.7)  <- differs; inside the rounding range
+[pfizer] table 3 united states               6 vs 119: VE  94.9 (  88.6,  98.2); printed  94.9 (  88.6,  98.2)
+[pfizer] table 2 covid19_7d_after_dose2_no_prior_infectio 8 vs 162: VE 95.0; printed credible interval (90.3, 97.6) -- a posterior statement, not recomputed here
+[pfizer] table 2 covid19_7d_after_dose2_with_or_without_p 9 vs 169: VE 94.6; printed credible interval (89.9, 97.3) -- a posterior statement, not recomputed here
+[pfizer] table 12 overall                     1 vs   9: VE  88.9 (  20.1,  99.7); printed  88.9 (  20.1,  99.7)
+[pfizer] 9 of 16 Clopper-Pearson rows match every printed digit; 16 of 16 lie within what three-decimal surveillance times allow
+[pfizer] primary split 8 of 170, share 0.0471: Wald VE (91.40, 98.45); Wilson VE (90.06, 97.53); Agresti-Coull VE (89.89, 97.68); Clopper-Pearson VE (90.00, 97.90); Jeffreys VE (90.46, 97.69)
+[pfizer] exact coverage at n = 170 for a true share from 0.01 to 0.12: Wald min 0.7965, mean 0.9225; Wilson min 0.9301, mean 0.9525; Agresti-Coull min 0.9438, mean 0.9609; Clopper-Pearson min 0.9517, mean 0.9679; Jeffreys min 0.9086, mean 0.9487
+[pfizer] severe after dose 1: vaccine 0.249 (0.006, 1.386) and placebo 2.247 (1.027, 4.265) per 1000 person-years; the arms' 95% intervals overlap from 1.027 to 1.386
+[pfizer]   exact conditional test of no efficacy: P(X <= 1) = 0.01058, two-sided p = 0.0212 (mid-p 0.0115); VE 88.9 (20.1, 99.7)
+[pfizer]   scipy.stats.binomtest reports p = 0.0116: it sums the outcomes no more likely than the observed one, while the Clopper-Pearson interval inverts twice the smaller tail
+
+[overlap] the overlap rule's type I error, equal standard errors: 0.00557; SE ratio 2: 0.00855; 4: 0.0175; 10: 0.0319; limit 0.05
+[overlap] standard-error bars: 0.1573; intervals that make the rule a 5% test at k = 1: 83.4% (k = 2: 85.6%)
+[overlap] at p = 0.05 and k = 1 two 95% intervals overlap by 0.586 of an arm; touching means p = 0.0056 (k = 2: 0.0085); overlap of half an average arm, p = 0.0376 (k = 2: 0.0486)
+[overlap] a design with 80% power for the standard test has 51.2% power under the overlap rule
+[overlap] Greenland et al.'s (1.04, 4.96) and (4.16, 19.84): SEs 1.000 and 4.000, z = 2.183, p = 0.0291
+[overlap] simulated, 10 per group, R = 200,000: with no difference, the t-test rejects 4.99% +- 0.05; 95% intervals fail to overlap 0.57% +- 0.02; 83.4% intervals 4.97% +- 0.05
+[overlap]   with a true difference of 1.325 SD (80% power): t-test 79.97% +- 0.09; 95% intervals apart 44.86% +- 0.11; 83.4% intervals apart 79.85% +- 0.09
+
+[tcoverage] customer spend: N = 4,317 customers, mean 1,925.71, SD 8,266.70 (divisor N), skewness 21.58
+[tcoverage] n =     10, R = 200,000: coverage 64.42% +- 0.11; the interval lies below the mean 35.58% and above it 0.004%
+[tcoverage] n =     30, R = 200,000: coverage 65.83% +- 0.11; the interval lies below the mean 34.17% and above it 0.001%
+[tcoverage] n =    100, R = 200,000: coverage 70.30% +- 0.10; the interval lies below the mean 29.69% and above it 0.007%
+[tcoverage] n =    300, R = 100,000: coverage 77.94% +- 0.13; the interval lies below the mean 22.04% and above it 0.026%
+[tcoverage] n =  1,000, R =  60,000: coverage 85.65% +- 0.14; the interval lies below the mean 14.19% and above it 0.160%
+[tcoverage] n =  3,000, R =  40,000: coverage 91.47% +- 0.14; the interval lies below the mean 7.91% and above it 0.620%
+[tcoverage] n = 10,000, R =  20,000: coverage 93.84% +- 0.17; the interval lies below the mean 5.05% and above it 1.105%
+[tcoverage] spend, n = 30: coverage by tenth of interval width, narrowest first: 0.0%, 1.0%, 14.9%, 54.8%, 88.7%, 99.0%, 100.0%, 100.0%, 100.0%, 100.0%
+[tcoverage] spend, n = 100: coverage by tenth of interval width, narrowest first: 0.0%, 2.9%, 28.8%, 76.0%, 95.5%, 99.9%, 100.0%, 100.0%, 100.0%, 100.0%
+[tcoverage] normal population, n = 30: exact by tenth of width 88.2%, 91.9%, 93.5%, 94.5%, 95.3%, 96.0%, 96.6%, 97.3%, 97.9%, 98.7%; simulated overall 95.04% +- 0.05 (R = 200,000)
+
+wrote captures.json: enumerate 0.1 s, invert 5.1 s, coverage 5.8 s, pfizer 0.0 s, overlap 0.3 s, tcoverage 4.6 s

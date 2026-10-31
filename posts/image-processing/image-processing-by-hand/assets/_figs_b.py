@@ -170,8 +170,9 @@ def fig13():
     s += (f'<line x1="{peak}" y1="{b1}" x2="{peak}" y2="{b1 - 96}" stroke="{ACCENT}" '
           f'stroke-width="2.4"/>')
     s += masked(peak, b1 - 108, "one column survives", size=8, fill=ACCENT)
-    s += masked(peak + 160, b1 - 36, "suppressed", size=8, fill=SOFT)
-    s += masked(peak - 160, b1 - 36, "suppressed", size=8, fill=SOFT)
+    # no plate: a plate on the ridge cut gaps in the curve, so the labels sit above it
+    s += mono(peak + 150, b1 - 72, "suppressed", size=8, fill=SOFT, track="0.04em")
+    s += mono(peak - 150, b1 - 72, "suppressed", size=8, fill=SOFT, track="0.04em")
 
     s += txt(508, 396, "non-maximum suppression makes the edge thin; the gradient alone never does",
              size=11, fill=MUTED)

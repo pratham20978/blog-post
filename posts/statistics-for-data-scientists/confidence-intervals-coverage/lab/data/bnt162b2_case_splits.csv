@@ -1,0 +1,29 @@
+# Case splits from the BNT162b2 (Pfizer-BioNTech) phase 3 trial, copied as printed; the lab recomputes every interval.
+# Source A: F. P. Polack et al., "Safety and efficacy of the BNT162b2 mRNA Covid-19 vaccine", New England Journal of Medicine
+#   383(27): 2603-2615, 2020, https://doi.org/10.1056/NEJMoa2034577 (read via PMC7745181), Table 2 and Table 3.
+# Source B: U.S. Food and Drug Administration, Vaccines and Related Biological Products Advisory Committee, FDA Briefing
+#   Document: Pfizer-BioNTech COVID-19 Vaccine, meeting of 10 December 2020, https://www.fda.gov/media/144245/download , Table 12
+#   (a U.S. government work).
+# surveillance_* is total follow-up in 1000 person-years for the endpoint, printed to three decimals; at_risk_* is the number
+# of participants at risk. interval is the paper's method: clopper_pearson is "derived according to the Clopper-Pearson method,
+# adjusted for surveillance time"; credible is a beta-binomial model with prior beta(0.700102, 1) adjusted for surveillance time.
+# Counts and times are facts reported in the sources; nothing here is changed except the subgroup labels, shortened to plain ASCII.
+source,table,endpoint,subgroup,cases_vaccine,surveillance_vaccine,at_risk_vaccine,cases_placebo,surveillance_placebo,at_risk_placebo,published_ve,published_lower,published_upper,interval
+A,3,covid19_7d_after_dose2_no_prior_infection,overall,8,2.214,17411,162,2.222,17511,95.0,90.0,97.9,clopper_pearson
+A,3,covid19_7d_after_dose2_no_prior_infection,age 16-55,5,1.234,9897,114,1.239,9955,95.6,89.4,98.6,clopper_pearson
+A,3,covid19_7d_after_dose2_no_prior_infection,age over 55,3,0.980,7500,48,0.983,7543,93.7,80.6,98.8,clopper_pearson
+A,3,covid19_7d_after_dose2_no_prior_infection,age 65 or over,1,0.508,3848,19,0.511,3880,94.7,66.7,99.9,clopper_pearson
+A,3,covid19_7d_after_dose2_no_prior_infection,age 75 or over,0,0.102,774,5,0.106,785,100.0,-13.1,100.0,clopper_pearson
+A,3,covid19_7d_after_dose2_no_prior_infection,male,3,1.124,8875,81,1.108,8762,96.4,88.9,99.3,clopper_pearson
+A,3,covid19_7d_after_dose2_no_prior_infection,female,5,1.090,8536,81,1.114,8749,93.7,84.7,98.0,clopper_pearson
+A,3,covid19_7d_after_dose2_no_prior_infection,white,7,1.889,14504,146,1.903,14670,95.2,89.8,98.1,clopper_pearson
+A,3,covid19_7d_after_dose2_no_prior_infection,black or african american,0,0.165,1502,7,0.164,1486,100.0,31.2,100.0,clopper_pearson
+A,3,covid19_7d_after_dose2_no_prior_infection,all others,1,0.160,1405,9,0.155,1355,89.3,22.6,99.8,clopper_pearson
+A,3,covid19_7d_after_dose2_no_prior_infection,hispanic or latinx,3,0.605,4764,53,0.600,4746,94.4,82.7,98.9,clopper_pearson
+A,3,covid19_7d_after_dose2_no_prior_infection,non-hispanic non-latinx,5,1.596,12548,109,1.608,12661,95.4,88.9,98.5,clopper_pearson
+A,3,covid19_7d_after_dose2_no_prior_infection,argentina,1,0.351,2545,35,0.346,2521,97.2,83.3,99.9,clopper_pearson
+A,3,covid19_7d_after_dose2_no_prior_infection,brazil,1,0.119,1129,8,0.117,1121,87.7,8.1,99.7,clopper_pearson
+A,3,covid19_7d_after_dose2_no_prior_infection,united states,6,1.732,13359,119,1.747,13506,94.9,88.6,98.2,clopper_pearson
+A,2,covid19_7d_after_dose2_no_prior_infection,overall,8,2.214,17411,162,2.222,17511,95.0,90.3,97.6,credible
+A,2,covid19_7d_after_dose2_with_or_without_prior_infection,overall,9,2.332,18559,169,2.345,18708,94.6,89.9,97.3,credible
+B,12,first_severe_covid19_after_dose1,overall,1,4.021,21314,9,4.006,21259,88.9,20.1,99.7,clopper_pearson

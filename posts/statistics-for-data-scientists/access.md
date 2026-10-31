@@ -100,6 +100,19 @@ Part 5's lab, measured with `/usr/bin/time -v` on the frozen `testing.py` (13b3a
 peaked at 0.48 GB in 26.5 s, `--quick` at 0.27 GB in 7.6 s, and the E4 fault run (`retrodesign --quick
 --fault`) at 0.14 GB in 2.9 s.
 
+## Probe — 2026-10-31 (Part 6)
+
+```
+ram_total=14G ram_available=4G at the start of the build, 1G at its end
+disk_free=318G on /
+everything else as on 2026-10-23
+```
+
+Part 6's lab, measured with `/usr/bin/time -v` on the frozen `intervals.py` (4cde398084f1): the full
+run peaked at 0.28 GB in 17.3 s, `--quick` at 0.19 GB in 11.3 s, and the E4 fault run (`coverage
+--quick --fault`) at 0.14 GB in 6.8 s. PyPI was unreachable when the notebook was built (uv reported a
+network error); uv's cache held every package, so `--offline` was enough.
+
 ## Requests
 
 None. Every part is **G1 — runs anywhere**, self-provisioned. No hardware, privilege, credential or
@@ -125,7 +138,10 @@ check used the system MASS (`glm.nb`), and its `powerlaw` 2.0.0 check ran in a t
 session scratchpad. On 2026-10-29, Part 5
 reused the venv unchanged; its notebook ran the same way, its private R check used base R only
 (`power.t.test` and Gelman and Carlin's `retrodesign()` as printed in their appendix), and the papers
-it read were downloaded to the session scratchpad.
+it read were downloaded to the session scratchpad. On 2026-10-31, Part 6 reused the venv unchanged;
+its notebook ran the same way but offline, from uv's cache; its private R check used base R only
+(`binom.test`, `prop.test`, `poisson.test`, `qbeta`, `pbeta`, `dbinom`); and the papers it read
+were downloaded to the session scratchpad.
 
 | What | Where | For | Undo |
 |---|---|---|---|
