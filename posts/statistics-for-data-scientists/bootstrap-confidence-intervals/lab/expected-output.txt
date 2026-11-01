@@ -1,0 +1,93 @@
+Captured 2026-11-01T06:29:25Z on Linux 7.0.0-38-generic x86_64, AMD Ryzen 7 5825U with Radeon Graphics; Python 3.12.15, NumPy 2.5.4, SciPy 1.18.1; bootstrap.py e3a939a03bc4; budget full, seed 20261101.
+
+[example] 15 law schools: r = 0.776374; the 82-school population's rho = 0.759998
+[example] standard errors before resampling: normal theory (1 - r^2)/sqrt(n - 3) = 0.1147; delta method sqrt(sum L^2)/n = 0.1243
+[example] first resample, rows drawn for LSAT: [10, 13, 15, 11, 11, 6, 15, 5, 6, 12, 8, 3, 12, 2, 1]
+[example] first resample, rows drawn for GPA:  [10, 13, 15, 11, 11, 6, 15, 5, 6, 12, 8, 3, 12, 2, 1]
+[example] first resample: 11 distinct schools, r* = 0.7195
+[example] B = 10,000 replicates: mean 0.7692, bootstrap SE 0.1353, bias estimate -0.0072
+[example] 4,630 of 10,000 replicates lie below r: p0 = 0.4630, z0 = qnorm(p0) = -0.0929
+[example] leave-one-out correlations, school by school: 6: 0.8929, 13: 0.7637, 79: 0.7550, 35: 0.7761, 70: 0.7313, 52: 0.7800, 50: 0.7845, 15: 0.7362, 47: 0.7517, 31: 0.7761, 4: 0.8181, 82: 0.7857, 45: 0.7404, 36: 0.7670, 53: 0.7799
+[example] jackknife mean 0.7759; acceleration a = -0.07567
+[example] BCa levels: 0.581% and 93.859% in place of 2.5% and 97.5%
+[example]   normal, bootstrap SE       (0.5112, 1.0416)  width 0.5304
+[example]   percentile                 (0.4523, 0.9624)  width 0.5101
+[example]   basic                      (0.5904, 1.1004)  width 0.5101
+[example]   studentized                (-0.4624, 0.9971)  width 1.4595
+[example]   studentized, z scale       (-0.1421, 0.9455)  width 1.0876
+[example]   BCa                        (0.3273, 0.9421)  width 0.6147
+[example]   Fisher z (normal theory)   (0.4385, 0.9220)  width 0.4835
+[example] studentized t* quantiles -1.776 and 9.968; percentile quantiles 0.4523 and 0.9624
+[example] the true sampling distribution of r at n = 15 from the 82 schools (R = 1,000,000): SE 0.1296, mean 0.7467, bias -0.0133, P(r < rho) 0.4684, 2.5/50/97.5% points 0.4334, 0.7696, 0.9294
+[example] B =  1,000: endpoint SD over 200 reruns: percentile 0.0177, 0.0034; BCa 0.0379, 0.0045; bootstrap SE itself 0.0036
+[example] B =  2,000: endpoint SD over 200 reruns: percentile 0.0116, 0.0025; BCa 0.0261, 0.0032; bootstrap SE itself 0.0026
+[example] B = 10,000: endpoint SD over 200 reruns: percentile 0.0063, 0.0010; BCa 0.0115, 0.0014; bootstrap SE itself 0.0012
+
+[reconcile] SciPy 1.18.1 percentile (0.453665, 0.962576); from scratch (0.453665, 0.962576)
+[reconcile] SciPy 1.18.1 basic      (0.590173, 1.099084); from scratch (0.590173, 1.099084)
+[reconcile] SciPy 1.18.1 BCa        (0.354838, 0.943558); from scratch (0.354838, 0.943558)
+[reconcile] largest difference from SciPy: 2.2e-16
+[reconcile] acceleration four ways: jackknife, centred -0.07567; jackknife, about r -0.07409; regression on these 10,000 resamples -0.08175; exact influence values (infinitesimal jackknife) -0.08168
+[reconcile] BCa as bcanon (bootstrap 2019.6)     : z0 -0.0712, a -0.07567 (type 1): (0.3547, 0.9436)
+[reconcile] BCa as boot.ci default (boot 1.3.32) : z0 -0.0712, a -0.08175 (normal-scale interpolation): (0.3493, 0.9421)
+[reconcile] BCa as boot.ci with jackknife L      : z0 -0.0712, a -0.07409 (normal-scale interpolation): (0.3551, 0.9437)
+[reconcile] BCa as scipy.stats.bootstrap         : z0 -0.0712, a -0.07567 (type 7): (0.3548, 0.9436)
+[reconcile] R boot.ci normal        (0.5205, 1.0284); recomputed (0.5205, 1.0284)
+[reconcile] R boot.ci basic         (0.5901, 1.0732); recomputed (0.5901, 1.0732)
+[reconcile] R boot.ci studentized   (-0.3930, 0.9784); recomputed (-0.3930, 0.9784)
+[reconcile] R boot.ci studentized_z (-0.1513, 0.9366); recomputed (-0.1513, 0.9366)
+[reconcile] R boot.ci percentile    (0.4796, 0.9626); recomputed (0.4796, 0.9626)
+[reconcile] R boot.ci bca           (0.3021, 0.9392); recomputed (0.3021, 0.9392)
+[reconcile] R boot.ci bca_jack      (0.3155, 0.9410); recomputed (0.3155, 0.9410)
+[reconcile] R 4.5.2, boot 1.3.32, B = 2,000: largest difference 3.9e-15; z0 -0.1421; a from regression -0.08655, from the jackknife -0.07409; R's jackknife values match the lab's to 3.1e-15
+
+[coverage] 20,000 samples of 15 from the 82 schools (rho = 0.7600), B = 2,000 replicates each:
+[coverage]   normal, bootstrap SE       89.0% +- 0.2; rho below the interval 10.2%, above it 0.9%; median width 0.465; upper limit above 1 in 45.7%
+[coverage]   percentile                 91.0% +- 0.2; rho below the interval 6.9%, above it 2.2%; median width 0.454; upper limit above 1 in 0.0%
+[coverage]   basic                      80.7% +- 0.3; rho below the interval 18.7%, above it 0.7%; median width 0.454; upper limit above 1 in 69.6%
+[coverage]   studentized                95.7% +- 0.1; rho below the interval 2.6%, above it 1.7%; median width 0.685; upper limit above 1 in 23.5%
+[coverage]   studentized, z scale       93.8% +- 0.2; rho below the interval 2.9%, above it 3.3%; median width 0.599; upper limit above 1 in 0.0%
+[coverage]   BCa                        92.0% +- 0.2; rho below the interval 5.0%, above it 3.0%; median width 0.490; upper limit above 1 in 0.0%
+[coverage]   Fisher z (normal theory)   93.6% +- 0.2; rho below the interval 4.5%, above it 2.0%; median width 0.497; upper limit above 1 in 0.0%
+[coverage] across samples, z0 quartiles -0.151, -0.095, -0.049; a quartiles -0.0277, +0.0031, +0.0409; 0 samples had undefined replicates
+
+[spend] customer spend: N = 4,317, mean 1,925.71; the top 1% are the 44 customers spending 17,507 or more
+[spend] n = 30, R = 20,000, B = 2,000: 5,270 samples (26.4%; exact 26.5%) contain a top-1% customer
+[spend]   t-interval             66.0% +- 0.3; interval below the mean 34.0%; coverage without a top-1% customer 53.8%, with one 100.0%
+[spend]   normal, bootstrap SE   64.3% +- 0.3; interval below the mean 35.7%; coverage without a top-1% customer 51.5%, with one 100.0%
+[spend]   percentile             66.8% +- 0.3; interval below the mean 33.1%; coverage without a top-1% customer 55.0%, with one 99.8%
+[spend]   basic                  60.3% +- 0.3; interval below the mean 39.7%; coverage without a top-1% customer 46.1%, with one 99.9%
+[spend]   studentized            80.3% +- 0.3; interval below the mean 19.5%; coverage without a top-1% customer 73.5%, with one 99.4%
+[spend]   BCa                    73.3% +- 0.3; interval below the mean 25.9%; coverage without a top-1% customer 64.8%, with one 97.0%
+[spend] n = 100, R = 8,000, B = 2,000: 5,109 samples (63.9%; exact 64.1%) contain a top-1% customer
+[spend]   t-interval             70.1% +- 0.5; interval below the mean 29.9%; coverage without a top-1% customer 25.4%, with one 95.4%
+[spend]   normal, bootstrap SE   69.6% +- 0.5; interval below the mean 30.3%; coverage without a top-1% customer 24.4%, with one 95.2%
+[spend]   percentile             72.0% +- 0.5; interval below the mean 27.9%; coverage without a top-1% customer 28.4%, with one 96.7%
+[spend]   basic                  66.2% +- 0.5; interval below the mean 33.8%; coverage without a top-1% customer 20.2%, with one 92.2%
+[spend]   studentized            80.3% +- 0.4; interval below the mean 19.3%; coverage without a top-1% customer 46.8%, with one 99.2%
+[spend]   BCa                    77.0% +- 0.5; interval below the mean 21.8%; coverage without a top-1% customer 40.4%, with one 97.7%
+
+[maximum] tanks: serials [58, 171, 272, 273, 303], N = 342; the bootstrap distribution of the maximum over all 3,125 resamples: 58: 0.00032, 171: 0.00992, 272: 0.06752, 273: 0.24992, 303: 0.67232
+[maximum] the bootstrap puts 0.67232 on the observed maximum 303; the true distribution of M puts 0.00897 on 303, 0.01462 on 342, and has P(M <= 303) = 0.5438
+[maximum] exact bounds from P(M <= 303 | N): the largest N not rejected at 2.5% is 631, at 5% 549; the lower tail is empty because M <= N, so (303, 631) covers at least 97.5% and (303, 549) at least 95%
+[maximum] 95% intervals for N from these five serials: percentile (272, 303), basic (303, 334), BCa (171, 303) (z0 -0.4463 from the strict share) or (273, 303) (z0 +0.4230, mid-rank), with jackknife a = +0.1118; the exact interval from the distribution of M is (303, 631)
+[maximum] scipy.stats.bootstrap on the five serials: BCa (273.0, 303.0), percentile (272.0, 303.0)
+[maximum] exact coverage of N = 342 over all captures of five: percentile and BCa 1.46% (only when tank 342 is caught), basic 75.73%, the exact interval at least 95%
+[maximum] uniform, n =    10: P*(M* = M) = 0.6513; the basic interval reflects at x_(7) and covers 87.6% +- 0.1 (R = 200,000); percentile and BCa intervals cover 0%
+[maximum] uniform, n =   100: P*(M* = M) = 0.6340; the basic interval reflects at x_(97) and covers 87.5% +- 0.1 (R = 200,000); percentile and BCa intervals cover 0%
+[maximum] uniform, n = 1,000: P*(M* = M) = 0.6323; the basic interval reflects at x_(997) and covers 87.4% +- 0.1 (R = 200,000); percentile and BCa intervals cover 0%
+[maximum] limits as n grows: point mass 1 - 1/e = 0.6321; basic coverage 1 - (1/2)^3 = 0.875
+
+[heavy] Pareto data with tail index 1.5: mean 3.0, infinite variance
+[heavy] n =    30, R = 10,000: t-interval 65.9% +- 0.5; percentile 66.6% +- 0.5; studentized 80.8% +- 0.4; BCa 73.2% +- 0.4
+[heavy] n =   100, R = 4,000: t-interval 69.9% +- 0.7; percentile 71.7% +- 0.7; studentized 81.9% +- 0.6; BCa 78.2% +- 0.7
+[heavy] n =   300, R = 2,000: t-interval 73.7% +- 1.0; percentile 76.2% +- 1.0; studentized 83.5% +- 0.8; BCa 80.9% +- 0.9
+[heavy] n = 1,000, R = 2,000: t-interval 77.2% +- 0.9; percentile 78.7% +- 0.9; studentized 84.8% +- 0.8; BCa 83.6% +- 0.8
+[heavy] sample 1 of n = 100: mean 2.623, largest value 22.2 (8.5% of the sum; lumps 0.222 apart against a spread of 0.188 from the rest); bootstrap means by copies of it: 0 copies 36.9% at 2.426, 1 copies 36.8% at 2.624, 2 copies 18.5% at 2.822, 3 copies 5.8% at 3.010
+[heavy] sample 2 of n = 100: mean 2.386, largest value 20.7 (8.7% of the sum; lumps 0.207 apart against a spread of 0.232 from the rest); bootstrap means by copies of it: 0 copies 36.6% at 2.205, 1 copies 36.7% at 2.389, 2 copies 18.5% at 2.575, 3 copies 6.3% at 2.751
+[heavy] sample 3 of n = 100: mean 2.566, largest value 17.5 (6.8% of the sum; lumps 0.175 apart against a spread of 0.286 from the rest); bootstrap means by copies of it: 0 copies 36.7% at 2.414, 1 copies 37.0% at 2.566, 2 copies 18.7% at 2.715, 3 copies 5.8% at 2.870
+
+[dependent] AR(1), phi = 0.5, n = 200: the SD of the mean is 0.1409 (exact); independent resampling estimates 0.574 of it (large-n theory 0.577)
+[dependent] lag-1 autocorrelation: series +0.487, resamples -0.0054; the percentile interval for the mean covers 73.5% +- 0.7 (R = 4,000, B = 1,000); normal-theory value at that SE ratio 74.4%
+
+wrote captures.json: example 3.0 s, reconcile 0.1 s, coverage 59.8 s, spend 67.2 s, maximum 3.6 s, heavy 63.3 s, dependent 10.9 s

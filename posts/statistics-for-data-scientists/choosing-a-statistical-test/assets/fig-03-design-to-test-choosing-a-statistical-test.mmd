@@ -1,0 +1,35 @@
+---
+config:
+  flowchart:
+    curve: basis
+---
+flowchart TB
+  q["How were the data collected?"]
+  pair["the same units measured twice,<br/>or matched in pairs"]
+  two["two independent groups"]
+  k["three or more<br/>independent groups"]
+  tab["a 2 × 2 table of counts"]
+  pt["paired t-test<br/>on the differences<br/>sleep data: p = 0.0028,<br/>not 0.079 as two groups"]
+  w["Welch's t-test<br/>Student's errs 18.3%<br/>at 10 vs 40 with SD × 2"]
+  wa["Welch's ANOVA, W<br/>classical F errs 16.1%<br/>under negative pairing"]
+  both["both margins fixed<br/>the tea test: told<br/>four of each"]
+  one["only the group sizes,<br/>or only the total, fixed"]
+  fis["Fisher's exact test<br/>exact here:<br/>size 1/70 at 5%"]
+  bos["Boschloo's test or mid-p;<br/>'N − 1' chi-squared if<br/>every expected count ≥ 1<br/>Fisher's size: at most<br/>3.61% at 20 vs 22"]
+
+  q -->|"both conditions<br/>per unit"| pair
+  q -->|"one group<br/>per unit"| two
+  q -->|"one of k groups<br/>per unit"| k
+  q -->|"a yes-or-no<br/>outcome"| tab
+  pair -->|"analyse the<br/>differences"| pt
+  two -->|"do not pool<br/>the variances"| w
+  k -->|"do not pool<br/>the variances"| wa
+  tab -->|"the design set<br/>both totals"| both
+  tab -->|"the design set<br/>fewer totals"| one
+  both -->|"condition on<br/>both margins"| fis
+  one -->|"use the design's<br/>own sampling"| bos
+
+  classDef ask fill:#fdf1eb,stroke:#eb6c36,color:#2d3142
+  classDef test fill:#ffffff,stroke:#2e5aa8,color:#2d3142
+  class q ask
+  class pt,w,wa,fis,bos test

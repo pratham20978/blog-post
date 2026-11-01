@@ -113,6 +113,30 @@ run peaked at 0.28 GB in 17.3 s, `--quick` at 0.19 GB in 11.3 s, and the E4 faul
 --quick --fault`) at 0.14 GB in 6.8 s. PyPI was unreachable when the notebook was built (uv reported a
 network error); uv's cache held every package, so `--offline` was enough.
 
+## Probe — 2026-11-01 (Part 7)
+
+```
+ram_total=14G ram_available=7G at the start of the build, 6G at its end
+disk_free=317G on /
+everything else as on 2026-10-23
+```
+
+Part 7's lab, measured with `/usr/bin/time -v` on the frozen `bootstrap.py` (e3a939a03bc4): the full
+run peaked at 0.46 GB in 209.2 s, `--quick` at 0.42 GB in 22.3 s, the E4 fault run (`example --quick
+--fault`) at 0.11 GB in 5.0 s, and the E3 run (`example --quick --drop 6`) at 0.11 GB in 1.3 s.
+
+## Probe — 2026-11-01 (Part 8)
+
+```
+ram_total=14G ram_available=5G at the start of the build, 5G at its end
+disk_free=317G on /
+everything else as on 2026-10-23
+```
+
+Part 8's lab, measured with `/usr/bin/time -v` on the frozen `choosing.py` (f97524b7029d): the full run peaked at
+0.21 GB in 61 s, `--quick` at 0.21 GB in 30 s, the E4 fault run (`example --quick --fault`) at 0.13 GB in 1.7 s, and the
+E3 run (`twosample --quick --n1 40 --n2 10 --ratio 2`) at 0.11 GB in 1.7 s.
+
 ## Requests
 
 None. Every part is **G1 — runs anywhere**, self-provisioned. No hardware, privilege, credential or
@@ -141,7 +165,15 @@ reused the venv unchanged; its notebook ran the same way, its private R check us
 it read were downloaded to the session scratchpad. On 2026-10-31, Part 6 reused the venv unchanged;
 its notebook ran the same way but offline, from uv's cache; its private R check used base R only
 (`binom.test`, `prop.test`, `poisson.test`, `qbeta`, `pbeta`, `dbinom`); and the papers it read
-were downloaded to the session scratchpad.
+were downloaded to the session scratchpad. On 2026-11-01, Part 7 reused the venv unchanged (its lab
+needs only NumPy and SciPy); its notebook ran the same way, online; its shipped `crosscheck.R` used
+the system R's recommended package boot 1.3.32 (`/usr/lib/R/library`), so nothing was installed into
+R; and the CRAN `bootstrap` 2019.6 tarball behind its law-school CSV, and the papers it read, were
+downloaded to the session scratchpad. On 2026-11-01, Part 8 reused the venv unchanged (its lab needs NumPy, SciPy,
+statsmodels and pandas at the series pins); its notebook ran the same way, online; its private R check used base R
+only (`t.test`, `chisq.test`, `fisher.test`, `anova`, `oneway.test`); a throwaway venv in the session scratchpad
+measured the lab's install at 263 MB and was deleted; and the papers it read were downloaded to the session
+scratchpad.
 
 | What | Where | For | Undo |
 |---|---|---|---|

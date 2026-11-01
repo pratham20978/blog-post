@@ -1,0 +1,101 @@
+Captured 2026-11-01T14:56:06Z on Linux 7.0.0-38-generic x86_64, AMD Ryzen 7 5825U with Radeon Graphics; Python 3.12.15, NumPy 2.5.4, SciPy 1.18.1, statsmodels 0.15.0; choosing.py f97524b7029d; budget full, seed 20261101.
+
+example: Student's ten patients (R's sleep), extra hours of sleep on drug 1 and drug 2
+  pairs (patient on drug 1, patient on drug 2): (1, 1), (2, 2), (3, 3), (4, 4), (5, 5), (6, 6), (7, 7), (8, 8), (9, 9), (10, 10)
+  means 0.75 and 2.33; mean difference 1.58; SDs (divisor n - 1) 1.7890, 2.0022, differences 1.2300; correlation between the drugs 0.7952
+  Var(d) = Var(1) + Var(2) - 2 Cov = 3.2006 + 4.0090 - 2 x 2.8483 = 1.5129
+  paired: SE 0.3890, t = 4.0621 on 9 df, p = 0.002833, 95% CI 0.7001 to 2.4599
+  Student unpaired: pooled variance 3.6048, SE 0.8491, t = 1.8608 on 18 df, p = 0.079187, 95% CI -0.2039 to 3.3639
+  Welch unpaired: SE 0.8491, t = 1.8608 on 17.776 df, p = 0.079394, 95% CI -0.2055 to 3.3655
+  the unpaired SE is 2.183 times the paired one; a parallel-group trial would need 47.7 patients per arm for the paired SE (from these sample variances)
+  Student's 1908 scale (divisor n): SDs 1.70, 1.90, 1.17; z = 1.354; t = z sqrt(n - 1) = 4.0621; one-sided P = 0.001416
+  SciPy ttest_rel p = 0.002833; ttest_ind default (equal_var=True, Student) p = 0.079187; equal_var=False p = 0.079394
+  statsmodels ttest_ind default (usevar='pooled') p = 0.079187; usevar='unequal' p = 0.079394; largest difference from the hand values 1.4e-16
+
+twosample: Student's pooled t-test against Welch's, normal data, alpha = 0.05 two-sided
+  n1 = 10, n2 = 40 (sigma1/sigma2: exact Student, exact Welch; quadrature converged to 1e-12)
+    0.250: Student 0.07%, Welch 4.98%; 0.297: Student 0.11%, Welch 4.97%; 0.333: Student 0.14%, Welch 4.97%; 0.354: Student 0.17%, Welch 4.97%
+    0.420: Student 0.29%, Welch 4.98%; 0.500: Student 0.52%, Welch 5.01%; 0.595: Student 0.95%, Welch 5.04%; 0.667: Student 1.41%, Welch 5.07%
+    0.707: Student 1.72%, Welch 5.09%; 0.841: Student 3.03%, Welch 5.12%; 1.000: Student 5.00%, Welch 5.15%; 1.189: Student 7.69%, Welch 5.15%
+    1.414: Student 10.96%, Welch 5.15%; 1.500: Student 12.17%, Welch 5.14%; 1.682: Student 14.59%, Welch 5.13%; 2.000: Student 18.25%, Welch 5.11%
+    2.378: Student 21.70%, Welch 5.09%; 2.828: Student 24.74%, Welch 5.07%; 3.000: Student 25.66%, Welch 5.06%; 3.364: Student 27.30%, Welch 5.05%
+    4.000: Student 29.37%, Welch 5.04%
+    simulated at 0.25 (R = 200,000): Student 0.08% +- 0.01, Welch 4.94% +- 0.05 (z against exact +0.7, -0.7)
+    simulated at 0.5 (R = 200,000): Student 0.51% +- 0.02, Welch 4.97% +- 0.05 (z against exact -0.5, -0.8)
+    simulated at 1 (R = 200,000): Student 5.01% +- 0.05, Welch 5.13% +- 0.05 (z against exact +0.1, -0.3)
+    simulated at 2 (R = 200,000): Student 18.22% +- 0.09, Welch 5.15% +- 0.05 (z against exact -0.3, +0.7)
+    simulated at 4 (R = 200,000): Student 29.47% +- 0.10, Welch 5.04% +- 0.05 (z against exact +1.1, +0.0)
+  n1 = 25, n2 = 25 (sigma1/sigma2: exact Student, exact Welch; quadrature converged to 3e-17)
+    0.250: Student 5.44%, Welch 5.01%; 0.297: Student 5.39%, Welch 5.01%; 0.333: Student 5.36%, Welch 5.01%; 0.354: Student 5.34%, Welch 5.01%
+    0.420: Student 5.27%, Welch 5.01%; 0.500: Student 5.20%, Welch 5.01%; 0.595: Student 5.12%, Welch 5.00%; 0.667: Student 5.08%, Welch 4.99%
+    0.707: Student 5.06%, Welch 4.99%; 0.841: Student 5.02%, Welch 4.98%; 1.000: Student 5.00%, Welch 4.98%; 1.189: Student 5.02%, Welch 4.98%
+    1.414: Student 5.06%, Welch 4.99%; 1.500: Student 5.08%, Welch 4.99%; 1.682: Student 5.12%, Welch 5.00%; 2.000: Student 5.20%, Welch 5.01%
+    2.378: Student 5.27%, Welch 5.01%; 2.828: Student 5.34%, Welch 5.01%; 3.000: Student 5.36%, Welch 5.01%; 3.364: Student 5.39%, Welch 5.01%
+    4.000: Student 5.44%, Welch 5.01%
+    simulated at 1 (R = 200,000): Student 5.02% +- 0.05, Welch 4.99% +- 0.05 (z against exact +0.3, +0.3)
+    simulated at 4 (R = 200,000): Student 5.52% +- 0.05, Welch 5.10% +- 0.05 (z against exact +1.5, +1.8)
+  the lab's t-tests against scipy.stats.ttest_ind on 2,000 pairs of samples: largest p difference 5.6e-16
+  equal SDs, n1 = 10, n2 = 40: at a difference of 1.011 SD Student's power is 80.0% and Welch's 75.6%; the largest gap over 0 to 2 SD is 4.58 points
+  equal SDs, n1 = 25, n2 = 25: at a difference of 0.809 SD Student's power is 80.0% and Welch's 79.9%; the largest gap over 0 to 2 SD is 0.08 points
+  SD ratio 2, n1 = 10, n2 = 40, difference 1 SD of group 2: Student 57.3%, Welch 28.7%
+  SD ratio 0.5, n1 = 10, n2 = 40, difference 1 SD of group 2: Student 92.9%, Welch 99.0%
+
+pretest: n1 = 10, n2 = 40, normal data, equal means; R = 100,000 per ratio; pre-tests at alpha 0.05
+  SD ratio 0.250: Student 0.06% +- 0.01, Welch 5.03% +- 0.07, Levene decides 4.99% +- 0.07, the full habit 4.65% +- 0.07; Levene rejects 99.1%; Student when Levene accepts 0.00%, Welch when it rejects 5.04%
+  SD ratio 0.333: Student 0.16% +- 0.01, Welch 4.93% +- 0.07, Levene decides 4.68% +- 0.07, the full habit 4.42% +- 0.06; Levene rejects 92.4%; Student when Levene accepts 0.39%, Welch when it rejects 5.04%
+  SD ratio 0.500: Student 0.52% +- 0.02, Welch 5.21% +- 0.07, Levene decides 3.85% +- 0.06, the full habit 3.75% +- 0.06; Levene rejects 54.5%; Student when Levene accepts 0.63%, Welch when it rejects 6.54%
+  SD ratio 0.667: Student 1.33% +- 0.04, Welch 4.95% +- 0.07, Levene decides 2.96% +- 0.05, the full habit 3.00% +- 0.05; Levene rejects 21.6%; Student when Levene accepts 1.42%, Welch when it rejects 8.58%
+  SD ratio 1.000: Student 4.86% +- 0.07, Welch 5.09% +- 0.07, Levene decides 5.07% +- 0.07, the full habit 5.18% +- 0.07; Levene rejects 4.3%; Student when Levene accepts 4.86%, Welch when it rejects 9.77%
+  SD ratio 1.500: Student 12.23% +- 0.10, Welch 5.07% +- 0.07, Levene decides 9.74% +- 0.09, the full habit 9.75% +- 0.09; Levene rejects 27.9%; Student when Levene accepts 12.90%, Welch when it rejects 1.57%
+  SD ratio 2.000: Student 18.25% +- 0.12, Welch 5.06% +- 0.07, Levene decides 9.13% +- 0.09, the full habit 9.53% +- 0.09; Levene rejects 64.6%; Student when Levene accepts 21.19%, Welch when it rejects 2.52%
+  SD ratio 3.000: Student 25.60% +- 0.14, Welch 5.04% +- 0.07, Levene decides 6.00% +- 0.08, the full habit 7.26% +- 0.08; Levene rejects 94.5%; Student when Levene accepts 35.80%, Welch when it rejects 4.28%
+  SD ratio 4.000: Student 29.29% +- 0.14, Welch 5.03% +- 0.07, Levene decides 5.22% +- 0.07, the full habit 6.86% +- 0.08; Levene rejects 99.1%; Student when Levene accepts 50.71%, Welch when it rejects 4.79%
+  the lab's Levene test against scipy.stats.levene (center='median') on 2,000 pairs: largest p difference 2.2e-16
+
+tables: 2x2 tables
+  tea: 8 cups, 4 milk first; ways to pick 0..4 of them correctly [1, 16, 36, 16, 1] of 70
+  P(4 correct) = 1/70 = 0.014286; P(3 or more) = 17/70 = 0.242857; the 5% test rejects only at 4 correct, so its size is 0.014286
+  not told the split, one cup doubtful: the table [[3, 1], [0, 4]] has one-sided P = 0.071429 (= 4/56), and no table with one doubt reaches 1/70
+  malocclusion (Hellman, via Yates 1934): breast-fed 4 normal of 20, bottle-fed 1 of 22; expected counts 2.381, 17.619, 2.619, 19.381; smallest 2.381
+  chi-squared 2.3858; p-values: Pearson chi-squared 0.1224; Yates-corrected chi-squared 0.2857; 'N - 1' chi-squared 0.1270; Fisher's exact (Irwin's rule) 0.1745; Fisher's exact, doubled one-sided 0.2871; Fisher's mid-p 0.1118; Boschloo's unconditional 0.1747; Barnard's unconditional 0.1429
+  SciPy on the observed table: chi2_contingency_default 0.2857; chi2_contingency_no_correction 0.1224; fisher_exact 0.1745; boschloo_exact 0.1747; barnard_exact 0.1429
+  over the 483 tables with these row totals (481 checked for the unconditional tests): largest differences from SciPy: fisher_exact 2.2e-16, chi2_contingency 5.6e-16, boschloo_exact 2.5e-13, barnard_exact 3.8e-02
+  barnard_exact differs on 71 tables, 71 of them tables whose |Z| ties another table's exactly; worst (15 of 20, 12 of 22): lab 0.217158, SciPy 0.179079, SciPy on its mirror image (5, 10) 0.217158; exact ties [(0, 2), (5, 2), (5, 10), (15, 12), (15, 20), (20, 20)]
+  (20, 22) Pearson chi-squared                rejects 268 of 483 tables; largest size 4.94% at pi = 0.2447; size at pi 0.12 4.33%; power 20% vs 5% 28.3%, reversed 30.1%
+  (20, 22) Yates-corrected chi-squared        rejects 234 of 483 tables; largest size 2.19% at pi = 0.3936; size at pi 0.12 1.03%; power 20% vs 5% 15.9%, reversed 11.8%
+  (20, 22) 'N - 1' chi-squared                rejects 268 of 483 tables; largest size 4.94% at pi = 0.2447; size at pi 0.12 4.33%; power 20% vs 5% 28.3%, reversed 30.1%
+  (20, 22) Fisher's exact (Irwin's rule)      rejects 254 of 483 tables; largest size 3.61% at pi = 0.2851; size at pi 0.12 2.95%; power 20% vs 5% 27.1%, reversed 21.8%
+  (20, 22) Fisher's exact, doubled one-sided  rejects 234 of 483 tables; largest size 2.19% at pi = 0.3936; size at pi 0.12 1.03%; power 20% vs 5% 15.9%, reversed 11.8%
+  (20, 22) Fisher's mid-p                     rejects 268 of 483 tables; largest size 5.14% at pi = 0.4042; size at pi 0.12 4.44%; power 20% vs 5% 34.9%, reversed 21.9%
+  (20, 22) Boschloo's unconditional           rejects 264 of 483 tables; largest size 4.63% at pi = 0.3818; size at pi 0.12 3.09%; power 20% vs 5% 28.3%, reversed 21.8%
+  (20, 22) Barnard's unconditional            rejects 268 of 483 tables; largest size 4.94% at pi = 0.2447; size at pi 0.12 4.33%; power 20% vs 5% 28.3%, reversed 30.1%
+  (10, 40) Pearson chi-squared                rejects 234 of 451 tables; largest size 9.11% at pi = 0.0278
+  (10, 40) Yates-corrected chi-squared        rejects 194 of 451 tables; largest size 1.93% at pi = 0.4228
+  (10, 40) 'N - 1' chi-squared                rejects 234 of 451 tables; largest size 9.11% at pi = 0.0278
+  (10, 40) Fisher's exact (Irwin's rule)      rejects 214 of 451 tables; largest size 3.44% at pi = 0.2756
+  (10, 40) Fisher's exact, doubled one-sided  rejects 194 of 451 tables; largest size 2.05% at pi = 0.5000
+  (10, 40) Fisher's mid-p                     rejects 228 of 451 tables; largest size 5.19% at pi = 0.3377
+  (10, 40) Boschloo's unconditional           rejects 220 of 451 tables; largest size 4.30% at pi = 0.3538
+  (10, 40) Barnard's unconditional            rejects 226 of 451 tables; largest size 4.30% at pi = 0.3468
+  at that pi the expected count of successes in the group of 10 is 0.28
+  (20, 22) rejection regions nested: fisher_in_boschloo True, fisher_doubled_in_boschloo True, fisher_in_mid_p True, fisher_doubled_in_fisher True, yates_in_fisher True, fisher_in_pearson True; identical: n_minus_1_equals_pearson True, barnard_equals_pearson True, yates_equals_fisher_doubled True
+  (10, 40) rejection regions nested: fisher_in_boschloo False, fisher_doubled_in_boschloo True, fisher_in_mid_p True, fisher_doubled_in_fisher True, yates_in_fisher True, fisher_in_pearson True
+  (10, 40) Fisher (Irwin's rule) rejects 4 tables Boschloo does not, for example (3 of 10, 2 of 40: Fisher 0.0483, Boschloo 0.0518), (5 of 10, 7 of 40: Fisher 0.0460, Boschloo 0.0515); Boschloo rejects 10 tables Fisher does not; size at pi 0.1: Fisher 2.43%, Boschloo 1.61%
+  tables Boschloo rejects and Fisher does not: 10, for example (4 of 20, 11 of 22: Fisher 0.0577, Boschloo 0.0467), (7 of 20, 2 of 22: Fisher 0.0622, Boschloo 0.0481), (7 of 20, 15 of 22: Fisher 0.0623, Boschloo 0.0377)
+  simulated check at pi = 0.12 (R = 200,000): Fisher rejects 2.91% +- 0.04, exact 2.95%
+  (30.0 s for the 2x2 computations)
+
+anova: one-way ANOVA on PlantGrowth (dried weight, 10 plants per group)
+  ctrl: mean 5.032, SD 0.5831, n 10
+  trt1: mean 4.661, SD 0.7937, n 10
+  trt2: mean 5.526, SD 0.4426, n 10
+  grand mean 5.0730; between SS 3.7663 on 2 df, mean square 1.8832; within SS 10.4921 on 27 df, mean square 0.3886
+  F = 1.8832/0.3886 = 4.8461, p = 0.015910; Welch's W = 5.1810 on 2 and 17.128 df, p = 0.017393; Brown-Forsythe F* = 4.8461 on 2 and 22.208 df, p = 0.017927
+  SciPy f_oneway default (equal_var=True) p = 0.015910, equal_var=False p = 0.017393; statsmodels anova_oneway default (use_var='unequal') p = 0.017393; largest difference 3.1e-17
+  two groups (sleep, as if unpaired): F = 3.4626 = 1.8608 squared; W = 3.4626 = 1.8608 squared, on 1 and 17.776 df (Welch's df 17.776)
+  negative pairing (n (10, 20, 30), SD (3.0, 2.0, 1.0)), R = 100,000: F 16.13% +- 0.12, Welch W 5.25% +- 0.07, Brown-Forsythe F* 5.96% +- 0.07
+  positive pairing (n (10, 20, 30), SD (1.0, 2.0, 3.0)), R = 100,000: F 2.04% +- 0.04, Welch W 4.90% +- 0.07, Brown-Forsythe F* 6.01% +- 0.08
+  equal sizes (n (20, 20, 20), SD (1.0, 2.0, 3.0)), R = 100,000: F 6.14% +- 0.08, Welch W 4.98% +- 0.07, Brown-Forsythe F* 5.77% +- 0.07
+  equal variances (n (10, 20, 30), SD (1.0, 1.0, 1.0)), R = 100,000: F 5.08% +- 0.07, Welch W 5.12% +- 0.07, Brown-Forsythe F* 4.96% +- 0.07
+
+wrote captures.json: example 0.4 s, twosample 14.2 s, pretest 12.7 s, tables 30.0 s, anova 1.1 s
