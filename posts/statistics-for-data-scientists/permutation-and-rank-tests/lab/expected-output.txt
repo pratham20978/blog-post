@@ -1,0 +1,90 @@
+Captured 2026-11-23T17:18:42Z on Linux 7.0.0-43-generic x86_64, AMD Ryzen 7 5825U with Radeon Graphics; Python 3.12.16, NumPy 2.5.4, SciPy 1.18.1; permutation.py d180435ad219; budget full, seed 20261123.
+
+example: Darwin's 15 pairs of Zea mays (1876), height in inches; crossed minus self-fertilised
+  pairs (crossed, self, difference): (23 4/8, 17 3/8, 6 1/8), (12, 20 3/8, -8 3/8), (21, 20, 1), (22, 20, 2), (19 1/8, 18 3/8, 0 6/8), (21 4/8, 18 5/8, 2 7/8), (22 1/8, 18 5/8, 3 4/8), (20 3/8, 15 2/8, 5 1/8), (18 2/8, 16 4/8, 1 6/8), (21 5/8, 18, 3 5/8), (23 2/8, 16 2/8, 7), (21, 18, 3), (22 1/8, 12 6/8, 9 3/8), (23, 15 4/8, 7 4/8), (12, 18, -6)
+  differences in eighths: 49, -67, 8, 16, 6, 23, 28, 41, 14, 29, 56, 24, 75, 60, -48; sum 314; 13 positive, 2 negative
+  paired t: mean 2.6167 in, SD 4.7180, SE 1.2182, t = 2.1480 on 14 df, p = 0.049703, 95% CI 0.0039 to 5.2294; 5% two-sided critical t 2.1448
+  one-sided: P(t >= 2.148) = 2.485%
+  randomisation test: 32,768 sign assignments; totals > 314: 835, = 314: 28, at least 314: 863 (one-sided 863/32768 = 2.634%); two-sided p = 0.052673
+  by number of negative signs (>, =, <, total): 2: 94, 1, 10, 105; 3: 263, 3, 189, 455; 4: 302, 11, 1,052, 1,365; 5: 138, 12, 2,853, 3,003; 6: 22, 1, 4,982, 5,005
+  signed-rank: ranks of |d| for the two negatives 14 and 10; V+ = 96, V- = 24; exact two-sided p = 0.041260 (676 of 32,768 assignments have V+ >= 96)
+  sign test: 13 of 15 positive; two-sided p = 2 x 121/32768 = 0.007385
+  SciPy: ttest_1samp p = 0.049703, ttest_rel p = 0.049703; wilcoxon p = 0.041260 (statistic 24, the smaller rank sum); binomtest p = 0.007385; permutation_test(n_resamples=np.inf) p = 0.052673
+  Galton's re-paired columns: differences 3 1/8, 3 2/8, 3, 3 4/8, 3 4/8, 3 5/8, 3 5/8, 3 4/8, 3, 3 5/8, 3 7/8, 2 7/8, 2 6/8, -3 2/8, -0 6/8; mean 2.6167 (unchanged), SD 1.9597, t = 5.1714, p = 1.42e-04
+  Hodges-Lehmann: 120 Walsh averages; median 3.1250 in; exact interval from the 26th smallest to the 26th largest: 0.5000 to 5.1875 in, confidence 95.21%
+  SciPy's default (n_resamples=9,999): over reruns its two-sided p has mean 0.05287, SD 0.00320, 95% of runs between 0.0466 and 0.0592; P(p <= 0.05) = 19.4% (exact, binomial)
+  1,000 actual SciPy runs with different seeds: p from 0.0410 to 0.0670; p <= 0.05 in 21.3% +- 1.3 (z against exact +1.5)
+  the +1: with m = 999 permutations per test and Bonferroni over 1,000 true nulls, b/m gives a family-wise error of 63.2% and (b + 1)/(m + 1) gives 0.0%; 30,000 null tests at m = 1,000 give 29.97 zero p-values on average
+
+twosample: permutation tests of equal means for two normal samples, 999 random relabellings per data set, alpha = 0.05 two-sided
+  engine check, 4 and 6 values, all 210 relabellings: difference p 0.738095 (SciPy on |T| 0.738095), studentised p 0.780952 (SciPy on |T| 0.780952); SciPy's default two-sided p, which doubles the smaller tail: 0.676190 and 0.723810
+  n1 = 10, n2 = 40 (sigma1/sigma2: permutation of the difference, permutation of Welch's t; Student's t, Welch's t), R = 50,000
+    0.250: difference 0.06% +- 0.01, studentised 3.87% +- 0.09; Student 0.06% +- 0.01, Welch 5.01% +- 0.10
+    0.333: difference 0.15% +- 0.02, studentised 3.90% +- 0.09; Student 0.14% +- 0.02, Welch 4.95% +- 0.10
+    0.500: difference 0.48% +- 0.03, studentised 4.12% +- 0.09; Student 0.47% +- 0.03, Welch 4.99% +- 0.10
+    0.667: difference 1.46% +- 0.05, studentised 4.40% +- 0.09; Student 1.44% +- 0.05, Welch 4.98% +- 0.10
+    1.000: difference 4.89% +- 0.10, studentised 4.92% +- 0.10; Student 4.89% +- 0.10, Welch 5.15% +- 0.10
+    1.500: difference 12.23% +- 0.15, studentised 5.63% +- 0.10; Student 12.22% +- 0.15, Welch 5.19% +- 0.10
+    2.000: difference 18.31% +- 0.17, studentised 5.73% +- 0.10; Student 18.34% +- 0.17, Welch 5.02% +- 0.10
+    3.000: difference 25.72% +- 0.20, studentised 5.92% +- 0.11; Student 25.81% +- 0.20, Welch 5.08% +- 0.10
+    4.000: difference 29.10% +- 0.20, studentised 5.81% +- 0.10; Student 29.20% +- 0.20, Welch 5.11% +- 0.10
+  n1 = 25, n2 = 25 (sigma1/sigma2: permutation of the difference, permutation of Welch's t; Student's t, Welch's t), R = 50,000
+    0.250: difference 5.51% +- 0.10, studentised 5.51% +- 0.10; Student 5.43% +- 0.10, Welch 5.02% +- 0.10
+    0.333: difference 5.52% +- 0.10, studentised 5.52% +- 0.10; Student 5.51% +- 0.10, Welch 5.15% +- 0.10
+    0.500: difference 5.23% +- 0.10, studentised 5.23% +- 0.10; Student 5.16% +- 0.10, Welch 4.96% +- 0.10
+    0.667: difference 5.06% +- 0.10, studentised 5.06% +- 0.10; Student 5.06% +- 0.10, Welch 4.97% +- 0.10
+    1.000: difference 5.12% +- 0.10, studentised 5.12% +- 0.10; Student 5.11% +- 0.10, Welch 5.08% +- 0.10
+    1.500: difference 5.22% +- 0.10, studentised 5.22% +- 0.10; Student 5.12% +- 0.10, Welch 5.03% +- 0.10
+    2.000: difference 5.14% +- 0.10, studentised 5.14% +- 0.10; Student 5.11% +- 0.10, Welch 4.94% +- 0.10
+    3.000: difference 5.35% +- 0.10, studentised 5.35% +- 0.10; Student 5.25% +- 0.10, Welch 4.95% +- 0.10
+    4.000: difference 5.57% +- 0.10, studentised 5.57% +- 0.10; Student 5.48% +- 0.10, Welch 5.08% +- 0.10
+
+mannwhitney: what the rank-sum test responds to; X ~ N(0, 1) against Y = E - c with E ~ Exp(1) (SD 1 both)
+  S1, equal medians: c = ln 2 = 0.693147; medians 0 and 0; means 0 and 0.3069; P(X > Y) = 0.443065; the median of X - Y (the two-sample Hodges-Lehmann target) = -0.1827
+  S2, P(X > Y) = 1/2: c = 0.875798; medians 0 and -0.1827; means 0 and 0.1242
+  simulated check of P(X > Y) in S1 on 2,000,000 pairs: 0.44317 (exact 0.44306)
+  S1, n per group (Mann-Whitney, Brunner-Munzel, Welch's t), R = 20,000:
+     10: Mann-Whitney 6.1% +- 0.2, Brunner-Munzel 7.7% +- 0.2, Welch 6.9% +- 0.2
+     25: Mann-Whitney 10.2% +- 0.2, Brunner-Munzel 10.9% +- 0.2, Welch 16.0% +- 0.3
+     50: Mann-Whitney 16.7% +- 0.3, Brunner-Munzel 16.7% +- 0.3, Welch 31.3% +- 0.3
+    100: Mann-Whitney 28.8% +- 0.3, Brunner-Munzel 28.4% +- 0.3, Welch 58.1% +- 0.3
+    200: Mann-Whitney 50.2% +- 0.4, Brunner-Munzel 49.3% +- 0.4, Welch 87.7% +- 0.2
+    400: Mann-Whitney 79.7% +- 0.3, Brunner-Munzel 78.9% +- 0.3, Welch 99.4% +- 0.1
+  S2, n per group (Mann-Whitney, Brunner-Munzel, Welch's t), R = 20,000:
+     10: Mann-Whitney 4.7% +- 0.1, Brunner-Munzel 5.6% +- 0.2, Welch 4.7% +- 0.1
+     25: Mann-Whitney 5.2% +- 0.2, Brunner-Munzel 5.5% +- 0.2, Welch 6.0% +- 0.2
+     50: Mann-Whitney 5.0% +- 0.2, Brunner-Munzel 4.7% +- 0.2, Welch 7.9% +- 0.2
+    100: Mann-Whitney 5.2% +- 0.2, Brunner-Munzel 4.9% +- 0.2, Welch 12.6% +- 0.2
+    200: Mann-Whitney 5.5% +- 0.2, Brunner-Munzel 5.2% +- 0.2, Welch 23.1% +- 0.3
+    400: Mann-Whitney 5.7% +- 0.2, Brunner-Munzel 5.3% +- 0.2, Welch 41.4% +- 0.3
+  S3, normal data with equal centres, n1 = 10, n2 = 40, by sigma1/sigma2; P(X > Y) = 1/2 exactly:
+    0.25: Mann-Whitney 0.71% +- 0.06, Brunner-Munzel 4.94% +- 0.15, Welch 4.67% +- 0.15
+    0.33: Mann-Whitney 0.84% +- 0.06, Brunner-Munzel 5.03% +- 0.15, Welch 4.79% +- 0.15
+    0.50: Mann-Whitney 1.55% +- 0.09, Brunner-Munzel 5.18% +- 0.16, Welch 4.91% +- 0.15
+    0.67: Mann-Whitney 2.29% +- 0.11, Brunner-Munzel 5.67% +- 0.16, Welch 5.06% +- 0.15
+    1.00: Mann-Whitney 4.66% +- 0.15, Brunner-Munzel 5.57% +- 0.16, Welch 5.06% +- 0.15
+    1.50: Mann-Whitney 7.85% +- 0.19, Brunner-Munzel 5.42% +- 0.16, Welch 4.86% +- 0.15
+    2.00: Mann-Whitney 9.93% +- 0.21, Brunner-Munzel 5.55% +- 0.16, Welch 4.97% +- 0.15
+    3.00: Mann-Whitney 13.53% +- 0.24, Brunner-Munzel 5.45% +- 0.16, Welch 5.11% +- 0.16
+    4.00: Mann-Whitney 14.81% +- 0.25, Brunner-Munzel 5.27% +- 0.16, Welch 5.32% +- 0.16
+  two-sample Hodges-Lehmann in S1 at 400 per group, R = 200: mean -0.1858 +- 0.0048 (target -0.1827); the difference in medians is 0
+  fixed example for the R cross-check (12 and 15 values): HL -0.3525, Mann-Whitney U 63, p = 0.195988
+
+efficiency: rank-sum (Mann-Whitney) against the t-test; ARE = 12 sigma^2 (int f^2)^2; power at n = 20 per group for a shift of 0.9091 SD, which gives Student's t 80% power for normal data
+            parabolic: ARE 0.8640 (mass 1.000000, variance 1.000000); power Welch 79.9% +- 0.1, Mann-Whitney 74.1% +- 0.1, R = 100,000
+               normal: ARE 0.9549 (mass 1.000000, variance 1.000000); power Welch 79.7% +- 0.1, Mann-Whitney 77.6% +- 0.1, R = 100,000
+              uniform: ARE 1.0000 (mass 1.000000, variance 1.000000); power Welch 79.8% +- 0.1, Mann-Whitney 73.5% +- 0.1, R = 100,000
+             logistic: ARE 1.0966 (mass 1.000000, variance 1.000000); power Welch 79.9% +- 0.1, Mann-Whitney 82.0% +- 0.1, R = 100,000
+              t, 5 df: ARE 1.2412 (mass 1.000000, variance 1.000000); power Welch 80.8% +- 0.1, Mann-Whitney 86.0% +- 0.1, R = 100,000
+              Laplace: ARE 1.5000 (mass 1.000000, variance 1.000000); power Welch 79.8% +- 0.1, Mann-Whitney 88.0% +- 0.1, R = 100,000
+  contaminated normal: ARE 1.3733 (mass 1.000000, variance 1.000000); power Welch 80.5% +- 0.1, Mann-Whitney 89.2% +- 0.1, R = 100,000
+              t, 3 df: ARE 1.8998 (mass 1.000000, variance 1.000000); power Welch 84.0% +- 0.1, Mann-Whitney 95.0% +- 0.1, R = 100,000
+  3/pi = 0.954930; 108/125 = 0.864000; pi^2/9 = 1.096623
+
+correlation: the law-school sample of 15 (average LSAT and GPA of each school's class); ties: 0 in LSAT, 0 in GPA
+  Pearson r = 0.7764; Spearman rho = 0.7964 (Pearson on ranks; 1 - 6 sum d^2/(n(n^2 - 1)) = 0.7964; sum d^2 = 114); Kendall tau = (86 - 19)/105 = 0.6381
+  SciPy: pearsonr p = 0.000665 (t), spearmanr p = 0.000380 (t approximation), kendalltau p = 0.000532 (exact)
+  Spearman, exact: 833,742,534 of the 1,307,674,368,000 orderings have |rho| >= 0.7964; p = 0.000638 (1.2 s)
+  permutation p-values, 99,999 random reorderings of GPA plus the observed one: Pearson 0.001340, Spearman 0.000780, Kendall 0.000670
+
+wrote captures.json: example 9.0 s, twosample 110.1 s, mannwhitney 29.3 s, efficiency 5.9 s, correlation 1.4 s

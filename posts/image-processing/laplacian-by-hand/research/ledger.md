@@ -121,6 +121,7 @@ carries a key from this ledger.
 | L68 | Paris, Hasinoff & Kautz showed edge-preserving smoothing, detail enhancement and tone mapping using standard Laplacian pyramids with point-wise nonlinearities, contradicting the belief that the pyramid cannot represent edges well | S29 abstract | — |
 | L69 | Burt & Adelson published the Laplacian pyramid in IEEE Trans. Commun. in April 1983 | S2 header | — |
 | L70 | The OpenCV documentation consulted is the 4.13.0 build | S21 footer | generated 2025-12-31 |
+| L71 | SIFT's edge test also discards a candidate whose Hessian determinant is negative: the two principal curvatures then have opposite signs, so the point is not an extremum | S5 §4.1 p.12 | added 2026-11-20; the same sentence of Lowe 2004 is claim L12 in the scale-space-and-sift ledger |
 
 ## Open questions
 
@@ -146,3 +147,23 @@ carries a key from this ledger.
   constant factor is irrelevant. The post says both.
 - Nothing in this post rests on a measurement taken by us. Every curve is a closed form and
   is captioned as a model.
+
+## Revision 2026-11-20
+
+The owner's review notes (a long explainer of this post's paragraphs) were folded in as
+derivations on the post's own numbers. They need no new source: each is shown in full in the
+post and was cross-checked in plain Python (`assets/_data.py` asserts every value). One claim
+was added from a source already in the ledger: L71, from S5.
+
+Corrected in the post, all computed:
+- The five-pixel average moves a pixel by ∇²f/5 (four-fifths of the way to the neighbour
+  mean), not by "one fifth of centre − mean, −∇²f/20". Its per-axis variance is 2/5.
+- The 3×3 Gaussian's variance 0.478 is lost to the three-tap cut, not to sampling: the
+  σ = 0.8 Gaussian sampled at every integer keeps 0.640 (five taps 0.632).
+- Anisotropy spreads are 60.6% and 17.6% (printed before as 60% and 18%).
+- "The third equation is the second rearranged" — it is the first.
+
+Not adopted from the review notes, because they disagree with the sources: Lowe's
+"almost no impact" is at k = √2 (L23), not k = 2; the heat equation is ∂L/∂s = ½∇²L with
+s = σ² (L28), not with s = σ²/2; and the pyramid's equal-contribution constraint is
+a + 2c = 2b, which forces b = 1/4 (L10), not a restatement of normalisation.

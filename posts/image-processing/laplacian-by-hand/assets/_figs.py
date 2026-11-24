@@ -520,7 +520,8 @@ def fig11():
     ang = -30
     cx, cy = gx + gw / 2, gy + gw / 2
     s += f'<g transform="rotate({ang} {cx} {cy})">'
-    s += f'<rect x="{cx}" y="{cy - 200}" width="200" height="400" fill="rgba(45,49,66,0.10)"/>'
+    # the shaded half-plane is the dark side: left of the edge, opposite n (n points to the bright side)
+    s += f'<rect x="{cx - 200}" y="{cy - 200}" width="200" height="400" fill="rgba(45,49,66,0.10)"/>'
     s += f'<line x1="{cx}" y1="{cy - 200}" x2="{cx}" y2="{cy + 200}" stroke="{INK}" stroke-width="1.6"/>'
     # n axis (across), t axis (along)
     s += f'<line x1="{cx}" y1="{cy}" x2="{cx + 88}" y2="{cy}" stroke="{ACCENT}" stroke-width="1.4" marker-end="url(#arrow-accent)"/>'

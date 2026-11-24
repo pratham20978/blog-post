@@ -1,0 +1,8 @@
+flowchart TB
+    Q["What will you claim<br/>from the tests?"]
+    Q -->|"each finding stands alone"| F["Family-wise error rate<br/>Holm: valid under<br/>any dependence"]
+    Q -->|"a list to follow up"| D{"How do the tests<br/>depend on each other?"}
+    Q -->|"one analysis chosen<br/>after seeing the data"| P["Count the forks:<br/>pre-specify the analysis,<br/>or correct for all of them"]
+    D -->|"independent, or one-sided<br/>with positive correlation"| BH["False discovery rate<br/>Benjamini–Hochberg at q"]
+    D -->|"unknown or arbitrary"| BY["False discovery rate<br/>Benjamini–Yekutieli<br/>at q / H_m"]
+    BH -->|"thousands of tests,<br/>weak dependence"| ST["Storey q-values<br/>BH at q / π0"]

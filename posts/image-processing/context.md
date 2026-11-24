@@ -31,7 +31,7 @@
 | # | Slug | Status | Owns | Actual handoff |
 |---|---|---|---|---|
 | 1 | image-processing-by-hand | published | the four-stage frame, the shared arithmetic | eleven areas by title, Figure 17 |
-| 2 | laplacian-by-hand | published | one operator, five uses | gradient-domain editing, Part 14 |
+| 2 | laplacian-by-hand | published; revised 2026-11-20, upload pending | one operator, five uses | gradient-domain editing, Part 14 |
 | 3 | resampling-and-aliasing | gate PASS 2026-09-25, **not published** | reconstruction kernels, prefiltering | Parts 4, 5, 13 |
 | 4 | kernel-design-separability-borders-derivatives | gate PASS 2026-09-25, **not published** | 3×3 derivatives, truncation, borders | Parts 7, 10 |
 | 5 | the-2d-dft-spectra-phase-filtering | gate PASS 2026-10-10, **not published** | spectrum, phase, notches, FFT crossover | Part 6 |
@@ -54,7 +54,8 @@ All fourteen parts are built.
 - **Part 1:** stages 1 and 4 are irreversible, 2 and 3 are not. The impulse: box 64, median 40, σ = 0.8
   Gaussian 98.6 (sigma-0 default 93.75); it moves Sobel at (r2, c2) 640 → 210.
 - **Part 2:** a unit-sum kernel of 1-D variance *v* changes each pixel by (v/2)∇²f; the limit is the
-  heat equation (`#the-heat-equation-and-the-sharpening-identity`). Zero-crossings own the
+  heat equation (`#the-heat-equation-and-the-sharpening-identity`). Five-pixel average: v = 2/5, so
+  exactly ∇²f/5. The 3×3 Gaussian's 0.478 is truncation, not sampling. Zero-crossings own the
   coarse-to-fine argument; scale selection is `#scale-selection-the-laplacian-as-a-ruler`.
 
 ### Parts 3–7 (built, not published)
@@ -129,6 +130,8 @@ All fourteen parts are built.
 - Titles stay under 60 characters. Write `\lt`/`\gt` in math: the validator strips `<…>` as tags.
 - Compute every number a figure prints from the data. SVG collapses spaces: draw matrices as
   positioned cells with opaque fills and crisp edges.
+- **Figures: keep the diagram-design originals** (1,016-px canvas, 2× export); the owner rejected
+  Part 2's 680-px redraw on 2026-11-20. canery drops `<details>`, prints `$`…`$` backticks.
 
 ## Open threads
 
@@ -136,7 +139,7 @@ All fourteen parts are built.
   Gaussian (table, 94), histogram 14/10, Figure 7 (row 2; morphology's border value per type), the
   footprint's border case (47.8) and seven smaller slips. Upload, purge and re-publish pending. Still
   open: reference 18 links the wrong PDF; Figure 17 lacks the Laplacian branch; four `--` jump links
-  are dead. Part 2 (~line 189) credits 0.478 to sampling. Parts 1–2 lack `series` /
+  are dead. Parts 1–2 lack `series` /
   `series_position` live. All reopen published posts.
 - **Owner checks before publishing:** Part 7's `denoise_bilateral` offset; Part 8's three `cv2.Canny`
   predictions (and 8-bit rounding with the fixed-point blur); Part 9's five; Part 10's four SIFT;
@@ -154,9 +157,7 @@ All fourteen parts are built.
 
 ## Next part brief
 
-- **The series is complete:** all fourteen parts are built; Parts 1–2 are live. Next is publication,
-  not a part: run each manifest's owner checks (Parts 7–14), fix whatever they contradict, then upload
-  and `--publish` Parts 3–14 in the plan's order.
-- **Before any new part:** it would change the published promise (Part 1's eleven spokes and Part 2's
-  twelfth), so it needs Checkpoint S and a plan edit first. The Part 1 and 2 corrections under *Open
-  threads* are edits to live posts, the owner's call.
+- **The series is complete;** Parts 1–2 are live. Next is publication: run each manifest's owner
+  checks (Parts 7–14), fix what they contradict, upload and `--publish` Parts 3–14 in plan order.
+- **A new part** changes the published promise (eleven spokes plus Part 2's twelfth): Checkpoint S
+  and a plan edit first. Corrections to Parts 1–2 edit live posts: the owner's call.

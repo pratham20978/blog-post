@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg viewBox="0 0 720 440" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="The joint law that breaks Benjamini–Hochberg"><defs><style>@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&display=swap');</style></defs>
+<rect width="100%" height="100%" fill="#f5f5f5"/>
+<text x="150.0" y="28.0" fill="#4f5d75" font-size="12" font-family="'Geist Mono', monospace" text-anchor="start">the first α of the p-value axis, cut into m = 5 slots of width α/m</text>
+<line x1="150.0" y1="50.0" x2="150.0" y2="352.0" stroke="#bfc0c0" stroke-width="1"/>
+<line x1="224.0" y1="50.0" x2="224.0" y2="352.0" stroke="#bfc0c0" stroke-width="1"/>
+<line x1="298.0" y1="50.0" x2="298.0" y2="352.0" stroke="#bfc0c0" stroke-width="1"/>
+<line x1="372.0" y1="50.0" x2="372.0" y2="352.0" stroke="#bfc0c0" stroke-width="1"/>
+<line x1="446.0" y1="50.0" x2="446.0" y2="352.0" stroke="#bfc0c0" stroke-width="1"/>
+<line x1="520.0" y1="50.0" x2="520.0" y2="352.0" stroke="#bfc0c0" stroke-width="1"/>
+<text x="224.0" y="44.0" fill="#4f5d75" font-size="11" font-family="'Geist Mono', monospace" text-anchor="middle">α/m</text>
+<text x="298.0" y="44.0" fill="#4f5d75" font-size="11" font-family="'Geist Mono', monospace" text-anchor="middle">2α/m</text>
+<text x="372.0" y="44.0" fill="#4f5d75" font-size="11" font-family="'Geist Mono', monospace" text-anchor="middle">3α/m</text>
+<text x="446.0" y="44.0" fill="#4f5d75" font-size="11" font-family="'Geist Mono', monospace" text-anchor="middle">4α/m</text>
+<text x="520.0" y="44.0" fill="#4f5d75" font-size="11" font-family="'Geist Mono', monospace" text-anchor="middle">5α/m</text>
+<text x="28.0" y="83.0" fill="#2d3142" font-size="13" font-family="'Geist', sans-serif" text-anchor="start" font-weight="600">event E1</text>
+<text x="28.0" y="99.0" fill="#4f5d75" font-size="11" font-family="'Geist Mono', monospace" text-anchor="start">P = α/1 = 0.0500</text>
+<line x1="150.0" y1="78.0" x2="520.0" y2="78.0" stroke="rgba(45,49,66,0.12)" stroke-width="1"/>
+<circle cx="187.0" cy="78.0" r="4.2" fill="#2d3142"/>
+<text x="540.0" y="83.0" fill="#2d3142" font-size="12" font-family="'Geist Mono', monospace" text-anchor="start">1 null p-value ≤ α/m</text>
+<text x="540.0" y="99.0" fill="#4f5d75" font-size="11" font-family="'Geist Mono', monospace" text-anchor="start">BH rejects 1, all false</text>
+<text x="28.0" y="141.0" fill="#2d3142" font-size="13" font-family="'Geist', sans-serif" text-anchor="start" font-weight="600">event E2</text>
+<text x="28.0" y="157.0" fill="#4f5d75" font-size="11" font-family="'Geist Mono', monospace" text-anchor="start">P = α/2 = 0.0250</text>
+<line x1="150.0" y1="136.0" x2="520.0" y2="136.0" stroke="rgba(45,49,66,0.12)" stroke-width="1"/>
+<circle cx="242.5" cy="136.0" r="4.2" fill="#2d3142"/>
+<circle cx="279.5" cy="136.0" r="4.2" fill="#2d3142"/>
+<text x="540.0" y="141.0" fill="#2d3142" font-size="12" font-family="'Geist Mono', monospace" text-anchor="start">2 null p-values ≤ 2α/m</text>
+<text x="540.0" y="157.0" fill="#4f5d75" font-size="11" font-family="'Geist Mono', monospace" text-anchor="start">BH rejects 2, all false</text>
+<text x="28.0" y="199.0" fill="#2d3142" font-size="13" font-family="'Geist', sans-serif" text-anchor="start" font-weight="600">event E3</text>
+<text x="28.0" y="215.0" fill="#4f5d75" font-size="11" font-family="'Geist Mono', monospace" text-anchor="start">P = α/3 = 0.0167</text>
+<line x1="150.0" y1="194.0" x2="520.0" y2="194.0" stroke="rgba(45,49,66,0.12)" stroke-width="1"/>
+<circle cx="310.3" cy="194.0" r="4.2" fill="#2d3142"/>
+<circle cx="335.0" cy="194.0" r="4.2" fill="#2d3142"/>
+<circle cx="359.7" cy="194.0" r="4.2" fill="#2d3142"/>
+<text x="540.0" y="199.0" fill="#2d3142" font-size="12" font-family="'Geist Mono', monospace" text-anchor="start">3 null p-values ≤ 3α/m</text>
+<text x="540.0" y="215.0" fill="#4f5d75" font-size="11" font-family="'Geist Mono', monospace" text-anchor="start">BH rejects 3, all false</text>
+<text x="28.0" y="257.0" fill="#2d3142" font-size="13" font-family="'Geist', sans-serif" text-anchor="start" font-weight="600">event E4</text>
+<text x="28.0" y="273.0" fill="#4f5d75" font-size="11" font-family="'Geist Mono', monospace" text-anchor="start">P = α/4 = 0.0125</text>
+<line x1="150.0" y1="252.0" x2="520.0" y2="252.0" stroke="rgba(45,49,66,0.12)" stroke-width="1"/>
+<circle cx="381.2" cy="252.0" r="4.2" fill="#2d3142"/>
+<circle cx="399.8" cy="252.0" r="4.2" fill="#2d3142"/>
+<circle cx="418.2" cy="252.0" r="4.2" fill="#2d3142"/>
+<circle cx="436.8" cy="252.0" r="4.2" fill="#2d3142"/>
+<text x="540.0" y="257.0" fill="#2d3142" font-size="12" font-family="'Geist Mono', monospace" text-anchor="start">4 null p-values ≤ 4α/m</text>
+<text x="540.0" y="273.0" fill="#4f5d75" font-size="11" font-family="'Geist Mono', monospace" text-anchor="start">BH rejects 4, all false</text>
+<text x="28.0" y="315.0" fill="#2d3142" font-size="13" font-family="'Geist', sans-serif" text-anchor="start" font-weight="600">event E5</text>
+<text x="28.0" y="331.0" fill="#4f5d75" font-size="11" font-family="'Geist Mono', monospace" text-anchor="start">P = α/5 = 0.0100</text>
+<line x1="150.0" y1="310.0" x2="520.0" y2="310.0" stroke="rgba(45,49,66,0.12)" stroke-width="1"/>
+<circle cx="453.4" cy="310.0" r="4.2" fill="#eb6c36"/>
+<circle cx="468.2" cy="310.0" r="4.2" fill="#eb6c36"/>
+<circle cx="483.0" cy="310.0" r="4.2" fill="#eb6c36"/>
+<circle cx="497.8" cy="310.0" r="4.2" fill="#eb6c36"/>
+<circle cx="512.6" cy="310.0" r="4.2" fill="#eb6c36"/>
+<text x="540.0" y="315.0" fill="#2d3142" font-size="12" font-family="'Geist Mono', monospace" text-anchor="start">5 null p-values ≤ 5α/m</text>
+<text x="540.0" y="331.0" fill="#4f5d75" font-size="11" font-family="'Geist Mono', monospace" text-anchor="start">BH rejects 5, all false</text>
+<line x1="28.0" y1="366.0" x2="692.0" y2="366.0" stroke="rgba(45,49,66,0.12)" stroke-width="1"/>
+<text x="28.0" y="386.0" fill="#2d3142" font-size="13" font-family="'Geist Mono', monospace" text-anchor="start" font-weight="600">FDR = α(1 + 1/2 + … + 1/5) = α·H_5 = 0.1142</text>
+<text x="28.0" y="406.0" fill="#4f5d75" font-size="12" font-family="'Geist Mono', monospace" text-anchor="start">every other p-value sits above α; each test&#x27;s p-value is still uniform on (0, 1)</text>
+<text x="28.0" y="424.0" fill="#4f5d75" font-size="12" font-family="'Geist Mono', monospace" text-anchor="start">at m = 3,170 the same law gives α·H_m = 0.4319</text>
+</svg>

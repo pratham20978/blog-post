@@ -243,8 +243,14 @@ def rasterize(svg_path, png_path, vw, vh, scale=2, svg_markup=None):
     """
     body = svg_markup if svg_markup is not None else svg_path.read_text(encoding="utf-8")
     body = body.replace('<?xml version="1.0" encoding="UTF-8"?>\n', "")
+    fonts = f'<link href="{FONTS}" rel="stylesheet">'
+    if LOCAL_FONTS.exists():
+        # Rasterise from a local copy of the same Google Fonts files (Part 10's fix): on a slow
+        # network Chrome fell back to another face. The published SVG keeps its @import.
+        body = body.replace(f"@import url('{FONTS}');", "")
+        fonts = f"<style>{LOCAL_FONTS.read_text(encoding='utf-8')}</style>"
     shim = (f'<!doctype html><meta charset="utf-8">'
-            f'<link href="{FONTS}" rel="stylesheet">'
+            f'{fonts}'
             f'<style>html,body{{margin:0;padding:0;background:{PAPER};'
             f'width:{vw}px;height:{vh}px;overflow:hidden}}'
             f'svg{{display:block}}</style>'
@@ -254,7 +260,7 @@ def rasterize(svg_path, png_path, vw, vh, scale=2, svg_markup=None):
     with tempfile.TemporaryDirectory() as prof:
         subprocess.run(
             ["google-chrome", "--headless", "--disable-gpu", "--no-sandbox",
-             "--hide-scrollbars", "--virtual-time-budget=6000",
+             "--hide-scrollbars", "--virtual-time-budget=15000", "--force-color-profile=srgb",
              f"--user-data-dir={prof}",
              f"--force-device-scale-factor={scale}",
              f"--window-size={vw},{vh}",
@@ -264,16 +270,24 @@ def rasterize(svg_path, png_path, vw, vh, scale=2, svg_markup=None):
     shim_path.unlink(missing_ok=True)
 
 
-def emit(num, slug, title, sub, eyebrow_text, vw, vh, body):
+LOCAL_FONTS = pathlib.Path.home() / ".cache" / "blog-forge-fonts" / "fonts.local.css"
+SUFFIX = "laplacian-by-hand"   # the object store is flat: published files carry the slug
+
+
+def emit(num, slug, title, sub, eyebrow_text, vw, vh, body, scale=2):
+    """Write fig-NN-<slug>.html (editable source) and the published
+    fig-NN-<slug>-laplacian-by-hand.svg/.png under the names already live in MinIO."""
     stem = f"fig-{num}-{slug}"
+    pub = f"{stem}-{SUFFIX}"
     svg = svg_doc(vw, vh, body)
     html = PAGE.format(title=title, sub=sub, eyebrow=ascii_upper(eyebrow_text), num=num,
                        svg=svg, fonts=FONTS, paper=PAPER, ink=INK, muted=MUTED,
                        soft=SOFT, rule=RULE, sans=SANS, mono=MONO, serif=SERIF)
     (HERE / f"{stem}.html").write_text(html, encoding="utf-8")
-    svg_path = HERE / f"{stem}.svg"
+    # The first edition kept the editable SVGs of figures 02-16 unsuffixed; keep each SVG's name.
+    svg_path = HERE / (f"{stem}.svg" if (HERE / f"{stem}.svg").exists() else f"{pub}.svg")
     svg_path.write_text('<?xml version="1.0" encoding="UTF-8"?>\n' + svg, encoding="utf-8")
-    png_path = HERE / f"{stem}.png"
-    rasterize(svg_path, png_path, vw, vh, svg_markup=svg)
-    print(f"  {stem}: html + svg + png ({vw}x{vh} @2x)")
-    return stem
+    png_path = HERE / f"{pub}.png"
+    rasterize(svg_path, png_path, vw, vh, scale=scale, svg_markup=svg)
+    print(f"  {pub}: html + svg + png ({vw}x{vh} @{scale}x)")
+    return pub

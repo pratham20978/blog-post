@@ -137,6 +137,20 @@ Part 8's lab, measured with `/usr/bin/time -v` on the frozen `choosing.py` (f975
 0.21 GB in 61 s, `--quick` at 0.21 GB in 30 s, the E4 fault run (`example --quick --fault`) at 0.13 GB in 1.7 s, and the
 E3 run (`twosample --quick --n1 40 --n2 10 --ratio 2`) at 0.11 GB in 1.7 s.
 
+## Probe — 2026-11-23 (Part 10)
+
+```
+Linux 7.0.0-43-generic x86_64
+ram_total=14G ram_available=5G at the start of the build, 7G at its end
+disk_free=262G on /
+venv python 3.12.16 (the system's 3.12 moved from 3.12.15); NumPy 2.5.4, SciPy 1.18.1 unchanged
+everything else as on 2026-10-23
+```
+
+Part 10's lab, measured with `/usr/bin/time -v` on the frozen `permutation.py` (d180435ad219): the full run peaked at
+0.30 GB in 157.5 s, `--quick` at 0.27 GB in 20.2 s, the E4 fault run (`example --quick --fault`) at 0.14 GB in 2.6 s, and
+the E3 run (`twosample --quick --n1 25 --n2 25 --ratio 4`) at 0.14 GB in 2.1 s.
+
 ## Requests
 
 None. Every part is **G1 — runs anywhere**, self-provisioned. No hardware, privilege, credential or
@@ -173,7 +187,11 @@ downloaded to the session scratchpad. On 2026-11-01, Part 8 reused the venv unch
 statsmodels and pandas at the series pins); its notebook ran the same way, online; its private R check used base R
 only (`t.test`, `chisq.test`, `fisher.test`, `anova`, `oneway.test`); a throwaway venv in the session scratchpad
 measured the lab's install at 263 MB and was deleted; and the papers it read were downloaded to the session
-scratchpad.
+scratchpad. On 2026-11-23, Part 10 reused the venv unchanged (its lab
+needs only NumPy and SciPy); its notebook ran the same way, online; its private R check used base R only (`t.test`,
+`wilcox.test`, `binom.test`, `cor.test`); a throwaway pip venv in the session scratchpad measured the lab's install at
+220 MB and was deleted; and Darwin Online's page scans, Fisher's 1937 edition and the papers it read were downloaded
+to the session scratchpad.
 
 | What | Where | For | Undo |
 |---|---|---|---|

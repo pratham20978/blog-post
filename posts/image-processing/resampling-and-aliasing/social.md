@@ -2,7 +2,6 @@
 social_schema: 2
 canonical_url: "https://canery.in/blogs/resampling-and-aliasing"
 ---
-
 # Social publishing package — resampling-and-aliasing
 
 ## LinkedIn post
@@ -145,7 +144,7 @@ Link in bio.
 - Visible-text transcript: Canery.in · 05 / 07 · Enlarging rings. · Lanczos-3 keeps the impulse sharp at 1.7× and pays for it: 14.1 in a region that is flat 40, 225.0 over a flat 200. · 255 · 200 · 40 · 8-bit ceiling · 255.6 · 225.0 · 14.1 · Row r2 enlarged 1.7× by Lanczos-3 · eight samples · Negative lobes buy sharpness. Near an edge they push values past the input's range, and 8-bit output clips. · Resampling and aliasing · canery.in
 - Alt text: Lanczos-3 curve through the row enlarged 1.7×: samples dip to 14.1 below a flat 40, reach 225.0 over 200 and pass 255.
 - Long description: Row r2, 40 255 40 200 200, is enlarged to eight samples by Lanczos-3. The continuous reconstruction dips below the flat 40 to a sample of 14.1 beside the impulse, peaks at 255.6 on the impulse, just past the 8-bit ceiling of 255, and overshoots the flat 200 to 225.0 after the step. The negative lobes that keep the impulse sharp are what push values past the input's range; an 8-bit output clips them.
-- Keywords: Lanczos resampling, ringing, overshoot, image upscaling, 8-bit clipping
+- Keywords:
 - Canonical URL: https://canery.in/blogs/resampling-and-aliasing
 
 ### feed-06-better-interpolator-worse-downscaler

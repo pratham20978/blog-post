@@ -1,0 +1,27 @@
+# Darwin's Zea mays: 15 pairs of cross-fertilised and self-fertilised plants, height in eighths of an inch.
+# Source: C. Darwin, The Effects of Cross and Self Fertilisation in the Vegetable Kingdom, John Murray, London, 1876,
+#   Table XCVII (p. 234), and Galton's table on p. 16, columns I and II ("as recorded by Mr. Darwin"). Public domain.
+#   Page scans: The Complete Work of Charles Darwin Online, ed. J. van Wyhe, https://darwin-online.org.uk/ (item F1249).
+# Each pair germinated at the same time and was planted on opposite sides of one of four large pots; heights were
+#   measured to the tips of the leaves when the plants were 1 to 2 feet tall (Darwin, p. 234). Darwin measured in
+#   inches and eighths, so 188 eighths is 23 4/8 inches; integers keep every sum exact.
+# The site's text transcription of Table XCVII (read 2026-11-23) gives 18 3/8 for pot II's third self-fertilised plant
+#   and 21 3/8 for pot III's fourth crossed plant. The page scans of pp. 16 and 234 print 18 5/8 and 21 5/8, and only
+#   those make the printed column totals, 302.88 and 263.63 inches, add up. This file follows the scans.
+# R. A. Fisher analysed these 15 differences in The Design of Experiments (Oliver and Boyd, 1935), chapter III.
+pot,pair,crossed_eighths,self_eighths
+1,1,188,139
+1,2,96,163
+1,3,168,160
+2,4,176,160
+2,5,153,147
+2,6,172,149
+3,7,177,149
+3,8,163,122
+3,9,146,132
+3,10,173,144
+3,11,186,130
+4,12,168,144
+4,13,177,102
+4,14,184,124
+4,15,96,144

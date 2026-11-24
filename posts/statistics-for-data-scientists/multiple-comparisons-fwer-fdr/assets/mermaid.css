@@ -1,0 +1,5 @@
+/* House overrides for mermaid-cli (-C). Colours only: Mermaid sizes label boxes from the
+   config's fontFamily/fontSize before this CSS applies, so changing fonts here clips labels.
+   !important beats Mermaid's id-scoped theme CSS. */
+.edgeLabel p, .edgeLabel rect, .labelBkg { background-color: #f5f5f5 !important; fill: #f5f5f5 !important; opacity: 1 !important; }
+.edgeLabel, .edgeLabel p, .edgeLabel span { color: #4f5d75 !important; }

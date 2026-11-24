@@ -183,3 +183,31 @@ Plus `COVER`.
   holds the `COVER` placeholder until `fill_urls.py` resolves it.
 - **Series link**: the Insights block names the parent, and the parent's child list gains
   this post at the next parent edit (not touched here).
+
+---
+
+## Revision 2026-11-20 — owner's review: "too much in a small space", add the reference's insights
+
+Owner's notes: a long explainer of this post's paragraphs (kept outside the repo). Expert content
+folded in on the patch's own numbers; the explainer's tutorial framing left out. Section headings
+and the three anchors other parts use are unchanged; new H3s only.
+
+| Where | Added |
+|---|---|
+| Why this matters | the `ksize=3` surprise as a three-row table (−1,720; 640; 1,070) |
+| The problem / Worked example | the two differences, both windows and the impulse windows as tables; interpolated zeros on display lines |
+| Intuition | f_C − m = −∇²₅f/4 displayed; **corrected**: the five-pixel average moves a pixel by ∇²f/5 (v = 2/5), with a table on the patch |
+| Which discrete Laplacian? | the five stencils as a table; the transfer function derived from shifts; axis/diagonal table; scale error vs direction error (60.6% → 17.6%, a 71% cut) |
+| Sharpening | new H3s: the moment derivation of (v/2)∇²f; 0.956 two ways; nominal σ vs taps table (truncation, not sampling); the exact grid identity with the corner-weight cross term |
+| Zero-crossings | the LoG's two forms; zero-sum and truncation; σ ↔ radius ↔ width ↔ wavelength table; the spectrum and its 1.22-octave half-power band; the one-way logic of phantoms; Marr–Hildreth vs Canny table |
+| Scale selection | bar/disc closed forms with a σ table; the DoG derivation step by step; SIFT's 2^{1/3} ladder; new H3 "The 26-neighbour test" (the owner's "dice" is FIG_13, the first edition's stacked planes); the parabola in log σ (2.14 vs 2.12; 2.18 in σ); the Hessian trace–determinant test (12.1, Det < 0) |
+| The pyramid | the equal-contribution derivation (b = 1/4); variance per level; EXPAND's two phases; the pyramid worked on the patch row, as a table; new H3 "What the redundancy buys": 4/3 table, first-order entropy, progressive rates, the spline formula |
+| The math | heat-equation section: s = σ², sign rule on the patch, the explicit step and its stability table |
+| Limitations / Try it yourself | box-like blur, fitting in σ; exercise 4 (five-pixel average); answers as visible labels |
+
+Not adopted, because the sources disagree: Lowe's k = 2 (it is √2), the heat equation with
+s = σ²/2 and ½, and "equal contribution restates normalisation". Rendering fixes for canery:
+plain `$…$` instead of `$`…`$`, no `<details>`, displays split to fit the 686-px column.
+
+Figures: redrawn on a 680-px canvas, then put back to the first edition at the owner's request
+(FIG_14's flow diagram above all); only FIG_11 changed, its shading moved to the dark side. See `manifest.md`.

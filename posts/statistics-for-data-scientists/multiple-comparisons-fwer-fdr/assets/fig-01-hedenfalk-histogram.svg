@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg viewBox="0 0 720 400" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="The Hedenfalk p-values over their null floor"><defs><style>@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&display=swap');</style></defs>
+<rect width="100%" height="100%" fill="#f5f5f5"/>
+<line x1="64.0" y1="330.0" x2="700.0" y2="330.0" stroke="rgba(45,49,66,0.12)" stroke-width="1"/>
+<text x="56.0" y="334.0" fill="#4f5d75" font-size="12" font-family="'Geist Mono', monospace" text-anchor="end">0</text>
+<line x1="64.0" y1="285.4" x2="700.0" y2="285.4" stroke="rgba(45,49,66,0.12)" stroke-width="1"/>
+<text x="56.0" y="289.4" fill="#4f5d75" font-size="12" font-family="'Geist Mono', monospace" text-anchor="end">100</text>
+<line x1="64.0" y1="240.8" x2="700.0" y2="240.8" stroke="rgba(45,49,66,0.12)" stroke-width="1"/>
+<text x="56.0" y="244.8" fill="#4f5d75" font-size="12" font-family="'Geist Mono', monospace" text-anchor="end">200</text>
+<line x1="64.0" y1="196.2" x2="700.0" y2="196.2" stroke="rgba(45,49,66,0.12)" stroke-width="1"/>
+<text x="56.0" y="200.2" fill="#4f5d75" font-size="12" font-family="'Geist Mono', monospace" text-anchor="end">300</text>
+<line x1="64.0" y1="151.5" x2="700.0" y2="151.5" stroke="rgba(45,49,66,0.12)" stroke-width="1"/>
+<text x="56.0" y="155.5" fill="#4f5d75" font-size="12" font-family="'Geist Mono', monospace" text-anchor="end">400</text>
+<line x1="64.0" y1="106.9" x2="700.0" y2="106.9" stroke="rgba(45,49,66,0.12)" stroke-width="1"/>
+<text x="56.0" y="110.9" fill="#4f5d75" font-size="12" font-family="'Geist Mono', monospace" text-anchor="end">500</text>
+<line x1="64.0" y1="62.3" x2="700.0" y2="62.3" stroke="rgba(45,49,66,0.12)" stroke-width="1"/>
+<text x="56.0" y="66.3" fill="#4f5d75" font-size="12" font-family="'Geist Mono', monospace" text-anchor="end">600</text>
+<text x="64.0" y="48.3" fill="#4f5d75" font-size="12" font-family="'Geist Mono', monospace" text-anchor="start">genes per bin of width 0.05</text>
+<rect x="66.0" y="59.6" width="27.8" height="270.4" rx="0" fill="rgba(235,108,54,0.08)" stroke="#eb6c36" stroke-width="1"/>
+<rect x="97.8" y="213.1" width="27.8" height="116.9" rx="0" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<rect x="129.6" y="243.4" width="27.8" height="86.6" rx="0" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<rect x="161.4" y="245.2" width="27.8" height="84.8" rx="0" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<rect x="193.2" y="249.7" width="27.8" height="80.3" rx="0" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<rect x="225.0" y="261.3" width="27.8" height="68.7" rx="0" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<rect x="256.8" y="272.9" width="27.8" height="57.1" rx="0" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<rect x="288.6" y="272.0" width="27.8" height="58.0" rx="0" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<rect x="320.4" y="270.2" width="27.8" height="59.8" rx="0" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<rect x="352.2" y="276.5" width="27.8" height="53.5" rx="0" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<rect x="384.0" y="281.8" width="27.8" height="48.2" rx="0" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<rect x="415.8" y="284.9" width="27.8" height="45.1" rx="0" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<rect x="447.6" y="279.6" width="27.8" height="50.4" rx="0" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<rect x="479.4" y="293.0" width="27.8" height="37.0" rx="0" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<rect x="511.2" y="278.7" width="27.8" height="51.3" rx="0" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<rect x="543.0" y="277.4" width="27.8" height="52.6" rx="0" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<rect x="574.8" y="281.4" width="27.8" height="48.6" rx="0" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<rect x="606.6" y="275.6" width="27.8" height="54.4" rx="0" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<rect x="638.4" y="288.1" width="27.8" height="41.9" rx="0" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<rect x="670.2" y="281.4" width="27.8" height="48.6" rx="0" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+<line x1="64.0" y1="282.2" x2="700.0" y2="282.2" stroke="#2d3142" stroke-width="1.4" stroke-dasharray="6,4"/>
+<rect x="408.0" y="255.2" width="290.0" height="18.0" rx="0" fill="#f5f5f5"/>
+<text x="696.0" y="269.2" fill="#2d3142" font-size="12" font-family="'Geist Mono', monospace" text-anchor="end">null floor: π0 × 3,170 × 0.05 ≈ 107</text>
+<text x="109.8" y="75.6" fill="#2d3142" font-size="13" font-family="'Geist', sans-serif" text-anchor="start" font-weight="600">606 genes with p ≤ 0.05</text>
+<text x="109.8" y="93.6" fill="#4f5d75" font-size="13" font-family="'Geist', sans-serif" text-anchor="start">about 107 of them expected noise</text>
+<text x="109.8" y="111.6" fill="#4f5d75" font-size="12" font-family="'Geist Mono', monospace" text-anchor="start">(π0 = 0.676 at λ = 0.5)</text>
+<line x1="64.0" y1="330.0" x2="700.0" y2="330.0" stroke="#2d3142" stroke-width="1"/>
+<line x1="64.0" y1="330.0" x2="64.0" y2="335.0" stroke="#2d3142" stroke-width="1"/>
+<text x="64.0" y="350.0" fill="#4f5d75" font-size="12" font-family="'Geist Mono', monospace" text-anchor="middle">0.0</text>
+<line x1="191.2" y1="330.0" x2="191.2" y2="335.0" stroke="#2d3142" stroke-width="1"/>
+<text x="191.2" y="350.0" fill="#4f5d75" font-size="12" font-family="'Geist Mono', monospace" text-anchor="middle">0.2</text>
+<line x1="318.4" y1="330.0" x2="318.4" y2="335.0" stroke="#2d3142" stroke-width="1"/>
+<text x="318.4" y="350.0" fill="#4f5d75" font-size="12" font-family="'Geist Mono', monospace" text-anchor="middle">0.4</text>
+<line x1="445.6" y1="330.0" x2="445.6" y2="335.0" stroke="#2d3142" stroke-width="1"/>
+<text x="445.6" y="350.0" fill="#4f5d75" font-size="12" font-family="'Geist Mono', monospace" text-anchor="middle">0.6</text>
+<line x1="572.8" y1="330.0" x2="572.8" y2="335.0" stroke="#2d3142" stroke-width="1"/>
+<text x="572.8" y="350.0" fill="#4f5d75" font-size="12" font-family="'Geist Mono', monospace" text-anchor="middle">0.8</text>
+<line x1="700.0" y1="330.0" x2="700.0" y2="335.0" stroke="#2d3142" stroke-width="1"/>
+<text x="700.0" y="350.0" fill="#4f5d75" font-size="12" font-family="'Geist Mono', monospace" text-anchor="middle">1.0</text>
+<text x="382.0" y="372.0" fill="#4f5d75" font-size="12" font-family="'Geist Mono', monospace" text-anchor="middle">p-value (3,170 Hedenfalk genes)</text>
+</svg>
