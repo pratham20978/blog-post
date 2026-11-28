@@ -1,0 +1,192 @@
+Captured 2026-11-28T11:52:55Z on Linux 7.0.0-43-generic x86_64, AMD Ryzen 7 5825U with Radeon Graphics; Python 3.12.16, NumPy 2.5.4, SciPy 1.18.1, statsmodels 0.15.0; regression.py 7bd415f83058; budget full, seed 20261128; R check: crosscheck-R.csv.
+
+== example
+Sleep data as a regression of extra hours on a drug-2 dummy (Student's ten patients, both drugs):
+  X'X = [[20, 10], [10, 10]]; X'y = [30.8, 23.3]
+  coefficients 0.7500 (drug-1 mean) and 1.5800 (difference in means)
+  RSS 64.8860 on 18 df; sigma^2 3.6048; sigma 1.8986; (X'X)^-1 diagonal [0.1 0.2]
+  SE 0.8491; t 1.8608; p 0.07919; 95% CI -0.2039 to 3.3639; R^2 0.1613; F 3.4626 = t^2
+  SciPy ttest_ind (Student): t 1.8608, p 0.07919
+Adding nine patient dummies (the paired design as a regression):
+  coefficient 1.5800; SE 0.3890; t 4.0621 on 9 df; p 0.002833; sigma 0.8697; R^2 0.9120
+  SciPy ttest_rel (paired): t 4.0621, p 0.002833
+PlantGrowth with a three-level factor (control as the reference level):
+  coefficients 5.0320 (control mean), -0.3710 and 0.4940 (differences)
+  RSS intercept-only 14.2584 on 29 df; with the factor 10.4921 on 27 df; nested F 4.8461 on 2 and 27 df, p 0.01591
+  SciPy f_oneway: F 4.8461, p 0.01591
+  R lm/anova agree to 3.7e-16 relative
+
+== nist
+Exact rational least squares against NIST's certified values (15 significant digits):
+  Norris    n= 36 p= 2: 5/5 certified values reproduced digit for digit
+  Pontius   n= 40 p= 3: 7/7 certified values reproduced digit for digit
+  NoInt1    n= 11 p= 1: 3/3 certified values reproduced digit for digit
+  NoInt2    n=  3 p= 1: 3/3 certified values reproduced digit for digit
+  Filip     n= 82 p=11: 23/23 certified values reproduced digit for digit
+  Longley   n= 16 p= 7: 15/15 certified values reproduced digit for digit
+  Wampler1  n= 21 p= 6: 13/13 certified values reproduced digit for digit
+  Wampler2  n= 21 p= 6: 13/13 certified values reproduced digit for digit
+  Wampler3  n= 21 p= 6: 13/13 certified values reproduced digit for digit
+  Wampler4  n= 21 p= 6: 13/13 certified values reproduced digit for digit
+  Wampler5  n= 21 p= 6: 13/13 certified values reproduced digit for digit
+  all datasets: 121/121 (0.31 s)
+Longley: kappa(X) 4.8593e+09, kappa(X'X) 2.3612e+19, column-scaled kappa 4.3275e+04; smallest/largest singular value 2.058e-10
+  Householder QR                 digits min  10.92 max  13.22 RSS/certified 1.0000
+  normal equations (LU)          digits min   7.38 max   8.56 RSS/certified 1.0000
+  normal equations (Cholesky)    digits min   7.24 max   8.38 RSS/certified 1.0000
+  normal equations (inverse)     digits min   7.41 max   8.60 RSS/certified 1.0000
+  NumPy lstsq, default rcond     digits min  10.99 max  13.67 RSS/certified 1.0000
+  NumPy lstsq, rcond=-1          digits min  10.99 max  13.67 RSS/certified 1.0000
+  SciPy lstsq (gelsd)            digits min  10.93 max  12.77 RSS/certified 1.0000
+  SciPy lstsq (gelsy)            digits min  11.08 max  13.33 RSS/certified 1.0000
+  statsmodels OLS().fit()        digits min  10.99 max  13.79 RSS/certified 1.0000
+  statsmodels fit(method='qr')   digits min  10.92 max  13.22 RSS/certified 1.0000
+Filip: kappa(X) 1.7680e+15, kappa(X'X) 3.1257e+30, column-scaled kappa 5.2068e+09; smallest/largest singular value 5.656e-16
+  Householder QR                 digits min   8.55 max   9.71 RSS/certified 1.0000
+  normal equations (LU)          digits min  -0.03 max   0.01 RSS/certified 1.3285
+  normal equations (Cholesky)    digits min    nan max    nan [LinAlgError: Internal potrf return info = [10] for slices [0].]
+  normal equations (inverse)     digits min  -0.03 max   0.01 RSS/certified 16269.0692
+  NumPy lstsq, default rcond     digits min  -0.03 max   0.00 RSS/certified 1.3458
+  NumPy lstsq, rcond=-1          digits min   5.41 max   8.15 RSS/certified 1.0094
+  SciPy lstsq (gelsd)            digits min   6.06 max   8.99 RSS/certified 1.0053
+  SciPy lstsq (gelsy)            digits min   7.80 max   7.94 RSS/certified 1.0000
+  statsmodels OLS().fit()        digits min  -0.03 max   0.00 RSS/certified 1.3458 [The design matrix is rank-deficient. The model parameters are not uniquely determined.]
+  statsmodels fit(method='qr')   digits min   8.55 max   9.71 RSS/certified 1.0000
+  Longley kappa(X'X) = 2.3612e+19; Wampler (1969) printed 2.361e+19
+  R lm (default) on Longley: rank 7 of 7; digits min 12.94; NA coefficients 0
+  R lm (default) on Filip: rank 10 of 11; digits min 0.01; NA coefficients 1
+  R lm (tol1e10) on Filip: rank 11 of 11; digits min 8.42; NA coefficients 0
+Filip without x^10 (what R's lm fits): RSS 1.2845 x the minimum; F for x^10 20.20 on 1 and 71 df, p 2.65e-05
+All eleven datasets: fewest correct digits over the coefficients
+  dataset       kappa    scaled       tan     QR normal
+  Norris     8.55e+02  2.80e+00  1.58e-03  12.09  11.82
+  Pontius    1.42e+13  1.84e+01  1.51e-04  12.39  11.53
+  NoInt1     1.00e+00  1.00e+00  2.52e-02  14.72  14.72
+  NoInt2     1.00e+00  1.00e+00  8.18e-02  15.00  15.00
+  Filip      1.77e+15  5.21e+09  3.66e-03   8.55  -0.03
+  Longley    4.86e+09  4.33e+04  3.50e-03  10.92   7.38
+  Wampler1   6.40e+06  2.22e+03  1.40e-16   9.62   6.25
+  Wampler2   6.40e+06  2.22e+03  1.06e-16  13.22   9.37
+  Wampler3   6.40e+06  2.22e+03  1.76e-03   9.07   6.25
+  Wampler4   6.40e+06  2.22e+03  1.76e-01   7.67   6.25
+  Wampler5   6.40e+06  2.22e+03  1.76e+01   5.68   6.25
+Longley with GNP in thousands: kappa 1.375e+09, scaled 4.328e+04; normal equations 7.43 digits (GNP as printed: 7.38)
+Longley's data perturbed within their printed precision (20000 refits):
+  const       coefficient moves by SD 5.063e+03 = 1.45e-03 of itself (about 2.8 stable digits), 0.006 of its SE
+  Deflator    coefficient moves by SD 2.045e+00 = 1.36e-01 of itself (about 0.9 stable digits), 0.024 of its SE
+  GNP         coefficient moves by SD 5.299e-04 = 1.48e-02 of itself (about 1.8 stable digits), 0.016 of its SE
+  Unemployed  coefficient moves by SD 6.646e-03 = 3.29e-03 of itself (about 2.5 stable digits), 0.014 of its SE
+  Armed       coefficient moves by SD 1.884e-03 = 1.82e-03 of itself (about 2.7 stable digits), 0.009 of its SE
+  Population  coefficient moves by SD 3.624e-03 = 7.09e-02 of itself (about 1.1 stable digits), 0.016 of its SE
+  Year        coefficient moves by SD 2.415e+00 = 1.32e-03 of itself (about 2.9 stable digits), 0.005 of its SE
+
+== summary
+                            OLS Regression Results                            
+==============================================================================
+Dep. Variable:               Employed   R-squared:                       0.995
+Model:                            OLS   Adj. R-squared:                  0.992
+Method:                 Least Squares   F-statistic:                     330.3
+Date:                Sat, 28 Nov 2026   Prob (F-statistic):           4.98e-10
+Time:                        17:22:59   Log-Likelihood:                -109.62
+No. Observations:                  16   AIC:                             233.2
+Df Residuals:                       9   BIC:                             238.6
+Df Model:                           6                                         
+Covariance Type:            nonrobust                                         
+==============================================================================
+                 coef    std err          t      P>|t|      [0.025      0.975]
+------------------------------------------------------------------------------
+const      -3.482e+06    8.9e+05     -3.911      0.004    -5.5e+06   -1.47e+06
+Deflator      15.0619     84.915      0.177      0.863    -177.029     207.153
+GNP           -0.0358      0.033     -1.070      0.313      -0.112       0.040
+Unemployed    -2.0202      0.488     -4.136      0.003      -3.125      -0.915
+Armed         -1.0332      0.214     -4.822      0.001      -1.518      -0.549
+Population    -0.0511      0.226     -0.226      0.826      -0.563       0.460
+Year        1829.1515    455.478      4.016      0.003     798.788    2859.515
+==============================================================================
+Omnibus:                        0.749   Durbin-Watson:                   2.559
+Prob(Omnibus):                  0.688   Jarque-Bera (JB):                0.684
+Skew:                           0.420   Prob(JB):                        0.710
+Kurtosis:                       2.434   Cond. No.                     4.86e+09
+==============================================================================
+
+Notes:
+[1] Standard Errors assume that the covariance matrix of the errors is correctly specified.
+[2] The condition number is large, 4.86e+09. This might indicate that there are
+strong multicollinearity or other numerical problems.
+
+The same numbers from the design matrix (QR), and the largest relative difference from statsmodels:
+  const       coef -3.482259e+06  SE 8.904204e+05  t -3.9108  p 0.003560  95% CI -5.49653e+06 to -1.46799e+06
+  Deflator    coef  1.506187e+01  SE 8.491493e+01  t  0.1774  p 0.863141  95% CI -1.77029e+02 to  2.07153e+02
+  GNP         coef -3.581918e-02  SE 3.349101e-02  t -1.0695  p 0.312681  95% CI -1.11581e-01 to  3.99427e-02
+  Unemployed  coef -2.020230e+00  SE 4.883997e-01  t -4.1364  p 0.002535  95% CI -3.12507e+00 to -9.15393e-01
+  Armed       coef -1.033227e+00  SE 2.142742e-01  t -4.8220  p 0.000944  95% CI -1.51795e+00 to -5.48505e-01
+  Population  coef -5.110411e-02  SE 2.260732e-01  t -0.2261  p 0.826212  95% CI -5.62517e-01 to  4.60309e-01
+  Year        coef  1.829151e+03  SE 4.554785e+02  t  4.0159  p 0.003037  95% CI  7.98788e+02 to  2.85952e+03
+  sigma 304.854074 on 9 df; RSS 836424.055506; TSS 185008826.000000; R^2 0.995479; adjusted 0.992465
+  F 330.2853 on 6 and 9 df, p 4.9840e-10; log-likelihood -109.6174; AIC 233.2349 (statsmodels) or 235.2349 (R, counting sigma)
+  Omnibus 0.7486 (p 0.6878); skew 0.4200; kurtosis 2.4337; Jarque-Bera 0.6841 (p 0.7103); Durbin-Watson 2.5595; condition number 4.8593e+09
+  largest relative difference from statsmodels over 39 numbers: 5.6e-12
+  R's summary(lm) and AIC agree to 1.2e-11 relative (R's AIC 235.2349)
+  joint test that GNP, Population are all zero: F 2.6128 on 2 and 9 df, p 0.1274
+  joint test that Deflator, GNP, Population are all zero: F 1.7465 on 3 and 9 df, p 0.227
+  joint test that GNP, Year are all zero: F 14.5319 on 2 and 9 df, p 0.00152
+  GNP and Year estimates correlate -0.8017; their joint 95% region is an ellipse with axes ratio 22751.9
+
+== meaning
+Frisch-Waugh-Lovell: each slope equals the slope of y's residuals on the predictor's residuals
+  Deflator    slope on residuals  1.506187e+01 vs coefficient  1.506187e+01; R^2 on the others 0.992622; VIF    135.53; residual SD 0.927 of raw SD 10.79
+  GNP         slope on residuals -3.581918e-02 vs coefficient -3.581918e-02; R^2 on the others 0.999441; VIF   1788.51; residual SD 2350 of raw SD 9.939e+04
+  Unemployed  slope on residuals -2.020230e+00 vs coefficient -2.020230e+00; R^2 on the others 0.970255; VIF     33.62; residual SD 161.2 of raw SD 934.5
+  Armed       slope on residuals -1.033227e+00 vs coefficient -1.033227e+00; R^2 on the others 0.721365; VIF      3.59; residual SD 367.3 of raw SD 695.9
+  Population  slope on residuals -5.110411e-02 vs coefficient -5.110411e-02; R^2 on the others 0.997495; VIF    399.15; residual SD 348.2 of raw SD 6956
+  Year        slope on residuals  1.829151e+03 vs coefficient  1.829151e+03; R^2 on the others 0.998682; VIF    758.98; residual SD 0.1728 of raw SD 4.761
+  GNP alone (employment on GNP and a constant): slope 0.034752; with the other five: -0.035819
+  statsmodels variance_inflation_factor agrees to 7.1e-13 relative
+Omitted-variable bias, leaving Year out (short = long + Year's coefficient x auxiliary slope):
+  const       long -3.48226e+06  short  9.24613e+04  = long + 1829.15 x  1.95431e+03
+  Deflator    long  1.50619e+01  short -4.84628e+01  = long + 1829.15 x -3.47291e-02
+  GNP         long -3.58192e-02  short  7.20038e-02  = long + 1829.15 x  5.89470e-05
+  Unemployed  long -2.02023e+00  short -4.03871e-01  = long + 1829.15 x  8.83666e-04
+  Armed       long -1.03323e+00  short -5.60496e-01  = long + 1829.15 x  2.58443e-04
+  Population  long -5.11041e-02  short -4.03509e-01  = long + 1829.15 x -1.92660e-04
+  identity holds to 1.3e-12 relative; short-model R^2 0.987378
+Condition number of X: raw 4.8593e+09, centred 5.7691e+05, standardised 110.5442; the VIFs move by 3.8e-15
+  correlation of GNP and Year 0.9953; of Deflator and GNP 0.9916
+
+== interaction
+ToothGrowth cell means (10 animals each):
+  OJ: 0.5 mg 13.23, 1 mg 22.70, 2 mg 26.06
+  VC: 0.5 mg 7.98, 1 mg 16.77, 2 mg 26.14
+  OJ - VC: 0.5 mg 5.25, 1 mg 5.93, 2 mg -0.08
+len ~ OJ * log2(dose/0.5): OJ 6.3650 (SE 1.5186, t 4.191, p 9.948e-05); interaction -2.6650 (SE 1.1763); slope for VC 9.0800; R^2 0.77554
+len ~ OJ * log2(dose/1): OJ 3.7000 (SE 0.9605, t 3.852, p 0.0003033); interaction -2.6650 (SE 1.1763); slope for VC 9.0800; R^2 0.77554
+len ~ OJ * log2(dose/2): OJ 1.0350 (SE 1.5186, t 0.682, p 0.4983); interaction -2.6650 (SE 1.1763); slope for VC 9.0800; R^2 0.77554
+  lack of fit of the log-dose lines against the six cell means: F 2.3804 on 2 and 54 df, p 0.1022
+  supplement x dose interaction with dose as a factor: F 4.1070 on 2 and 54 df, p 0.0219
+  R lm agrees to 4.5e-15 relative
+
+== intervals
+VC arm: length = 16.9633 + 9.0800 x doublings of dose from 1 mg; sigma 3.4463 on 28 df
+  at 1.5 mg: mean 22.2748; leverage 0.05044; 95% CI for the mean 20.689 to 23.860; 95% prediction interval 15.039 to 29.510 (4.56 times wider)
+  n =    6: CI covers the mean 95.0%; PI covers a new animal 95.1%; the CI used as a PI covers 71.8% (MCSE <= 0.35 points)
+  n =   15: CI covers the mean 95.2%; PI covers a new animal 95.0%; the CI used as a PI covers 47.4% (MCSE <= 0.35 points)
+  n =   30: CI covers the mean 95.3%; PI covers a new animal 94.9%; the CI used as a PI covers 34.1% (MCSE <= 0.35 points)
+  n =   60: CI covers the mean 94.9%; PI covers a new animal 95.4%; the CI used as a PI covers 24.4% (MCSE <= 0.35 points)
+  n =  150: CI covers the mean 95.1%; PI covers a new animal 94.9%; the CI used as a PI covers 15.3% (MCSE <= 0.35 points)
+  n =  600: CI covers the mean 94.9%; PI covers a new animal 95.0%; the CI used as a PI covers 7.8% (MCSE <= 0.35 points)
+
+== conditions
+Coverage of the slope's 95% interval, 20000 simulated datasets per cell (MCSE about 0.15 points at 95%):
+                        n=5     n=10    n=20    n=50    n=200   n=1000  
+  normal                    94.9    94.9    94.9    95.0    94.9    95.1
+  skewed predictor          94.7    95.3    95.1    94.8    95.0    94.9
+  skewed errors             93.4    94.2    94.4    94.7    95.4    95.4
+  heavy-tailed errors       95.2    94.9    94.9    94.9    95.0    94.9
+  non-constant variance     92.5    89.8    87.8    85.9    84.3    82.9
+  dependent errors          81.8    67.4    60.4    58.4    58.8    59.0
+  skewed errors, misses above / below the interval: n=5 5.3/1.3, n=10 5.2/0.6, n=20 5.2/0.4, n=50 4.9/0.3, n=200 4.1/0.5, n=1000 3.7/1.0
+Prediction interval with normal errors, misses below / above: n=10 2.49/2.32, n=30 2.44/2.56, n=100 2.50/2.34, n=1000 2.50/2.47
+Prediction interval with skewed errors, misses below / above: n=10 0.34/6.04, n=30 0.02/5.77, n=100 0.00/5.18, n=1000 0.00/5.41
+  large-n limit for the skewed errors: P(error > 1.96 SD) = exp(-2.96) = 5.18%, none below
+
+wrote full.json: example 0.9 s, nist 2.7 s, summary 0.0 s, meaning 0.0 s, interaction 0.0 s, intervals 0.6 s, conditions 13.6 s

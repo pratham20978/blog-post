@@ -30,7 +30,7 @@
   - Software is named by exact function and pinned version.
 - **Recurring examples still to come (each confirmed with its licence at its part's research):**
   Greenwood & Yule's accidents (1, 4, 12, 16); Efron–Morris batting averages (3, 17); Pfizer–BioNTech efficacy (6,
-  11, 12); NIST Longley and Filip (13); Anscombe and Duncan (14); Challenger (15);
+  11, 12); Anscombe and Duncan (14); Challenger (15);
   `MASS::ships` and `quine` (16); `sleepstudy` (17); eight schools and Minnesota radon (18).
 - **Lab:** G1 throughout, no access requests (see `access.md`). Pattern: by hand → matched to the
   library and R → guarantee measured with MCSE → real data with provenance.
@@ -72,9 +72,9 @@ None is published; "ready" means built and gated.
 | 8  | choosing-a-statistical-test                   | ready 2026-11-01 | the design picks the test; Welch by default      | rank tests to 10; regressions to 13; experiment tests to DS-2               |
 | 9  | multiple-comparisons-fwer-fdr                 | ready 2026-11-23 | error across many tests, counted and uncounted   | regression to 13                                                            |
 | 10 | permutation-and-rank-tests                    | ready 2026-11-23 | exact tests; what rank tests test                | randomisation inference to DS-2, DS-3; median tests named, not built        |
-| 11 | bayesian-inference-conjugate-priors           | planned          | prior to posterior in closed form                | —                                                                          |
-| 12 | mcmc-diagnostics-metropolis-nuts              | planned          | sampling a posterior and trusting the draws      | —                                                                          |
-| 13 | linear-regression-inference                   | planned          | every number in the regression table             | —                                                                          |
+| 11 | bayesian-inference-conjugate-priors           | ready 2026-11-25 | prior to posterior in closed form                | MCMC to 12; hierarchies to 18; machinery to ML-4; Bayesian A/B to DS-2     |
+| 12 | mcmc-diagnostics-metropolis-nuts              | ready 2026-11-27 | sampling a posterior and trusting the draws      | divergences and funnels to 18; NUTS internals, Gibbs, VI to ML-4           |
+| 13 | linear-regression-inference                   | ready 2026-11-28 | every number in the regression table             | robust SEs, normality tests to 14; causal to DS-3; dependent errors to DS-4  |
 | 14 | regression-diagnostics-robust-standard-errors | planned          | when to distrust the table, and the repair       | —                                                                          |
 | 15 | glm-logistic-regression                       | planned          | one algorithm for every GLM; logistic read right | —                                                                          |
 | 16 | count-regression-poisson-negative-binomial    | planned          | rates, exposure and overdispersion               | —                                                                          |
@@ -85,42 +85,35 @@ None is published; "ready" means built and gated.
 
 Durable numbers, traps and corrected claims, reused rather than re-derived.
 
-### Parts 1–7
+### Parts 1–12
 
-- **1:** Clarke 1946 (576 squares, mean 0.9323); Greenwood & Yule (647 women, mean 0.4652, variance 0.6919); NB k̂ 0.955.
-  **2:** UCI spend (CC BY 4.0), γ 21.58; a one-sided 5% t at n = 30 errs 39.82%/0.05%.
-- **3:** tanks (N = 342, k = 5) MSE 5,448 (MLE) against 3,303 (MVUE); James–Stein wins 96.2% of 1970 seasons. **4:** Clarke
-  sizes at nλ₀ = 12.2: Wald 8.84%, LR 6.57%, score 4.26%; NB k̂ 0.865 (`method="newton"`); boundary mixture 4.40%.
-- **5:** Lu–Qiu–Deng power 0.0570, type S 0.2396, exaggeration 9.537; peeking 52.99% after 1,000 looks. **6:** coverage at
-  n = 20, p = 0.1: Wald 87.6%, Wilson 95.7%, Clopper–Pearson 98.9%; Pfizer VE 90.0–97.9.
-- **7:** law schools (CRAN `bootstrap`, BSD-3): r 0.776, BCa 0.327–0.942; maximum 0.672 → 0.632; AR(1) SE ratio 0.574.
-- **Traps:** `nct.cdf` NaN past λ ≈ 8 (use `nct.sf(c, df, -λ)`); `proportion_confint` defaults to Wald; SciPy BCa NaN on
-  integer data; `boot.ci`'s acceleration is a regression.
+- **1–4:** Clarke 1946 (576 squares, mean 0.9323); Greenwood & Yule (647 women, mean 0.4652); tanks MSE 5,448 against
+  3,303; Clarke Wald/LR/score sizes 8.84/6.57/4.26%; NB k̂ 0.865 (`method="newton"`). **5–7:** Lu–Qiu–Deng power 0.0570,
+  exaggeration 9.537; coverage at n = 20, p = 0.1: Wald 87.6%, Clopper–Pearson 98.9%; Pfizer CI 90.0–97.9; law school
+  BCa 0.327–0.942.
+- **8–10:** sleep paired p 0.002833; Student 18.25% at SD × 2 (10 and 40); Hedenfalk BH 94; Darwin exact p 0.0527,
+  t 0.0497; Mann–Whitney 79.7% at equal medians; Spearman exact 0.000638. Corrected: FDR as "5% of my discoveries",
+  Mann–Whitney as a median test.
+- **11–12:** Laplace's 1781 tail 1.1461 × 10⁻⁴²; trial beta(8.700102, 163) → VE 90.317–97.617; Metropolis → VE
+  90.474–97.519, ESS 4,032; mean ± 1.96 SE covers 65.1% naive, 94.9% with SD/√ESS; split R̂ reaches 1.1 only at a
+  0.99-SD shift. Corrected: "a flat prior is objective", "R̂ below 1.1 means converged".
+- **Traps:** `nct.cdf` NaN past λ ≈ 8; `proportion_confint` defaults to Wald; SciPy BCa NaN on integer data; `ttest_ind`
+  pools; `barnard_exact` drops ties; `permutation_test` draws 9,999 by default; SciPy `gamma` takes `scale=1/rate`;
+  ArviZ 1.3 tail ESS on xarray uses 11%/89%; PyMC `alpha` is k; set `PYTENSOR_FLAGS` before import.
 
-### Part 8 — Which Statistical Test? The Design Decides, Not the Data
+### Part 13 — Linear Regression by Hand: Every Number in the Summary
 
-- **Sleep** paired p 0.002833 against 0.0792 unpaired; **PlantGrowth** F 4.846, W 5.181. Exact sizes, 10 and 40: Student
-  18.25% at SD × 2, Welch 4.97–5.15%. **2 × 2** (Hellman, 20 and 22): Fisher 3.61%, Boschloo
-  4.63%. **Traps:** SciPy's `ttest_ind` and `f_oneway` pool by default; `barnard_exact` drops tied tables.
-
-### Part 9 — Multiple Comparisons: FWER, FDR, and Tests You Didn't Count
-
-- **Hedenfalk** (3,170 genes): at 5% Bonferroni and Holm 2, BH 94, BY 0, Storey 162. **Equicorrelated, R 20,000:**
-  BH FDR 0.0335, 0.0260 at ρ 0.5, with 19.8% of lists > 10% false; Storey 0.0500 → 0.2723.
-  **Corrected:** "FDR 5% means 5% of my discoveries are false."
-
-### Part 10 — Permutation and Rank Tests: What They Actually Test
-
-- **Darwin** (1876 scans, public domain): t 2.148, p 0.0497; Fisher's count
-  835 + 28 = 863 of 32,768, p 0.0527; signed-rank V⁺ 96, p 0.0413; sign 0.0074; Hodges–Lehmann 3.125 (0.5 to 5.1875,
-  95.21%); Galton's re-pairing t 5.171.
-- **Monte Carlo:** SciPy's default (9,999 draws) puts Darwin at p ≤ 0.05 in 19.4% of runs; b/m gives FWER 63.2% (m 999,
-  1,000 tests); SciPy's two-sided p doubles the smaller tail.
-- **10 and 40, R 50,000:** raw permutation 18.31% at SD × 2 (Student 18.34%), studentised 5.73%; equal sizes, one test.
-- **Mann–Whitney:** equal medians (normal against Exp − ln 2, θ 0.4431) 79.7% at 400 per group; equal-centre normals 14.81%
-  where Brunner–Munzel gives 5.27%. ARE 3/π, ≥ 0.864; at n = 20 the uniform loses 6.3 points, t₃ gains 10.9.
-- **Law school:** Spearman exact 0.000638 (DP over 15!) against SciPy's t 0.00038, R's AS 89 0.00061. **Corrected:**
-  "Mann–Whitney compares medians, so use it when the data are not normal."
+- **Checks:** exact rationals reproduce all 121 NIST certified values. Worst-coefficient digits: Longley QR 10.92,
+  normal equations 7.38; Filip 8.55 and 0. The column-scaled κ predicts the loss; centring cuts Longley's κ, never a
+  VIF (GNP 1,788.5). Matches statsmodels to 5.6 × 10⁻¹², R to 1.2 × 10⁻¹¹. Sleep t 1.861 (dummy), 4.062 (with
+  patients); dropping Year turns GNP's −0.0358 into +0.0720.
+- **Measured:** the slope's CI covers 93.4–95.4% under skewed predictors or errors, n = 5 to 1,000; unequal variance
+  82.9%, dependent errors 59.0%. Skewed errors leave PI tails wrong at any n; a CI used as a PI covers 34.1%.
+- **Traps:** on Filip every default keeps no digit: NumPy ≥ 2.0 `lstsq` (`rcond=-1` fixes), statsmodels `pinv` (warns;
+  `method="qr"`), R `lm` tol 1e-7 drops x¹⁰. AIC counts p in statsmodels, p + 1 in R; statsmodels adds no intercept.
+  NIST answers 403 to Python-urllib's User-Agent. Strided arrays change BLAS last bits. Six-digit captures
+  double-round (R̂, AIC, TSS): store what the prose quotes at full precision. Corrected: "regression needs normally
+  distributed variables".
 
 ## Decisions to preserve
 
@@ -140,8 +133,8 @@ Durable numbers, traps and corrected claims, reused rather than re-derived.
 - Numbers are rounded once from the captures, half up from the exact decimal (lab `pc()` and `hu()`, figures
   `hp()`, never `:.4f`), and rechecked by script before the gate; plain-fact claims quote the exact value.
 - Assets: copy Part 8's toolchain and `lab/choosing.py` layout, or Part 9's builders; Mermaid top to bottom; one
-  style per method or test. Bin a discrete estimator on its own support; write "MLE", not λ̂ (Geist Mono lacks the
-  hat); `_figs.curve()` asserts no NaN.
+  style per method or test. Bin a discrete estimator on its own support; no hats in figures (Geist Mono drops the
+  combining mark: write "MLE", "residual SD"); `_figs.curve()` asserts no NaN.
 - Literal section headings, fenced `$$` display math: Part 9's cloud build broke both; `_export.py` needs
   Playwright. Jump links use canery's `slugify` (en dashes vanish: `mannwhitney`); answers keep `<details>` and
   open with **Answer.**, which canery shows when it strips the tag.
@@ -153,24 +146,25 @@ Durable numbers, traps and corrected claims, reused rather than re-derived.
 ## Open threads
 
 - Checkpoint S still open: part count (18 or 16), survival placement, title and the optional smoothing part await
-  the owner; none touches Parts 1–10.
+  the owner; none touches a built part.
 - `data-science` category: still missing from the live DB (the owner's write at publish).
-- Project Euclid, Taylor & Francis, Springer, the Royal Society and R's bug tracker refuse scripts:
-  cite abstracts and say so. CASI is free from the authors.
+- Project Euclid, Taylor & Francis, Springer, the Royal Society and R's bug tracker refuse scripts: cite abstracts.
 - blog-forge's `subject-playbooks.md` has no statistics entry (the owner's change).
 - Datasets still open: the heteroskedastic set for 14, the `sleepstudy` source for 17.
 - Part 9: owner's R check pending; BH counts differ from the paper's.
-- SciPy 1.18.1 `barnard_exact` compares |Z| without a tolerance (71 of 481 tables; no 5% decision flips); not
-  reported upstream.
-- Available RAM has been 2 to 7 GiB: keep Parts 12 and 18's PyMC runs small.
+- SciPy's `barnard_exact` tie bug (no 5% decision flips) is not reported upstream.
+- Part 11: protocol Table 8's >0.999 at VE 70% is 0.994; the FDA briefing's 99.5% threshold is 98.6%. Not reported.
 - `plan.md` holds the plan twice (a truncated copy in lines 1–888, uncommitted); the owner's call.
 
 ## Next part brief
 
-- **Part:** 11, *Bayesian Inference by Hand: Priors, Conjugacy and Credible Intervals* (`bayesian-inference-conjugate-priors`).
-- **Can assume:** Part 4 by title; Part 6 for coverage.
-- **Must teach:** `plan.md`'s Part 11 block, as written.
-- **Must not repeat:** intervals and coverage (6); MCMC (12); hierarchies (18); Bayesian A/B testing (DS-2).
-- **Evidence still needed:** Laplace's Paris baptisms with source; the Pfizer protocol's prior; Jeffreys 1946, Lindley 1957.
-- **Handoff:** as `plan.md` states. Part 6 promised the credible interval 90.3–97.6 from beta(0.700102, 1), adjusted for
-  surveillance time: check it first.
+- **Part:** 14, *Regression Diagnostics: Residuals, Leverage, Influence and Robust Standard Errors*
+  (`regression-diagnostics-robust-standard-errors`).
+- **Can assume:** Part 13 by its title, *Linear Regression by Hand: Every Number in the Summary*: SEs from
+  σ̂²(XᵀX)⁻¹ with n − p, QR, Frisch–Waugh–Lovell, VIF, a new point's leverage, and its coverage sweep (82.9% under
+  unequal variance is the failure 14 repairs).
+- **Must teach:** `plan.md`'s Part 14 block, as written.
+- **Must not repeat:** the summary rebuild, solver digits, collinearity or the normality sweep; cite Part 13's numbers.
+- **Evidence still needed:** Anscombe 1973; Duncan's data source and licence; the heteroskedastic dataset; White 1980,
+  MacKinnon–White 1985, Long–Ervin 2000. R `influence.measures` is a private check (no `crosscheck.R` in 14).
+- **Handoff:** as `plan.md` states.

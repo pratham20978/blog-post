@@ -151,6 +151,53 @@ Part 10's lab, measured with `/usr/bin/time -v` on the frozen `permutation.py` (
 0.30 GB in 157.5 s, `--quick` at 0.27 GB in 20.2 s, the E4 fault run (`example --quick --fault`) at 0.14 GB in 2.6 s, and
 the E3 run (`twosample --quick --n1 25 --n2 25 --ratio 4`) at 0.14 GB in 2.1 s.
 
+## Probe — 2026-11-25 (Part 11)
+
+```
+Linux 7.0.0-43-generic x86_64
+ram_total=14G ram_available=4 to 5G during the build
+disk_free=261G on /
+venv python 3.12.16; NumPy 2.5.4, SciPy 1.18.1 unchanged
+everything else as on 2026-10-23
+```
+
+Part 11's lab, measured with `/usr/bin/time -v` on the frozen `bayes.py` (f3b096d9fc45): the full run peaked at 0.14 GB
+in 10.2 s, `--quick` at 0.13 GB in 7.4 s, the E4 fault run (`pfizer --quick --fault`) at 0.10 GB in 1.5 s, and the E3
+run (`priors --quick --split 0 5 --times 0.102 0.106`) at 0.10 GB in 1.7 s.
+
+## Probe — 2026-11-27 (Part 12)
+
+```
+Linux 7.0.0-43-generic x86_64
+ram_total=14G ram_available=3 to 4G during the build
+disk_free=158G on /
+venv python 3.12.16; NumPy 2.5.4, SciPy 1.18.1 unchanged; added PyMC 6.4.0, PyTensor 3.3.8, ArviZ 1.3.0
+  (arviz-stats 1.3.3, arviz-base 1.3.1), xarray 2026.9.0, numba 0.68.0
+g++=yes (PyTensor compiled the model); R 4.5.2 unchanged
+everything else as on 2026-10-23
+```
+
+Part 12's lab, measured with `/usr/bin/time -v` on the frozen `mcmc.py` (e8731e385f0c): the full run peaked at 0.48 GB in
+142.8 s, `--quick` at 0.43 GB in 23.2 s, the E4 fault run (`pfizer --quick --fault`) at 0.15 GB in 2.3 s, and the E3 run
+(`pfizer --quick --step 0.01`) at 0.15 GB in 2.3 s. The notebook build executed every cell in 185 s and peaked at 0.51 GB.
+Free disk fell from 261 GB to 158 GB since Part 11, none of it this build's.
+
+## Probe — 2026-11-28 (Part 13)
+
+```
+Linux 7.0.0-43-generic x86_64
+ram_total=14G ram_available=4G at the probe
+disk_free=158G on /
+venv python 3.12.16; NumPy 2.5.4, SciPy 1.18.1, statsmodels 0.15.0, pandas 3.1.0 unchanged
+R 4.5.2 unchanged; base R only
+NIST's StRD site answers 403 to Python-urllib's default User-Agent and serves a named client
+everything else as on 2026-10-23
+```
+
+Part 13's lab, measured with `/usr/bin/time -v` on the frozen `regression.py` (7bd415f83058): the full run peaked at
+0.32 GB in 19.4 s, `--quick` at 0.26 GB in 4.7 s, the E4 fault run (`summary --quick --fault`) at 0.18 GB in 2.4 s, and
+the E3 run (`nist --quick --year-origin 1954`) at 0.18 GB in 2.9 s. The notebook build executed every cell in 47 s.
+
 ## Requests
 
 None. Every part is **G1 — runs anywhere**, self-provisioned. No hardware, privilege, credential or
@@ -191,13 +238,17 @@ scratchpad. On 2026-11-23, Part 10 reused the venv unchanged (its lab
 needs only NumPy and SciPy); its notebook ran the same way, online; its private R check used base R only (`t.test`,
 `wilcox.test`, `binom.test`, `cor.test`); a throwaway pip venv in the session scratchpad measured the lab's install at
 220 MB and was deleted; and Darwin Online's page scans, Fisher's 1937 edition and the papers it read were downloaded
-to the session scratchpad.
+to the session scratchpad. On 2026-11-25, Part 11 reused the venv unchanged (its lab needs only NumPy and SciPy); its notebook ran
+the same way, online; its private R check used base R only (`qbeta`, `pbeta`, `lbeta`, `lchoose`, `binom.test`); a
+throwaway pip venv in the session scratchpad measured the lab's install at 219 MB and was deleted; and Pulskamp's Laplace
+translations, the trial protocol (from the paper's supplement), the FDA briefing, BDA3 and the papers it read were
+downloaded to the session scratchpad. On 2026-11-27, Part 12 added PyMC 6.4.0, PyTensor 3.3.8, ArviZ 1.3.0 and their dependencies to the venv (226 MB more, 529 MB in all), keeping pandas at 3.1.0; its notebook ran the same way, online; its private R check installed `posterior` 1.8.1 and 18 dependencies from CRAN into the isolated library `~/.cache/statistics-for-data-scientists-lab/R-lib` (24 MB, through `R_LIBS_USER`, nothing compiled into the user library); a throwaway uv venv in the session scratchpad measured the lab's install at 439 MB and was deleted; a first PyMC run wrote PyTensor's compile cache to `~/.pytensor` (1.7 MB, created by this build), which was deleted once the lab set `PYTENSOR_FLAGS` to keep it in the lab folder; and the papers it read were downloaded to the session scratchpad. On 2026-11-28, Part 13 reused the venv unchanged (its lab needs NumPy, SciPy, statsmodels and pandas at the series pins); its notebook ran the same way; its shipped `crosscheck.R` used base R only (`lm`, `anova`, `AIC`, `BIC`, `predict`); a throwaway uv venv in the session scratchpad measured the lab's install at 263 MB and was deleted; NIST's eleven StRD files (about 30 kB, not redistributed) were downloaded to the session scratchpad and by the lab into its `.nist/` cache, which was deleted from the post folder; and the papers it read were downloaded to the session scratchpad.
 
 | What | Where | For | Undo |
 |---|---|---|---|
 | `uv` venv: NumPy, SciPy, pandas, statsmodels, Matplotlib, pinned per part | `~/.cache/statistics-for-data-scientists-lab/` | all parts | delete the directory |
 | PyMC and ArviZ in the same venv | same | 12, 18 | same |
-| Isolated R library: `lme4` (CMake from pip if `nloptr` needs it), `sandwich` | `~/.cache/statistics-for-data-scientists-lab/R-lib`, via `R_LIBS_USER` | 14, 16, 17 cross-checks | delete the directory |
+| Isolated R library: `posterior` 1.8.1 (installed in Part 12); later `lme4` (CMake from pip if `nloptr` needs it), `sandwich` | `~/.cache/statistics-for-data-scientists-lab/R-lib`, via `R_LIBS_USER` | 12, 14, 16, 17, 18 cross-checks | delete the directory |
 | Public datasets (NIST StRD, UCI, Gelman–Hill radon, Rdatasets CSVs) | each post's `lab/data/`, or its scratch directory when not redistributable | per part | delete the files |
 
 The user's default R library (`~/R/x86_64-pc-linux-gnu-library/4.5`) is not touched. All of the

@@ -1,0 +1,15 @@
+# Case splits from the BNT162b2 (Pfizer-BioNTech) phase 3 trial, copied as printed; the lab recomputes every interval.
+# Source A: F. P. Polack et al., "Safety and efficacy of the BNT162b2 mRNA Covid-19 vaccine", New England Journal of Medicine
+#   383(27): 2603-2615, 2020, https://doi.org/10.1056/NEJMoa2034577 (read via PMC7745181), Tables 2 and 3.
+# Source B: U.S. Food and Drug Administration, Vaccines and Related Biological Products Advisory Committee, FDA Briefing
+#   Document: Pfizer-BioNTech COVID-19 Vaccine, meeting of 10 December 2020, https://www.fda.gov/media/144245/download ,
+#   Table 11 (a U.S. government work).
+# surveillance_* is total follow-up in 1000 person-years for the endpoint, printed to three decimals. interval is the source's
+#   method: credible is "a beta-binomial model with prior beta (0.700102, 1) adjusted for the surveillance time";
+#   clopper_pearson is a confidence interval (the last row is kept for its counts only).
+# Counts and times are facts reported in the sources; nothing is changed except the subgroup labels, shortened to plain ASCII.
+source,table,endpoint,subgroup,cases_vaccine,surveillance_vaccine,cases_placebo,surveillance_placebo,published_ve,published_lower,published_upper,interval
+A,2,covid19_7d_after_dose2_no_prior_infection,overall,8,2.214,162,2.222,95.0,90.3,97.6,credible
+A,2,covid19_7d_after_dose2_with_or_without_prior_infection,overall,9,2.332,169,2.345,94.6,89.9,97.3,credible
+B,11,first_severe_covid19_7d_after_dose2_no_prior_infection,overall,1,2.215,3,2.232,66.4,-124.8,96.3,credible
+A,3,covid19_7d_after_dose2_no_prior_infection,age 75 or over,0,0.102,5,0.106,100.0,-13.1,100.0,clopper_pearson

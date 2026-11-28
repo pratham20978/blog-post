@@ -1,0 +1,28 @@
+# Baptisms in Paris by sex, as P.-S. Laplace published them; the lab reproduces his calculations from these counts.
+# 1745-1770: Laplace, "Memoire sur les probabilites", Memoires de l'Academie royale des sciences de Paris, annee 1778 (1781),
+#   article XIX; read in R. J. Pulskamp's English translation (2010): https://gtfp.cs.rhul.ac.uk/pulskamp/Laplace/memoir_probabilities.pdf
+# 1771 to 1784, year by year: Laplace, "Sur les naissances, les mariages et les morts a Paris, depuis 1771 jusqu'en 1784",
+#   Mem. Acad. R. Sci. Paris 1783, pp. 693-702, Table 1 (Oeuvres completes 11: 35-48); read in Pulskamp's translation (2010):
+#   https://gtfp.cs.rhul.ac.uk/pulskamp/Laplace/naissances.pdf . Each printed year total equals boys plus girls. The table's
+#   printed Total row (151859 boys, 145159 girls) does not equal its own columns, which sum to 141859 and 135610; the column
+#   sums reproduce the 1745-1784 totals below.
+# 1745-1784: Laplace, Theorie analytique des probabilites, 3rd edition (1820; first edition 1812), Book II, chapter VI, section 28,
+#   foundlings included; read in Pulskamp's translation: https://gtfp.cs.rhul.ac.uk/pulskamp/Laplace/TAP/TAP_book2_chap6.pdf
+# The counts are historical facts from public-domain works, copied without change.
+period,first_year,last_year,boys,girls,source
+1745-1770,1745,1770,251527,241945,memoire 1781 art. XIX
+1771,1771,1771,9604,9337,memoire 1783 table 1
+1772,1772,1772,9557,9156,memoire 1783 table 1
+1773,1773,1773,9751,9096,memoire 1783 table 1
+1774,1774,1774,9892,9461,memoire 1783 table 1
+1775,1775,1775,10247,9403,memoire 1783 table 1
+1776,1776,1776,9716,9203,memoire 1783 table 1
+1777,1777,1777,11445,10821,memoire 1783 table 1
+1778,1778,1778,11037,10651,memoire 1783 table 1
+1779,1779,1779,10506,10108,memoire 1783 table 1
+1780,1780,1780,10071,9546,memoire 1783 table 1
+1781,1781,1781,10397,9835,memoire 1783 table 1
+1782,1782,1782,9851,9536,memoire 1783 table 1
+1783,1783,1783,9952,9736,memoire 1783 table 1
+1784,1784,1784,9833,9721,memoire 1783 table 1
+1745-1784,1745,1784,393386,377555,theorie analytique 3rd ed. II.28

@@ -1,0 +1,36 @@
+---
+config:
+  flowchart:
+    curve: basis
+---
+flowchart TB
+  d["draws of one quantity, θ<br/>M = 4 chains × N = 5,000"]
+  s["split every chain in half<br/>8 half-chains × 2,500"]
+  r["rank all S = 20,000 draws together,<br/>then normal scores<br/>z = inverse normal of (r − 3/8)/(S + 1/4)"]
+  f["fold: |θ − median of θ|,<br/>then rank and normal scores"]
+  i["indicators: is θ at or below<br/>its 5% point? its 95% point?"]
+  m["the half-chains' raw values"]
+  rb["bulk R-hat = √(var+ / W)<br/>var+ = (n − 1)/n · W + B/n<br/>trial: 1.00035"]
+  rf["folded R-hat, the same<br/>formula on the folded scores<br/>trial: 1.00079"]
+  rh["reported R-hat:<br/>the larger of the two<br/>trial: 1.00079; use if below 1.01"]
+  eb["bulk ESS = S / τ on the scores<br/>trial: 4,242; want above 400"]
+  et["tail ESS: the smaller ESS<br/>of the two indicators<br/>trial: 4,458; want above 400"]
+  em["ESS for the mean = S / τ on θ;<br/>MCSE = SD / √ESS<br/>trial: 4,032; 0.000254"]
+
+  d -->|"a trend shows as<br/>halves that disagree"| s
+  s -->|"pooled ranks:<br/>tails cannot dominate"| r
+  s -->|"distance from<br/>the median"| f
+  s -->|"0 or 1 at each<br/>tail quantile"| i
+  s -->|"values as drawn"| m
+  r -->|"between B, within W"| rb
+  r -->|"autocorrelations,<br/>Geyer's truncation"| eb
+  f -->|"between B, within W"| rf
+  rb -->|"compare"| rh
+  rf -->|"compare"| rh
+  i -->|"autocorrelations<br/>of each indicator"| et
+  m -->|"autocorrelations,<br/>then SD / √ESS"| em
+
+  classDef out fill:#fdf1eb,stroke:#eb6c36,color:#2d3142
+  classDef step fill:#ffffff,stroke:#2e5aa8,color:#2d3142
+  class rh,eb,et,em out
+  class s,r,f,i,m step

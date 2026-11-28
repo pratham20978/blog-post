@@ -1,0 +1,86 @@
+Captured 2026-11-25T05:36:21Z on Linux 7.0.0-43-generic x86_64, AMD Ryzen 7 5825U with Radeon Graphics; Python 3.12.16, NumPy 2.5.4, SciPy 1.18.1; bayes.py f3b096d9fc45; budget full, seed 20261125.
+
+[laplace] Paris baptisms, a uniform prior on the probability x that a birth is a boy
+  1745-1770: 251,527 boys, 241,945 girls; posterior beta(251,528, 241,946): mean 0.509709, SD 0.000712, 95% interval 0.50831 to 0.51110; 1/2 lies 13.64 SDs below the mean
+  P(x <= 1/2): exact integers 1.1460584901553381e-42 (remainder < 1.1e-165 relative); beta CDF 1.146058490156627e-42; binomial identity 1.146058490156627e-42
+  Laplace 1781, first term of his series: 1.1522e-42 (he printed 1.1521e-42; logs -1.5339967 against his -1.5339961, 73616.6879721, 74893.3836147, 148550.4760803); second term 0.005373 = 1/186; two terms 1.1460e-42; first term / exact - 1 = 0.53%
+  log10 posterior density at 1/2: -37.66; law of succession P(next is a boy) = 251,528/493,474 = 0.509709
+  1783 table: the year rows sum to 141,859 boys and 135,610 girls (printed Total row 151,859 and 145,159); with 1745-1770 they give 393,386 and 377,555, the 1812 totals 393,386 and 377,555: match
+  1745-1784 (Theorie analytique): P(x <= 1/2) = 5.5928e-73; Laplace's printed 10^-72.2511780 x (1 - 0.0030761) = 5.5909e-73
+
+[pfizer] the BNT162b2 primary analysis, from the protocol's prior beta(0.700102, 1)
+  0.4118/0.5882 = 0.7001020061203673; theta at VE 30% = 0.7/1.7 = 0.411765; prior mean 0.411800 (VE 29.99%), prior median 0.37155 (VE 40.88%)
+  prior 95% interval: theta 0.00515 to 0.96448, VE -26.16 to 0.9948 (protocol: 0.005 to 0.964; -26.2 to 0.995); prior P(VE > 30%) 0.5373, P(VE < 0) 0.3845
+  covid19_7d_after_dose2_no_prior_infection: 8:162 cases, surveillance ratio r = 2.214/2.222 = 0.996400; theta at VE 30% under the efficacy map 0.410891; posterior beta(8.700102, 163)
+    VE 95% credible interval 90.317 to 97.617% -> 90.3 to 97.6 (published 90.3 to 97.6: match); posterior median 94.84%, MLE 95.04%; P(VE <= 30%) = 2.456e-28
+    posterior mean of theta 0.050670 = 0.009902 x prior mean 0.4118 + 0.990098 x observed share 0.047059
+  covid19_7d_after_dose2_with_or_without_prior_infection: 9:169 cases, surveillance ratio r = 2.332/2.345 = 0.994456; theta at VE 30% under the efficacy map 0.410419; posterior beta(9.700102, 170)
+    VE 95% credible interval 89.895 to 97.317% -> 89.9 to 97.3 (published 89.9 to 97.3: match); posterior median 94.45%, MLE 94.64%; P(VE <= 30%) = 7.990e-29
+    posterior mean of theta 0.053979 = 0.009461 x prior mean 0.4118 + 0.990539 x observed share 0.050562
+  first_severe_covid19_7d_after_dose2_no_prior_infection: 1:3 cases, surveillance ratio r = 2.215/2.232 = 0.992384; theta at VE 30% under the efficacy map 0.409914; posterior beta(1.700102, 4)
+    VE 95% credible interval -124.808 to 96.299% -> -124.8 to 96.3 (published -124.8 to 96.3: match); posterior median 62.07%, MLE 66.41%; P(VE <= 30%) = 2.570e-1
+    posterior mean of theta 0.298258 = 0.298258 x prior mean 0.4118 + 0.701742 x observed share 0.250000
+  32 cases: success if at most 6 vaccine cases (VE 76.9%; P(VE > 30%) 0.9965 at 6, 0.9892 at 7; threshold 0.995), futility at >= 15 (POS 0.0719 at 14, 0.0311 at 15)
+  62 cases: success if at most 15 vaccine cases (VE 68.1%; P(VE > 30%) 0.9975 at 15, 0.9943 at 16; threshold 0.995), futility at >= 26 (POS 0.0523 at 25, 0.0249 at 26)
+  92 cases: success if at most 25 vaccine cases (VE 62.7%; P(VE > 30%) 0.9974 at 25, 0.9950 at 26; threshold 0.995), futility at >= 35 (POS 0.0909 at 34, 0.0470 at 35)
+  120 cases: success if at most 35 vaccine cases (VE 58.8%; P(VE > 30%) 0.9968 at 35, 0.9944 at 36; threshold 0.995)
+  164 cases: success if at most 53 vaccine cases (VE 52.3%; P(VE > 30%) 0.9904 at 53, 0.9853 at 54; threshold 0.986)
+  protocol Table 6: every boundary matches
+  at 32 cases: POS 0.0719 with 14 vaccine cases, 0.0311 with 15 (success later needs at most 39 and 38 of the remaining 132)
+  VE 30%: 0.006 0.315 0.003 0.231 0.002 0.239 0.002 0.007 0.021  (protocol 0.006 0.315 0.003 0.231 0.002 0.239 0.002 0.007 0.021: match; the protocol's own success columns sum to 0.020; overall with futility not binding 0.0218)
+  VE 50%: 0.054 0.078 0.051 0.056 0.063 0.103 0.075 0.196 0.439  (protocol 0.054 0.078 0.051 0.056 0.063 0.103 0.075 0.196 0.439: match; the protocol's own success columns sum to 0.439; overall with futility not binding 0.4578)
+  VE 60%: 0.150 0.021 0.160 0.010 0.175 0.019 0.160 0.220 0.866  (protocol 0.150 0.021 0.160 0.010 0.175 0.019 0.160 0.220 0.866: match; the protocol's own success columns sum to 0.865; overall with futility not binding 0.8843)
+  VE 70%: 0.368 0.003 0.310 <0.001 0.195 0.001 0.085 0.036 0.994  (protocol 0.368 0.003 0.310 <0.001 0.195 0.001 0.085 0.036 >0.999: differs; the protocol's own success columns sum to 0.994; overall with futility not binding 0.9977)
+  VE 80%: 0.722 <0.001 0.238 <0.001 0.037 <0.001 0.003 <0.001 >0.999  (protocol 0.722 <0.001 0.238 <0.001 0.037 <0.001 0.003 <0.001 >0.999: match; the protocol's own success columns sum to 1.000; overall with futility not binding 1.0000)
+  overall P(success) at VE 30%: 0.0210 (the type I error the thresholds were set to hold under 0.025)
+
+[conjugate] each closed-form posterior against the same posterior normalised by quadrature
+  beta-binomial, 8 of 170: marginal likelihood 1.013023e-2 by quadrature, 1.013023e-2 closed form; density error 3.6e-15; 2.5% and 97.5% points 0.0231940, 0.0879907 against 0.0231940, 0.0879907
+  gamma-Poisson, vaccine: 8 cases in 2.214 thousand person-years -> gamma(shape 8.5, rate 2.214): mean 3.839 per 1,000 person-years (quadrature 3.839), 95% interval 1.71 to 6.82
+  gamma-Poisson, placebo: 162 cases in 2.222 thousand person-years -> gamma(shape 162.5, rate 2.222): mean 73.132 per 1,000 person-years (quadrature 73.132), 95% interval 62.32 to 84.80
+  the two arms' posteriors make the case share beta(8.5, 162.5): Monte Carlo (S 400,000) quantiles 0.02250 +- 0.00004 against 0.02250, 0.04799 +- 0.00003 against 0.04796, 0.08684 +- 0.00010 against 0.08682; VE 95% interval 90.46% to 97.69% (Monte Carlo 90.46 to 97.69)
+  gamma(0.700102, c) and gamma(1, c) priors on the expected counts give beta(8.700102, 163) for any c: quantiles 0.02325 +- 0.00004 against 0.02319, 0.04894 +- 0.00003 against 0.04893, 0.08793 +- 0.00010 against 0.08799
+  normal-normal, 1782 (9,851 of 19,387, share 0.50812 +- 0.00359) after 1745-1770 (N(0.509709, 0.000712^2)): prior weight 0.9622; posterior N(0.509649, 0.000698^2), quadrature mean 0.509649; exact beta update: mean 0.509649, SD 0.000698
+
+[intervals] equal-tailed and highest-density intervals; the coverage of the trial's credible interval
+  primary 8:162: equal-tailed VE 90.32 to 97.62%; HDI on theta, mapped 90.81 to 97.89%; HDI on VE 90.86 to 97.94% (grid 90.86 to 97.94); densities at the VE-HDI ends 3.0995e0, 3.0995e0; P(VE >= lower): 97.50%, 96.27%, 96.11%
+  severe 1:3: equal-tailed VE -124.81 to 96.30%; HDI on theta, mapped -73.55 to 99.08%; HDI on VE -69.71 to 99.95% (grid -69.71 to 99.94); densities at the VE-HDI ends 6.8378e-2, 6.8377e-2; P(VE >= lower): 97.50%, 95.26%, 95.00%
+  coverage, primary (n = 170 cases): credible interval 91.6% (at VE 98.0%) to 98.2% (at VE 98.8%) over VE 0 to 99% (Clopper-Pearson at least 95.1%); at VE 30, 50, 70, 95%: 94.9%, 95.0%, 95.5%, 95.6%; averaged over the prior 95.000000% by quadrature, 95.01% +- 0.03 by simulation (S 400,000); over VE 0 to 95%: credible 92.9% to 96.5%, Clopper-Pearson 95.1% to 98.0%
+  coverage, severe (n = 4 cases): credible interval 86.6% (at VE 96.3%) to 100.0% (at VE 13.7%) over VE 0 to 99% (Clopper-Pearson at least 97.5%); at VE 30, 50, 70, 95%: 97.2%, 98.8%, 96.0%, 98.7%; averaged over the prior 95.000000% by quadrature, 95.03% +- 0.03 by simulation (S 400,000); over VE 0 to 95%: credible 91.7% to 100.0%, Clopper-Pearson 97.5% to 100.0%
+
+[priors] how much the prior moves the answer, and what 'flat' means on other scales
+  primary 8:162: trial 90.3 to 97.6; senn_alternative 90.1 to 97.5; uniform 90.1 to 97.5; jeffreys 90.5 to 97.7; haldane 90.9 to 97.9
+  severe 1:3: trial -124.8 to 96.3; senn_alternative -116.6 to 94.9; uniform -154.6 to 94.4; jeffreys -154.4 to 97.0; haldane -143.9 to 99.1
+  prior worth 1.7001 cases centred at VE 30%, primary: VE 90.3 to 97.6%, median 94.8%
+  prior worth 1.7001 cases centred at VE 30%, severe: VE -124.8 to 96.3%, median 62.1%
+  prior worth 170 cases centred at VE 0%, primary: VE 52.3 to 70.4%, median 62.3%
+  prior worth 4 cases centred at VE 0%, severe: VE -146.2 to 88.9%, median 42.3%
+  uniform prior on theta: on the log-odds it is the logistic density, peak 0.250 at 0; P(VE > 30%) 0.4118, P(VE < 0) 0.5000, P(VE > 90%) 0.0909
+  trial: P(VE > 30%) 0.5373, P(VE < 0) 0.3845, P(VE > 90%) 0.1866, prior median VE 40.9%
+  senn_alternative: P(VE > 30%) 0.5314, P(VE < 0) 0.3716, P(VE > 90%) 0.1273, prior median VE 37.5%
+  jeffreys: P(VE > 30%) 0.4435, P(VE < 0) 0.5000, P(VE > 90%) 0.1950, prior median VE 0.0%
+  Jeffreys' prior transformed to the log-odds against Jeffreys' rule applied there: ratio constant to 2.2e-16
+
+[lindley] H0: a birth is a boy with probability 1/2, one year of Paris baptisms at a time
+  1771: 9,604 boys of 18,941 (share 0.5070): z 1.940, exact p 0.0533; BF01 (uniform alternative) 16.726, P(H0 | data) 0.944; BF01 = 1 at z 3.066
+  1772: 9,557 boys of 18,713 (share 0.5107): z 2.931, exact p 0.0035; BF01 (uniform alternative) 1.486, P(H0 | data) 0.598; BF01 = 1 at z 3.064
+  1773: 9,751 boys of 18,847 (share 0.5174): z 4.771, exact p 0.0000; BF01 (uniform alternative) 0.001, P(H0 | data) 0.001; BF01 = 1 at z 3.065
+  1774: 9,892 boys of 19,353 (share 0.5111): z 3.098, exact p 0.0020; BF01 (uniform alternative) 0.914, P(H0 | data) 0.478; BF01 = 1 at z 3.069
+  1775: 10,247 boys of 19,650 (share 0.5215): z 6.021, exact p 0.0000; BF01 (uniform alternative) 0.000, P(H0 | data) 0.000; BF01 = 1 at z 3.071
+  1776: 9,716 boys of 18,919 (share 0.5136): z 3.730, exact p 0.0002; BF01 (uniform alternative) 0.105, P(H0 | data) 0.095; BF01 = 1 at z 3.065
+  1777: 11,445 boys of 22,266 (share 0.5140): z 4.182, exact p 0.0000; BF01 (uniform alternative) 0.019, P(H0 | data) 0.019; BF01 = 1 at z 3.092
+  1778: 11,037 boys of 21,688 (share 0.5089): z 2.621, exact p 0.0089; BF01 (uniform alternative) 3.787, P(H0 | data) 0.791; BF01 = 1 at z 3.088
+  1779: 10,506 boys of 20,614 (share 0.5097): z 2.772, exact p 0.0057; BF01 (uniform alternative) 2.457, P(H0 | data) 0.711; BF01 = 1 at z 3.079
+  1780: 10,071 boys of 19,617 (share 0.5134): z 3.748, exact p 0.0002; BF01 (uniform alternative) 0.099, P(H0 | data) 0.090; BF01 = 1 at z 3.071
+  1781: 10,397 boys of 20,232 (share 0.5139): z 3.951, exact p 0.0001; BF01 (uniform alternative) 0.046, P(H0 | data) 0.044; BF01 = 1 at z 3.076
+  1782: 9,851 boys of 19,387 (share 0.5081): z 2.262, exact p 0.0241; BF01 (uniform alternative) 8.597, P(H0 | data) 0.896; BF01 = 1 at z 3.069
+  1783: 9,952 boys of 19,688 (share 0.5055): z 1.539, exact p 0.1255; BF01 (uniform alternative) 34.236, P(H0 | data) 0.972; BF01 = 1 at z 3.072
+  1784: 9,833 boys of 19,554 (share 0.5029): z 0.801, exact p 0.4273; BF01 (uniform alternative) 80.962, P(H0 | data) 0.988; BF01 = 1 at z 3.071
+  years with p < 0.05 and BF01 > 1: 1772, 1778, 1779, 1782
+  1782: BF01 uniform 8.5968 (exact integers 8.5968); against the 1745-1770 posterior as H1's prior BF10 11.544; most H1 can achieve, a spike at the observed share: BF10 12.925
+  1782 as estimation (uniform prior): 95% interval 0.5011 to 0.5152, P(theta <= 1/2) 0.0118
+  BF01 under beta(k/2, k/2) priors centred at 1/2: k 2: 8.597, k 20: 2.446, k 200: 0.787, k 2,000: 0.321, k 20,000: 0.398, k 200,000: 0.835
+  at z = 2.262, BF01 reaches 1 at n = 260 and 19 (P(H0) 0.95) at n = 94,708; at z = 1.96, at n = 70 and 26,418. Jeffreys' even-odds z for n = 19,387: sqrt(ln(2n/pi)) = 3.069
+  1771-1784 pooled: z 11.86, log10 BF01 -27.9: both schools reject
+
+wrote captures.json: laplace 3.4 s, pfizer 0.1 s, conjugate 0.8 s, intervals 4.2 s, priors 0.4 s, lindley 0.0 s
